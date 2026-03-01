@@ -2,7 +2,7 @@
 
 Site publico de criptografia e descriptografia de arquivos 100% client-side, inspirado no ecossistema `.crypt15` do WhatsApp para demonstrar seguranca real no navegador com React + TypeScript + Web Crypto API.
 
-Link do site: pendente de deploy. URL sugerida apos publicacao: `https://criptify.vercel.app`
+Link do site: `https://projeto-criptify.vercel.app/`
 
 ## Stack
 

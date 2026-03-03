@@ -85,6 +85,40 @@ function buildDownloadName(mode: 'encrypt' | 'decrypt', fileName: string) {
     : `${fileName}.decrypted`
 }
 
+function inferMimeTypeFromName(fileName: string) {
+  const extension = fileName.toLowerCase().split('.').pop()
+
+  if (!extension) {
+    return ''
+  }
+
+  const mimeByExtension: Record<string, string> = {
+    aac: 'audio/aac',
+    avi: 'video/x-msvideo',
+    flac: 'audio/flac',
+    gif: 'image/gif',
+    jpeg: 'image/jpeg',
+    jpg: 'image/jpeg',
+    json: 'application/json',
+    m4a: 'audio/mp4',
+    mov: 'video/quicktime',
+    mp3: 'audio/mpeg',
+    mp4: 'video/mp4',
+    oga: 'audio/ogg',
+    ogg: 'audio/ogg',
+    ogv: 'video/ogg',
+    pdf: 'application/pdf',
+    png: 'image/png',
+    svg: 'image/svg+xml',
+    txt: 'text/plain',
+    wav: 'audio/wav',
+    webm: 'video/webm',
+    webp: 'image/webp',
+  }
+
+  return mimeByExtension[extension] ?? ''
+}
+
 export function assertSupportedFileSize(file: File) {
   if (file.size > MAX_FILE_SIZE_BYTES) {
     throw new CriptifyError(
@@ -167,9 +201,11 @@ export async function decryptFile(
       encrypted,
     )
 
+    const downloadName = buildDownloadName('decrypt', file.name)
+
     return {
-      blob: new Blob([decrypted]),
-      downloadName: buildDownloadName('decrypt', file.name),
+      blob: new Blob([decrypted], { type: inferMimeTypeFromName(downloadName) }),
+      downloadName,
     }
   } catch (error) {
     if (error instanceof DOMException && error.name === 'OperationError') {

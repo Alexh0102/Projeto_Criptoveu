@@ -27,10 +27,16 @@ import {
 
 type Mode = 'encrypt' | 'decrypt'
 type StatusTone = 'info' | 'success' | 'error'
+type PreviewKind = 'audio' | 'video' | 'image' | 'pdf' | 'none'
 
 type StatusState = {
   tone: StatusTone
   message: string
+}
+
+type PreviewState = {
+  kind: PreviewKind
+  mimeType: string
 }
 
 const MODE_COPY: Record<
@@ -75,6 +81,26 @@ function downloadBlobUrl(url: string, fileName: string) {
   anchor.remove()
 }
 
+function getPreviewState(mimeType: string): PreviewState {
+  if (mimeType.startsWith('audio/')) {
+    return { kind: 'audio', mimeType }
+  }
+
+  if (mimeType.startsWith('video/')) {
+    return { kind: 'video', mimeType }
+  }
+
+  if (mimeType.startsWith('image/')) {
+    return { kind: 'image', mimeType }
+  }
+
+  if (mimeType === 'application/pdf') {
+    return { kind: 'pdf', mimeType }
+  }
+
+  return { kind: 'none', mimeType }
+}
+
 export default function App() {
   const [mode, setMode] = useState<Mode>('encrypt')
   const [file, setFile] = useState<File | null>(null)
@@ -87,6 +113,7 @@ export default function App() {
   })
   const [resultUrl, setResultUrl] = useState<string | null>(null)
   const [resultName, setResultName] = useState('')
+  const [preview, setPreview] = useState<PreviewState>({ kind: 'none', mimeType: '' })
   const [isDragging, setIsDragging] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -135,6 +162,7 @@ export default function App() {
 
     setResultUrl(null)
     setResultName('')
+    setPreview({ kind: 'none', mimeType: '' })
   }
 
   function handleModeChange(nextMode: Mode) {
@@ -291,10 +319,13 @@ export default function App() {
         setProgressLabel(label)
       })
 
+      const nextPreview: PreviewState =
+        mode === 'decrypt' ? getPreviewState(blob.type) : { kind: 'none', mimeType: '' }
       const nextUrl = URL.createObjectURL(blob)
       resultUrlRef.current = nextUrl
       setResultUrl(nextUrl)
       setResultName(downloadName)
+      setPreview(nextPreview)
       setProgress(100)
       setProgressLabel('Processo concluido')
       setStatus({
@@ -302,10 +333,14 @@ export default function App() {
         message:
           mode === 'encrypt'
             ? 'Arquivo criptografado com sucesso. O download do .cryptify foi iniciado.'
-            : 'Arquivo descriptografado com sucesso. O download do original foi iniciado.',
+            : nextPreview.kind === 'none'
+              ? 'Arquivo descriptografado com sucesso. Use o download manual para salvar o conteudo recuperado.'
+              : 'Arquivo descriptografado com sucesso. Use a previa local abaixo e baixe o conteudo quando quiser.',
       })
 
-      downloadBlobUrl(nextUrl, downloadName)
+      if (mode === 'encrypt') {
+        downloadBlobUrl(nextUrl, downloadName)
+      }
     } catch (error) {
       setProgress(0)
       setProgressLabel('Falha no processamento')
@@ -665,7 +700,7 @@ export default function App() {
                   className="inline-flex items-center justify-center gap-2 rounded-[22px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Download className="h-4 w-4" />
-                  Download
+                  {mode === 'decrypt' ? 'Baixar descriptografado' : 'Download'}
                 </button>
               </div>
 
@@ -673,6 +708,69 @@ export default function App() {
                 <p className="text-sm text-emerald-300">
                   Arquivo pronto: <span className="font-mono text-xs">{resultName}</span>
                 </p>
+              ) : null}
+
+              {mode === 'decrypt' && resultUrl ? (
+                <div className="rounded-[28px] border border-white/10 bg-black/25 p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-2 text-cyan-100">
+                      <Unlock className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">
+                        Previa local do arquivo recuperado
+                      </p>
+                      <p className="mt-1 text-sm text-zinc-400">
+                        A reproducao acontece no proprio navegador. Baixe o arquivo so
+                        depois de validar o conteudo.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 rounded-[24px] border border-white/10 bg-black/20 p-4">
+                    {preview.kind === 'audio' ? (
+                      <audio controls preload="metadata" className="w-full">
+                        <source src={resultUrl} type={preview.mimeType || undefined} />
+                        Seu navegador nao conseguiu carregar o player de audio.
+                      </audio>
+                    ) : null}
+
+                    {preview.kind === 'video' ? (
+                      <video
+                        controls
+                        preload="metadata"
+                        className="max-h-[420px] w-full rounded-2xl bg-black"
+                      >
+                        <source src={resultUrl} type={preview.mimeType || undefined} />
+                        Seu navegador nao conseguiu carregar o player de video.
+                      </video>
+                    ) : null}
+
+                    {preview.kind === 'image' ? (
+                      <img
+                        src={resultUrl}
+                        alt={`Previa de ${resultName}`}
+                        className="max-h-[420px] w-full rounded-2xl object-contain"
+                      />
+                    ) : null}
+
+                    {preview.kind === 'pdf' ? (
+                      <iframe
+                        src={resultUrl}
+                        title={`Previa de ${resultName}`}
+                        className="h-[420px] w-full rounded-2xl bg-white"
+                      />
+                    ) : null}
+
+                    {preview.kind === 'none' ? (
+                      <p className="text-sm leading-7 text-zinc-300">
+                        O arquivo foi recuperado com sucesso, mas este formato nao tem
+                        preview nativo disponivel no navegador. Use o botao de download
+                        para abrir o conteudo no app adequado.
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
               ) : null}
 
               <div

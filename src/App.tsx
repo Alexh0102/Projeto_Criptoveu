@@ -26,14 +26,10 @@ import {
   generateWhatsappStyleKey,
   getPasswordStrength,
 } from './lib/cryptify'
-import {
-  VIDEO_PREVIEW_COMPAT_LIMIT_BYTES,
-  transcodeVideoForBrowserPreview,
-} from './lib/video-preview'
 
 type Mode = 'encrypt' | 'decrypt'
 type StatusTone = 'info' | 'success' | 'error'
-type PreviewKind = 'audio' | 'video' | 'image' | 'pdf' | 'none'
+type PreviewKind = 'image' | 'none'
 
 type StatusState = {
   tone: StatusTone
@@ -42,14 +38,6 @@ type StatusState = {
 
 type PreviewState = {
   kind: PreviewKind
-  mimeType: string
-}
-
-type PreviewOrigin = 'original' | 'converted'
-
-type MediaStatus = {
-  hasError: boolean
-  message: string
 }
 
 const MODE_COPY: Record<
@@ -95,23 +83,11 @@ function downloadBlobUrl(url: string, fileName: string) {
 }
 
 function getPreviewState(mimeType: string): PreviewState {
-  if (mimeType.startsWith('audio/')) {
-    return { kind: 'audio', mimeType }
-  }
-
-  if (mimeType.startsWith('video/')) {
-    return { kind: 'video', mimeType }
-  }
-
   if (mimeType.startsWith('image/')) {
-    return { kind: 'image', mimeType }
+    return { kind: 'image' }
   }
 
-  if (mimeType === 'application/pdf') {
-    return { kind: 'pdf', mimeType }
-  }
-
-  return { kind: 'none', mimeType }
+  return { kind: 'none' }
 }
 
 export default function App() {
@@ -126,25 +102,14 @@ export default function App() {
   })
   const [resultUrl, setResultUrl] = useState<string | null>(null)
   const [resultName, setResultName] = useState('')
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [preview, setPreview] = useState<PreviewState>({ kind: 'none', mimeType: '' })
-  const [previewOrigin, setPreviewOrigin] = useState<PreviewOrigin>('original')
-  const [mediaStatus, setMediaStatus] = useState<MediaStatus>({
-    hasError: false,
-    message: '',
-  })
+  const [preview, setPreview] = useState<PreviewState>({ kind: 'none' })
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  const [isTranscodingPreview, setIsTranscodingPreview] = useState(false)
-  const [previewJobProgress, setPreviewJobProgress] = useState(0)
-  const [previewJobLabel, setPreviewJobLabel] = useState('')
   const [isDragging, setIsDragging] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [copied, setCopied] = useState(false)
   const fileInputId = useId()
   const passwordInputId = useId()
   const resultUrlRef = useRef<string | null>(null)
-  const previewUrlRef = useRef<string | null>(null)
-  const resultBlobRef = useRef<Blob | null>(null)
   const canUseSecureProcessing =
     window.isSecureContext && typeof window.crypto?.subtle !== 'undefined'
   const hasClipboardSupport = typeof navigator.clipboard?.writeText === 'function'
@@ -195,45 +160,22 @@ export default function App() {
 
   useEffect(() => {
     return () => {
-      const currentResultUrl = resultUrlRef.current
-      const currentPreviewUrl = previewUrlRef.current
-
-      if (currentResultUrl) {
-        URL.revokeObjectURL(currentResultUrl)
-      }
-
-      if (currentPreviewUrl && currentPreviewUrl !== currentResultUrl) {
-        URL.revokeObjectURL(currentPreviewUrl)
+      if (resultUrlRef.current) {
+        URL.revokeObjectURL(resultUrlRef.current)
       }
     }
   }, [])
 
   function clearResult() {
-    const currentResultUrl = resultUrlRef.current
-    const currentPreviewUrl = previewUrlRef.current
-
-    if (currentResultUrl) {
-      URL.revokeObjectURL(currentResultUrl)
+    if (resultUrlRef.current) {
+      URL.revokeObjectURL(resultUrlRef.current)
+      resultUrlRef.current = null
     }
-
-    if (currentPreviewUrl && currentPreviewUrl !== currentResultUrl) {
-      URL.revokeObjectURL(currentPreviewUrl)
-    }
-
-    resultUrlRef.current = null
-    previewUrlRef.current = null
 
     setResultUrl(null)
     setResultName('')
-    setPreviewUrl(null)
-    setPreview({ kind: 'none', mimeType: '' })
-    setPreviewOrigin('original')
-    setMediaStatus({ hasError: false, message: '' })
+    setPreview({ kind: 'none' })
     setIsPreviewOpen(false)
-    setIsTranscodingPreview(false)
-    setPreviewJobProgress(0)
-    setPreviewJobLabel('')
-    resultBlobRef.current = null
   }
 
   function handleModeChange(nextMode: Mode) {
@@ -354,7 +296,7 @@ export default function App() {
   }
 
   function handleOpenPreview() {
-    if (!previewUrl || preview.kind === 'none') {
+    if (!resultUrl || preview.kind !== 'image') {
       return
     }
 
@@ -363,78 +305,6 @@ export default function App() {
 
   function handleClosePreview() {
     setIsPreviewOpen(false)
-  }
-
-  function handleMediaReady() {
-    setMediaStatus({ hasError: false, message: '' })
-  }
-
-  function handleMediaError(kind: 'audio' | 'video') {
-    const kindLabel = kind === 'audio' ? 'audio' : 'video'
-    const mimeLabel = preview.mimeType || 'este formato'
-
-    setMediaStatus({
-      hasError: true,
-      message: `O navegador nao conseguiu reproduzir este ${kindLabel}. Isso geralmente indica codec sem suporte para ${mimeLabel}. Baixe o arquivo e teste em um player externo, ou use um formato com codec suportado pelo navegador.`,
-    })
-  }
-
-  async function handleConvertVideoPreview() {
-    if (!resultBlobRef.current || preview.kind !== 'video') {
-      return
-    }
-
-    setIsTranscodingPreview(true)
-    setPreviewJobProgress(0)
-    setPreviewJobLabel('Preparando conversao local do video')
-    setMediaStatus({ hasError: false, message: '' })
-
-    try {
-      const { blob, mimeType } = await transcodeVideoForBrowserPreview(
-        resultBlobRef.current,
-        resultName,
-        (value, label) => {
-          setPreviewJobProgress(value)
-          setPreviewJobLabel(label)
-        },
-      )
-
-      const nextPreviewUrl = URL.createObjectURL(blob)
-
-      if (previewUrlRef.current && previewUrlRef.current !== resultUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current)
-      }
-
-      previewUrlRef.current = nextPreviewUrl
-      setPreviewUrl(nextPreviewUrl)
-      setPreview({ kind: 'video', mimeType })
-      setPreviewOrigin('converted')
-      setPreviewJobProgress(100)
-      setPreviewJobLabel('Preview de video convertida localmente')
-      setStatus({
-        tone: 'success',
-        message:
-          'Preview de video convertida localmente para um formato mais compativel. O download continua apontando para o arquivo descriptografado original.',
-      })
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Falha ao converter o video localmente para preview compativel.'
-
-      setMediaStatus({
-        hasError: true,
-        message,
-      })
-      setPreviewJobProgress(0)
-      setPreviewJobLabel('Falha na conversao local')
-      setStatus({
-        tone: 'error',
-        message,
-      })
-    } finally {
-      setIsTranscodingPreview(false)
-    }
   }
 
   async function handleProcess() {
@@ -475,19 +345,12 @@ export default function App() {
       })
 
       const nextPreview: PreviewState =
-        mode === 'decrypt' ? getPreviewState(blob.type) : { kind: 'none', mimeType: '' }
+        mode === 'decrypt' ? getPreviewState(blob.type) : { kind: 'none' }
       const nextUrl = URL.createObjectURL(blob)
       resultUrlRef.current = nextUrl
-      previewUrlRef.current = mode === 'decrypt' ? nextUrl : null
-      resultBlobRef.current = blob
       setResultUrl(nextUrl)
       setResultName(downloadName)
-      setPreviewUrl(mode === 'decrypt' ? nextUrl : null)
       setPreview(nextPreview)
-      setPreviewOrigin('original')
-      setMediaStatus({ hasError: false, message: '' })
-      setPreviewJobProgress(0)
-      setPreviewJobLabel('')
       setProgress(100)
       setProgressLabel('Processo concluido')
       setStatus({
@@ -495,9 +358,9 @@ export default function App() {
         message:
           mode === 'encrypt'
             ? 'Arquivo criptografado com sucesso. O download do .cryptify foi iniciado.'
-            : nextPreview.kind === 'none'
-              ? 'Arquivo descriptografado com sucesso. Use o download manual para salvar o conteudo recuperado.'
-              : 'Arquivo descriptografado com sucesso. Use a previa local abaixo e baixe o conteudo quando quiser.',
+            : nextPreview.kind === 'image'
+              ? 'Arquivo descriptografado com sucesso. Se for uma imagem, use a previa local antes de baixar.'
+              : 'Arquivo descriptografado com sucesso. Este formato nao tem previa local; use o download manual para abrir o conteudo no app adequado.',
       })
 
       if (mode === 'encrypt') {
@@ -525,82 +388,21 @@ export default function App() {
       : status.tone === 'error'
         ? AlertCircle
         : Sparkles
-  const canExpandPreview = mode === 'decrypt' && Boolean(previewUrl) && preview.kind !== 'none'
+  const canExpandPreview = mode === 'decrypt' && Boolean(resultUrl) && preview.kind === 'image'
 
-  function renderPreviewMedia(expanded: boolean) {
-    if (!previewUrl) {
+  function renderPreviewImage(expanded: boolean) {
+    if (!resultUrl) {
       return null
     }
 
-    if (preview.kind === 'audio') {
-      return (
-        <div className={expanded ? 'mx-auto max-w-3xl' : undefined}>
-          <audio
-            key={previewUrl}
-            controls
-            onCanPlay={handleMediaReady}
-            onLoadedMetadata={handleMediaReady}
-            onError={() => handleMediaError('audio')}
-            preload="metadata"
-            src={previewUrl}
-            className="w-full"
-          >
-            Seu navegador nao conseguiu carregar o player de audio.
-          </audio>
-        </div>
-      )
-    }
-
-    if (preview.kind === 'video') {
-      return (
-        <video
-          key={previewUrl}
-          controls
-          onCanPlay={handleMediaReady}
-          onLoadedMetadata={handleMediaReady}
-          onError={() => handleMediaError('video')}
-          preload="metadata"
-          playsInline
-          src={previewUrl}
-          className={`w-full rounded-2xl bg-black ${
-            expanded ? 'max-h-[76vh]' : 'max-h-[420px]'
-          }`}
-        >
-          Seu navegador nao conseguiu carregar o player de video.
-        </video>
-      )
-    }
-
-    if (preview.kind === 'image') {
-      return (
-        <img
-          src={previewUrl}
-          alt={`Previa de ${resultName}`}
-          className={`w-full rounded-2xl object-contain ${
-            expanded ? 'max-h-[76vh]' : 'max-h-[420px]'
-          }`}
-        />
-      )
-    }
-
-    if (preview.kind === 'pdf') {
-      return (
-        <iframe
-          src={previewUrl}
-          title={`Previa de ${resultName}`}
-          className={`w-full rounded-2xl bg-white ${
-            expanded ? 'h-[76vh]' : 'h-[420px]'
-          }`}
-        />
-      )
-    }
-
     return (
-      <p className="text-sm leading-7 text-zinc-300">
-        O arquivo foi recuperado com sucesso, mas este formato nao tem preview
-        nativo disponivel no navegador. Use o botao de download para abrir o
-        conteudo no app adequado.
-      </p>
+      <img
+        src={resultUrl}
+        alt={`Previa de ${resultName}`}
+        className={`w-full rounded-2xl object-contain ${
+          expanded ? 'max-h-[76vh]' : 'max-h-[420px]'
+        }`}
+      />
     )
   }
 
@@ -664,21 +466,12 @@ export default function App() {
                     Preview local
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold text-white">
-                    Fotos e videos podem ser conferidos antes do download
+                    Imagens podem ser conferidas antes do download
                   </h2>
                   <p className="mt-3 max-w-xl text-sm leading-7 text-zinc-300 sm:text-base">
-                    Imagens abrem imediatamente no navegador. Videos tambem podem
-                    ganhar preview local, e se o codec nao for suportado voce pode
-                    converter tudo no proprio dispositivo para um formato mais
-                    compativel.
-                  </p>
-                  <p className="mt-3 text-sm text-amber-100/85">
-                    Limite da conversao local para videos: {' '}
-                    <span className="font-semibold text-amber-50">
-                      {formatFileSize(VIDEO_PREVIEW_COMPAT_LIMIT_BYTES)}
-                    </span>
-                    . O download continua entregando o arquivo descriptografado
-                    original.
+                    Quando o arquivo descriptografado for uma imagem, voce pode
+                    visualiza-la e ampliar o conteudo diretamente no navegador antes
+                    de baixar. Videos e outros formatos seguem com download manual.
                   </p>
                 </div>
               </div>
@@ -980,7 +773,7 @@ export default function App() {
                 </p>
               ) : null}
 
-              {mode === 'decrypt' && previewUrl ? (
+              {mode === 'decrypt' && resultUrl && preview.kind === 'image' ? (
                 <div className="rounded-[28px] border border-white/10 bg-black/25 p-5">
                   <div className="flex items-start gap-3">
                     <div className="rounded-2xl border border-white/10 bg-white/5 p-2 text-cyan-100">
@@ -988,22 +781,18 @@ export default function App() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-white">
-                        Previa local do arquivo recuperado
+                        Previa local da imagem recuperada
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
-                        A reproducao acontece no proprio navegador. Baixe o arquivo so
-                        depois de validar o conteudo.
+                        A visualizacao acontece no proprio navegador. Baixe o arquivo
+                        so depois de validar o conteudo.
                       </p>
                     </div>
                   </div>
 
                   {canExpandPreview ? (
                     <div className="mt-4 flex items-center justify-between gap-3 text-xs uppercase tracking-[0.24em] text-zinc-500">
-                      <p>
-                        {preview.kind === 'image' || preview.kind === 'pdf'
-                          ? 'Clique na previa para ampliar'
-                          : 'Abra em destaque para visualizar melhor'}
-                      </p>
+                      <p>Clique na previa para ampliar</p>
                       <button
                         type="button"
                         onClick={handleOpenPreview}
@@ -1015,110 +804,16 @@ export default function App() {
                     </div>
                   ) : null}
 
-                  {previewOrigin === 'converted' ? (
-                    <div className="mt-4 rounded-2xl border border-cyan-400/25 bg-cyan-400/10 p-4 text-sm text-cyan-50">
-                      Preview de video convertida localmente para compatibilidade.
-                      O botao de download continua entregando o arquivo
-                      descriptografado original.
-                    </div>
-                  ) : null}
-
                   <div className="mt-4 rounded-[24px] border border-white/10 bg-black/20 p-4">
-                    {preview.kind === 'image' ? (
-                      <button
-                        type="button"
-                        onClick={handleOpenPreview}
-                        className="block w-full cursor-zoom-in rounded-2xl transition hover:opacity-95"
-                        aria-label="Ampliar previa da imagem"
-                      >
-                        {renderPreviewMedia(false)}
-                      </button>
-                    ) : preview.kind === 'pdf' ? (
-                      <button
-                        type="button"
-                        onClick={handleOpenPreview}
-                        className="block w-full cursor-zoom-in rounded-2xl transition hover:opacity-95"
-                        aria-label="Ampliar previa do PDF"
-                      >
-                        <div className="pointer-events-none">{renderPreviewMedia(false)}</div>
-                      </button>
-                    ) : (
-                      renderPreviewMedia(false)
-                    )}
+                    <button
+                      type="button"
+                      onClick={handleOpenPreview}
+                      className="block w-full cursor-zoom-in rounded-2xl transition hover:opacity-95"
+                      aria-label="Ampliar previa da imagem"
+                    >
+                      {renderPreviewImage(false)}
+                    </button>
                   </div>
-
-                  {mediaStatus.hasError ? (
-                    <div className="mt-4 rounded-2xl border border-amber-400/25 bg-amber-400/10 p-4 text-sm text-amber-50">
-                      {mediaStatus.message}
-                    </div>
-                  ) : null}
-
-                  {preview.kind === 'video' && (isTranscodingPreview || previewJobLabel) ? (
-                    <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
-                      <div className="flex items-center justify-between gap-3 text-sm">
-                        <span className="text-zinc-300">Compatibilidade de video</span>
-                        <span className="font-mono text-xs uppercase tracking-[0.24em] text-zinc-400">
-                          {previewJobProgress}%
-                        </span>
-                      </div>
-                      <progress
-                        className="cryptify-progress mt-3"
-                        value={previewJobProgress}
-                        max={100}
-                        aria-label="Progresso da conversao local de video"
-                      />
-                      <p className="mt-3 text-xs uppercase tracking-[0.28em] text-zinc-500">
-                        {previewJobLabel}
-                      </p>
-                    </div>
-                  ) : null}
-
-                  {preview.kind === 'video' && mediaStatus.hasError ? (
-                    <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            Converter localmente para preview compativel
-                          </p>
-                          <p className="mt-1 text-sm text-zinc-400">
-                            Use esta opcao quando o navegador nao suportar o codec
-                            original do video. Limite: {' '}
-                            {formatFileSize(VIDEO_PREVIEW_COMPAT_LIMIT_BYTES)}.
-                          </p>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={handleConvertVideoPreview}
-                          disabled={
-                            isTranscodingPreview ||
-                            !resultBlobRef.current ||
-                            resultBlobRef.current.size >
-                              VIDEO_PREVIEW_COMPAT_LIMIT_BYTES
-                          }
-                          className="inline-flex items-center justify-center gap-2 rounded-[20px] border border-amber-300/25 bg-amber-300/10 px-4 py-3 text-sm font-medium text-amber-50 transition hover:bg-amber-300/15 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {isTranscodingPreview ? (
-                            <LoaderCircle className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Maximize2 className="h-4 w-4" />
-                          )}
-                          {isTranscodingPreview
-                            ? 'Convertendo localmente'
-                            : 'Converter para MP4 compativel'}
-                        </button>
-                      </div>
-
-                      {resultBlobRef.current &&
-                      resultBlobRef.current.size > VIDEO_PREVIEW_COMPAT_LIMIT_BYTES ? (
-                        <p className="mt-3 text-sm text-amber-100/85">
-                          Este video excede o limite de conversao local para
-                          compatibilidade. Baixe o arquivo e teste em um player
-                          externo.
-                        </p>
-                      ) : null}
-                    </div>
-                  ) : null}
                 </div>
               ) : null}
 
@@ -1149,12 +844,12 @@ export default function App() {
         </footer>
       </main>
 
-      {isPreviewOpen && previewUrl ? (
+      {isPreviewOpen && resultUrl && preview.kind === 'image' ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 py-6 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
-          aria-label="Visualizacao ampliada do arquivo recuperado"
+          aria-label="Visualizacao ampliada da imagem recuperada"
         >
           <button
             type="button"
@@ -1194,7 +889,7 @@ export default function App() {
             </div>
 
             <div className="rounded-[28px] border border-white/10 bg-black/40 p-3 sm:p-4">
-              {renderPreviewMedia(true)}
+              {renderPreviewImage(true)}
             </div>
           </div>
         </div>

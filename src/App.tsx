@@ -8,8 +8,10 @@ import {
   LoaderCircle,
   Lock,
   Maximize2,
+  MoonStar,
   ShieldCheck,
   Sparkles,
+  SunMedium,
   Unlock,
   Upload,
   X,
@@ -29,6 +31,8 @@ import {
 import SteganographyPanel from './components/SteganographyPanel'
 
 type Mode = 'encrypt' | 'decrypt'
+type ActiveView = 'files' | 'steganography'
+type Theme = 'dark' | 'light'
 type StatusTone = 'info' | 'success' | 'error'
 type PreviewKind = 'image' | 'none'
 
@@ -54,15 +58,15 @@ const MODE_COPY: Record<
     action: 'Criptografar arquivo',
     title: 'Blindagem local do arquivo',
     description:
-      'Monte um pacote .cryptify com cabecalho CRIPTIFY1, salt aleatorio, IV exclusivo e payload em AES-256-GCM.',
+      'Monte um pacote .cryptify com cabeçalho CRIPTIFY1, salt aleatório, IV exclusivo e payload em AES-256-GCM.',
     hint: 'Aceita qualquer formato de arquivo para criptografar.',
   },
   decrypt: {
     action: 'Descriptografar arquivo',
-    title: 'Recuperacao segura do conteudo',
+    title: 'Recuperação segura do conteúdo',
     description:
       'Abra um arquivo .cryptify, derive a chave localmente via PBKDF2 e recupere o arquivo original sem enviar nada para um servidor.',
-    hint: 'Selecione um arquivo com extensao .cryptify.',
+    hint: 'Selecione um arquivo com extensão .cryptify.',
   },
 }
 
@@ -92,7 +96,17 @@ function getPreviewState(mimeType: string): PreviewState {
 }
 
 export default function App() {
+  const [activeView, setActiveView] = useState<ActiveView>('files')
   const [mode, setMode] = useState<Mode>('encrypt')
+  const [theme, setTheme] = useState<Theme>(() => {
+    const savedTheme = window.localStorage.getItem('criptify-theme')
+
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      return savedTheme
+    }
+
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  })
   const [file, setFile] = useState<File | null>(null)
   const [password, setPassword] = useState('')
   const [progress, setProgress] = useState(0)
@@ -119,11 +133,16 @@ export default function App() {
   const currentMode = MODE_COPY[mode]
 
   useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    window.localStorage.setItem('criptify-theme', theme)
+  }, [theme])
+
+  useEffect(() => {
     if (!canUseSecureProcessing) {
       setStatus({
         tone: 'error',
         message:
-          'Este app precisa ser aberto em HTTPS ou localhost com Web Crypto API disponivel para processar arquivos.',
+          'Este app precisa ser aberto em HTTPS ou localhost com Web Crypto API disponível para processar arquivos.',
       })
     }
   }, [canUseSecureProcessing])
@@ -191,7 +210,7 @@ export default function App() {
       tone: 'info',
       message:
         nextMode === 'encrypt'
-          ? 'Modo de criptografia ativo. O arquivo sera convertido para .cryptify.'
+          ? 'Modo de criptografia ativo. O arquivo será convertido para .cryptify.'
           : 'Modo de descriptografia ativo. Selecione o arquivo .cryptify e use a mesma senha.',
     })
     clearResult()
@@ -259,7 +278,7 @@ export default function App() {
     if (!hasClipboardSupport) {
       setStatus({
         tone: 'error',
-        message: 'A API de clipboard nao esta disponivel neste navegador ou contexto atual.',
+        message: 'A API de clipboard não está disponível neste navegador ou contexto atual.',
       })
       return
     }
@@ -269,12 +288,12 @@ export default function App() {
       setCopied(true)
       setStatus({
         tone: 'success',
-        message: 'Senha ou chave copiada para a area de transferencia.',
+        message: 'Senha ou chave copiada para a área de transferência.',
       })
     } catch {
       setStatus({
         tone: 'error',
-        message: 'Nao foi possivel acessar a area de transferencia neste navegador.',
+        message: 'Não foi possível acessar a área de transferência neste navegador.',
       })
     }
   }
@@ -284,7 +303,7 @@ export default function App() {
     setCopied(false)
     setStatus({
       tone: 'info',
-      message: 'Chave aleatoria de 64 caracteres hex gerada no estilo WhatsApp.',
+      message: 'Chave aleatória de 64 caracteres hex gerada no estilo WhatsApp.',
     })
   }
 
@@ -360,8 +379,8 @@ export default function App() {
           mode === 'encrypt'
             ? 'Arquivo criptografado com sucesso. O download do .cryptify foi iniciado.'
             : nextPreview.kind === 'image'
-              ? 'Arquivo descriptografado com sucesso. Se for uma imagem, use a previa local antes de baixar.'
-              : 'Arquivo descriptografado com sucesso. Este formato nao tem previa local; use o download manual para abrir o conteudo no app adequado.',
+              ? 'Arquivo descriptografado com sucesso. Se for uma imagem, use a prévia local antes de baixar.'
+              : 'Arquivo descriptografado com sucesso. Este formato não tem prévia local. Use o download manual para abrir o conteúdo no app adequado.',
       })
 
       if (mode === 'encrypt') {
@@ -390,6 +409,7 @@ export default function App() {
         ? AlertCircle
         : Sparkles
   const canExpandPreview = mode === 'decrypt' && Boolean(resultUrl) && preview.kind === 'image'
+  const isToolsView = activeView === 'steganography'
 
   function renderPreviewImage(expanded: boolean) {
     if (!resultUrl) {
@@ -408,14 +428,168 @@ export default function App() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-ink text-white">
+    <div className="app-shell relative min-h-screen overflow-hidden bg-ink text-white">
       <div className="pointer-events-none absolute inset-0 bg-grid-fade bg-[size:36px_36px] opacity-20 [mask-image:linear-gradient(to_bottom,rgba(0,0,0,0.9),transparent)]" />
       <div className="pointer-events-none absolute -left-20 top-0 h-72 w-72 rounded-full bg-cyan-400/20 blur-3xl" />
       <div className="pointer-events-none absolute right-0 top-10 h-80 w-80 rounded-full bg-amber-400/15 blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" />
 
       <main className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
-        <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+        <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.38em] text-cyan-100/80">
+              Criptify
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              Segurança local para arquivos e ferramentas online.
+            </h1>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-300 sm:text-base">
+              Escolha a operação principal ou abra a lateral de ferramentas online.
+              A esteganografia já está disponível ali, e as próximas funções ficarão
+              agrupadas no mesmo espaço.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+            aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
+          >
+            {theme === 'dark' ? (
+              <>
+                <SunMedium className="h-4 w-4" />
+                Tema claro
+              </>
+            ) : (
+              <>
+                <MoonStar className="h-4 w-4" />
+                Tema escuro
+              </>
+            )}
+          </button>
+        </header>
+
+        <div className="grid gap-8 xl:grid-cols-[260px_minmax(0,1fr)]">
+          <aside className="panel-surface h-fit rounded-[32px] p-4 sm:p-5 xl:sticky xl:top-6">
+            <p className="text-xs uppercase tracking-[0.32em] text-zinc-500">
+              Navegação
+            </p>
+
+            <div className="mt-4 flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveView('files')}
+                aria-pressed={activeView === 'files'}
+                className={`rounded-[24px] border px-4 py-4 text-left transition ${
+                  activeView === 'files'
+                    ? 'border-cyan-400/35 bg-cyan-400/10'
+                    : 'border-white/10 bg-white/5 hover:bg-white/10'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-2 text-cyan-100">
+                    <Lock className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">
+                      Criptografia de arquivos
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-zinc-400">
+                      Fluxo principal de criptografar e descriptografar arquivos.
+                    </p>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <div className="mt-6 border-t border-white/10 pt-6">
+              <p className="text-xs uppercase tracking-[0.32em] text-zinc-500">
+                Ferramentas online
+              </p>
+
+              <div className="mt-4 flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={() => setActiveView('steganography')}
+                  aria-pressed={activeView === 'steganography'}
+                  className={`rounded-[24px] border px-4 py-4 text-left transition ${
+                    activeView === 'steganography'
+                      ? 'border-cyan-400/35 bg-cyan-400/10'
+                      : 'border-white/10 bg-white/5 hover:bg-white/10'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-2 text-cyan-100">
+                      <Sparkles className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">Esteganografia</p>
+                      <p className="mt-1 text-xs leading-5 text-zinc-400">
+                        Esconda e revele texto criptografado em imagens.
+                      </p>
+                    </div>
+                  </div>
+                </button>
+
+                <div className="rounded-[24px] border border-dashed border-white/10 bg-white/[0.035] p-4 text-sm leading-6 text-zinc-400">
+                  As próximas funções ficarão nesta área lateral.
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <div className="min-w-0">
+            {isToolsView ? (
+              <section className="space-y-6">
+                <div className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
+                  <div className="space-y-4">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-cyan-100">
+                      <Sparkles className="h-4 w-4" />
+                      Ferramenta online
+                    </div>
+
+                    <div className="space-y-4">
+                      <p className="text-sm uppercase tracking-[0.45em] text-zinc-400">
+                        Esteganografia local
+                      </p>
+                      <h2 className="max-w-3xl text-4xl font-semibold leading-none tracking-tight text-white sm:text-5xl">
+                        Esconda texto criptografado dentro de imagens.
+                      </h2>
+                      <p className="max-w-2xl text-base leading-7 text-zinc-300 sm:text-lg">
+                        Use LSB nos canais RGB com header de 32 bits para ocultar
+                        mensagens criptografadas. Tudo acontece 100% no navegador,
+                        sem servidor e sem bibliotecas pesadas.
+                      </p>
+                    </div>
+
+                    <div className="panel-surface rounded-[28px] p-5 sm:p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="rounded-2xl border border-cyan-400/30 bg-cyan-400/10 p-3 text-cyan-100">
+                          <ShieldCheck className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.35em] text-cyan-100/80">
+                            Fluxo local
+                          </p>
+                          <h3 className="mt-2 text-2xl font-semibold text-white">
+                            A mensagem já sai criptografada antes de ser escondida.
+                          </h3>
+                          <p className="mt-3 max-w-xl text-sm leading-7 text-zinc-300 sm:text-base">
+                            Primeiro o texto é criptografado com senha. Depois o payload
+                            cifrado é embutido na imagem e pode ser revelado mais tarde
+                            com a mesma senha.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <SteganographyPanel />
+                </div>
+              </section>
+            ) : (
+              <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-cyan-100">
               <ShieldCheck className="h-4 w-4" />
@@ -424,15 +598,15 @@ export default function App() {
 
             <div className="space-y-4">
               <p className="text-sm uppercase tracking-[0.45em] text-zinc-400">
-                Criptografia local para portfolio
+                Criptografia local para portfólio
               </p>
               <h1 className="max-w-3xl text-4xl font-semibold leading-none tracking-tight text-white sm:text-5xl lg:text-6xl">
                 Criptografe e recupere arquivos sem enviar nada para a nuvem.
               </h1>
               <p className="max-w-2xl text-base leading-7 text-zinc-300 sm:text-lg">
-                Criptify demonstra seguranca real no navegador com React, TypeScript e
+                Criptify demonstra segurança real no navegador com React, TypeScript e
                 Web Crypto API, em um fluxo inspirado pelo universo do WhatsApp
-                .crypt15 e adaptado para um formato proprio.
+                .crypt15 e adaptado para um formato próprio.
               </p>
             </div>
 
@@ -443,14 +617,14 @@ export default function App() {
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.35em] text-cyan-100/80">
-                    Aviso de seguranca
+                    Aviso de segurança
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold text-white">
                     Seus arquivos nunca saem do navegador
                   </h2>
                   <p className="mt-3 max-w-xl text-sm leading-7 text-zinc-300 sm:text-base">
-                    A senha nunca e armazenada. A chave e derivada localmente com
-                    PBKDF2, cada arquivo recebe salt e IV aleatorios, e todo o
+                    A senha nunca é armazenada. A chave é derivada localmente com
+                    PBKDF2, cada arquivo recebe salt e IV aleatórios, e todo o
                     processamento acontece com a API nativa do navegador.
                   </p>
                 </div>
@@ -464,15 +638,15 @@ export default function App() {
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.35em] text-amber-100/80">
-                    Preview local
+                    Prévia local
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold text-white">
                     Imagens podem ser conferidas antes do download
                   </h2>
                   <p className="mt-3 max-w-xl text-sm leading-7 text-zinc-300 sm:text-base">
-                    Quando o arquivo descriptografado for uma imagem, voce pode
-                    visualiza-la e ampliar o conteudo diretamente no navegador antes
-                    de baixar. Videos e outros formatos seguem com download manual.
+                    Quando o arquivo descriptografado for uma imagem, você pode
+                    visualizá-la e ampliar o conteúdo diretamente no navegador antes
+                    de baixar. Vídeos e outros formatos seguem com download manual.
                   </p>
                 </div>
               </div>
@@ -487,7 +661,7 @@ export default function App() {
                       Contexto inseguro
                     </p>
                     <p className="mt-2 text-sm leading-7 text-rose-100">
-                      A Web Crypto API exige HTTPS ou localhost. Sem isso, o app nao
+                      A Web Crypto API exige HTTPS ou localhost. Sem isso, o app não
                       deve processar chaves nem arquivos.
                     </p>
                   </div>
@@ -506,7 +680,7 @@ export default function App() {
 
               <article className="panel-surface rounded-3xl p-5">
                 <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-                  Derivacao
+                  Derivação
                 </p>
                 <p className="mt-3 text-2xl font-semibold text-white">600k PBKDF2</p>
                 <p className="mt-2 text-sm text-zinc-400">SHA-256 em cada chave</p>
@@ -516,7 +690,7 @@ export default function App() {
                 <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
                   Compatibilidade
                 </p>
-                <p className="mt-3 text-2xl font-semibold text-white">Browser native</p>
+                <p className="mt-3 text-2xl font-semibold text-white">Browser nativo</p>
                 <p className="mt-2 text-sm text-zinc-400">Chrome, Edge e Firefox</p>
               </article>
             </div>
@@ -558,7 +732,7 @@ export default function App() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs uppercase tracking-[0.3em] text-cyan-100/80">
-                      {mode === 'encrypt' ? 'Operacao ativa' : 'Recuperacao ativa'}
+                      {mode === 'encrypt' ? 'Operação ativa' : 'Recuperação ativa'}
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold text-white">
                       {currentMode.title}
@@ -703,7 +877,7 @@ export default function App() {
 
                 <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4">
                   <div className="flex items-center justify-between gap-3 text-sm">
-                    <span className="text-zinc-300">Forca da senha</span>
+                    <span className="text-zinc-300">Força da senha</span>
                     <span className={strength.textClass}>{strength.label}</span>
                   </div>
 
@@ -782,18 +956,18 @@ export default function App() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-white">
-                        Previa local da imagem recuperada
+                        Prévia local da imagem recuperada
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
-                        A visualizacao acontece no proprio navegador. Baixe o arquivo
-                        so depois de validar o conteudo.
+                        A visualização acontece no próprio navegador. Baixe o arquivo
+                        só depois de validar o conteúdo.
                       </p>
                     </div>
                   </div>
 
                   {canExpandPreview ? (
                     <div className="mt-4 flex items-center justify-between gap-3 text-xs uppercase tracking-[0.24em] text-zinc-500">
-                      <p>Clique na previa para ampliar</p>
+                      <p>Clique na prévia para ampliar.</p>
                       <button
                         type="button"
                         onClick={handleOpenPreview}
@@ -809,9 +983,9 @@ export default function App() {
                     <button
                       type="button"
                       onClick={handleOpenPreview}
-                      className="block w-full cursor-zoom-in rounded-2xl transition hover:opacity-95"
-                      aria-label="Ampliar previa da imagem"
-                    >
+                        className="block w-full cursor-zoom-in rounded-2xl transition hover:opacity-95"
+                        aria-label="Ampliar prévia da imagem"
+                      >
                       {renderPreviewImage(false)}
                     </button>
                   </div>
@@ -834,14 +1008,15 @@ export default function App() {
               </div>
             </div>
           </section>
-        </section>
-
-        <SteganographyPanel />
+              </section>
+            )}
+          </div>
+        </div>
 
         <footer className="mt-10 flex flex-col gap-3 border-t border-white/10 pt-6 text-sm text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
-          <p>100% no navegador - Nada sai do dispositivo</p>
+          <p>100% no navegador • Nada sai do dispositivo</p>
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-zinc-500">
-            Formato CRIPTIFY1 - Chrome, Edge, Firefox - Safari com limite pratico
+            Formato CRIPTIFY1 • Chrome, Edge, Firefox • Safari com limite prático
             de ~2 GB
           </p>
         </footer>
@@ -852,20 +1027,20 @@ export default function App() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 py-6 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
-          aria-label="Visualizacao ampliada da imagem recuperada"
+          aria-label="Visualização ampliada da imagem recuperada"
         >
           <button
             type="button"
             onClick={handleClosePreview}
             className="absolute inset-0"
-            aria-label="Fechar visualizacao ampliada"
+            aria-label="Fechar visualização ampliada"
           />
 
           <div className="relative z-10 flex w-full max-w-6xl flex-col gap-4 rounded-[32px] border border-white/10 bg-zinc-950/95 p-4 shadow-2xl shadow-black/40 sm:p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.32em] text-cyan-100/80">
-                  Visualizacao ampliada
+                  Visualização ampliada
                 </p>
                 <p className="mt-2 text-lg font-semibold text-white">{resultName}</p>
               </div>

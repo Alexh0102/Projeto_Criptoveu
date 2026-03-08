@@ -77,7 +77,7 @@ function parseSerializedPayload(payload: string) {
   if (!payload.startsWith(STEGANOGRAPHY_PAYLOAD_PREFIX)) {
     throw new SteganographyError(
       'INVALID_PAYLOAD',
-      'A imagem nao contem uma mensagem do Criptify reconhecivel.',
+      'A imagem não contém uma mensagem do Criptify reconhecível.',
     )
   }
 
@@ -247,7 +247,7 @@ export default function SteganographyPanel() {
     if (!encryptedPayload) {
       setHideStatus({
         tone: 'error',
-        message: 'Criptografe o texto antes de tentar escondelo em uma imagem.',
+        message: 'Criptografe o texto antes de tentar escondê-lo em uma imagem.',
       })
       return
     }
@@ -293,7 +293,7 @@ export default function SteganographyPanel() {
     if (!revealPassword) {
       setRevealStatus({
         tone: 'error',
-        message: 'Digite a senha correta para descriptografar a mensagem extraida.',
+        message: 'Digite a senha correta para descriptografar a mensagem extraída.',
       })
       return
     }
@@ -323,7 +323,7 @@ export default function SteganographyPanel() {
   }
 
   return (
-    <section className="panel-surface mt-10 rounded-[32px] p-4 sm:p-6">
+    <section className="panel-surface rounded-[32px] p-4 sm:p-6">
       <div className="flex flex-col gap-4">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -387,7 +387,7 @@ export default function SteganographyPanel() {
                     1. Criptografe o texto
                   </p>
                   <p className="mt-1 text-sm text-zinc-400">
-                    A mensagem e criptografada antes de ser escondida na imagem.
+                    A mensagem é criptografada antes de ser escondida na imagem.
                   </p>
                 </div>
               </div>
@@ -397,7 +397,7 @@ export default function SteganographyPanel() {
                   value={plainText}
                   onChange={(event) => setPlainText(event.target.value)}
                   rows={7}
-                  placeholder="Digite aqui a mensagem secreta que sera criptografada e escondida."
+                  placeholder="Digite aqui a mensagem secreta que será criptografada e escondida."
                   className="min-h-[180px] w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-cyan-400/50 focus:bg-white/10 focus:ring-2 focus:ring-cyan-400/20"
                 />
 
@@ -435,7 +435,7 @@ export default function SteganographyPanel() {
                     2. Esconda a mensagem em uma imagem
                   </p>
                   <p className="mt-1 text-sm text-zinc-400">
-                    Use PNG ou JPG de ate {formatFileSize(MAX_STEG_IMAGE_SIZE_BYTES)}.
+                    Use PNG ou JPG de até {formatFileSize(MAX_STEG_IMAGE_SIZE_BYTES)}.
                   </p>
                 </div>
               </div>
@@ -461,7 +461,8 @@ export default function SteganographyPanel() {
                       Selecionar imagem base
                     </p>
                     <p className="text-xs text-zinc-500">
-                      PNG ou JPG. O download final sera sempre em PNG.
+                      PNG ou JPG. O download final será sempre em PNG.
+                      PNG ou JPG. O download final será sempre em PNG.
                     </p>
                   </div>
                 </div>
@@ -591,7 +592,7 @@ export default function SteganographyPanel() {
                       Selecionar imagem secreta
                     </p>
                     <p className="text-xs text-zinc-500">
-                      PNG ou JPG de ate {formatFileSize(MAX_STEG_IMAGE_SIZE_BYTES)}.
+                      PNG ou JPG de até {formatFileSize(MAX_STEG_IMAGE_SIZE_BYTES)}.
                     </p>
                   </div>
                 </div>
@@ -659,7 +660,7 @@ export default function SteganographyPanel() {
                     2. Texto original recuperado
                   </p>
                   <p className="mt-1 text-sm text-zinc-400">
-                    Depois da extração, o payload e descriptografado localmente e o texto aparece aqui.
+                    Depois da extração, o payload é descriptografado localmente e o texto aparece aqui.
                   </p>
                 </div>
               </div>
@@ -676,7 +677,7 @@ export default function SteganographyPanel() {
               {revealedCiphertext ? (
                 <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
                   <p className="text-xs uppercase tracking-[0.26em] text-zinc-500">
-                    Payload extraido
+                    Payload extraído
                   </p>
                   <p className="mt-2 break-all font-mono text-xs text-zinc-300">
                     {revealedCiphertext.slice(0, 220)}

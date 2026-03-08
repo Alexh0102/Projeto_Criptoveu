@@ -131,10 +131,31 @@ export default function App() {
 
   const strength = getPasswordStrength(password)
   const currentMode = MODE_COPY[mode]
+  const shellStyle =
+    theme === 'light'
+      ? {
+          background:
+            'radial-gradient(circle at top, rgba(14, 165, 233, 0.12), transparent 30%), radial-gradient(circle at 90% 8%, rgba(245, 158, 11, 0.1), transparent 24%), #f3f7fb',
+          color: '#0f172a',
+        }
+      : {
+          background:
+            'radial-gradient(circle at top, rgba(82, 224, 255, 0.12), transparent 28%), radial-gradient(circle at 90% 10%, rgba(251, 191, 36, 0.12), transparent 26%), #05070b',
+          color: '#f5f7fb',
+        }
 
   useEffect(() => {
+    const nextBackground =
+      theme === 'light'
+        ? 'radial-gradient(circle at top, rgba(14, 165, 233, 0.12), transparent 30%), radial-gradient(circle at 90% 8%, rgba(245, 158, 11, 0.1), transparent 24%), #f3f7fb'
+        : 'radial-gradient(circle at top, rgba(82, 224, 255, 0.12), transparent 28%), radial-gradient(circle at 90% 10%, rgba(251, 191, 36, 0.12), transparent 26%), #05070b'
+    const nextColor = theme === 'light' ? '#0f172a' : '#f5f7fb'
+
     document.documentElement.dataset.theme = theme
     window.localStorage.setItem('criptify-theme', theme)
+    document.body.dataset.theme = theme
+    document.body.style.background = nextBackground
+    document.body.style.color = nextColor
   }, [theme])
 
   useEffect(() => {
@@ -428,7 +449,7 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell relative min-h-screen overflow-hidden">
+    <div className="app-shell relative min-h-screen overflow-hidden" style={shellStyle}>
       <div className="pointer-events-none absolute inset-0 bg-grid-fade bg-[size:36px_36px] opacity-20 [mask-image:linear-gradient(to_bottom,rgba(0,0,0,0.9),transparent)]" />
       <div className="pointer-events-none absolute -left-20 top-0 h-72 w-72 rounded-full bg-cyan-400/20 blur-3xl" />
       <div className="pointer-events-none absolute right-0 top-10 h-80 w-80 rounded-full bg-amber-400/15 blur-3xl" />

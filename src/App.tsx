@@ -26,6 +26,7 @@ import {
   generateWhatsappStyleKey,
   getPasswordStrength,
 } from './lib/cryptify'
+import SteganographyPanel from './components/SteganographyPanel'
 
 type Mode = 'encrypt' | 'decrypt'
 type StatusTone = 'info' | 'success' | 'error'
@@ -834,6 +835,8 @@ export default function App() {
             </div>
           </section>
         </section>
+
+        <SteganographyPanel />
 
         <footer className="mt-10 flex flex-col gap-3 border-t border-white/10 pt-6 text-sm text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
           <p>100% no navegador - Nada sai do dispositivo</p>

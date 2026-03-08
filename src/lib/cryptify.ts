@@ -19,6 +19,18 @@ type ProcessResult = {
   downloadName: string
 }
 
+export type TextEncryptionResult = {
+  ciphertext: string
+  iv: Uint8Array<ArrayBuffer>
+  salt: Uint8Array<ArrayBuffer>
+}
+
+export type TextDecryptionInput = {
+  ciphertext: string
+  iv: Uint8Array<ArrayBuffer>
+  salt: Uint8Array<ArrayBuffer>
+}
+
 export class CriptifyError extends Error {
   code: 'FILE_TOO_LARGE' | 'INVALID_FILE' | 'INVALID_PASSWORD_OR_FILE'
 
@@ -38,6 +50,35 @@ function waitForPaint() {
   })
 }
 
+function cloneBytes(source: Uint8Array): Uint8Array<ArrayBuffer> {
+  const cloned = new Uint8Array(new ArrayBuffer(source.length))
+  cloned.set(source)
+  return cloned
+}
+
+export function encodeBytesToBase64(bytes: Uint8Array) {
+  let binary = ''
+  const chunkSize = 0x8000
+
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    const chunk = bytes.subarray(index, index + chunkSize)
+    binary += String.fromCharCode(...chunk)
+  }
+
+  return btoa(binary)
+}
+
+export function decodeBase64ToBytes(value: string): Uint8Array<ArrayBuffer> {
+  const normalized = atob(value)
+  const bytes = new Uint8Array(new ArrayBuffer(normalized.length))
+
+  for (let index = 0; index < normalized.length; index += 1) {
+    bytes[index] = normalized.charCodeAt(index)
+  }
+
+  return bytes
+}
+
 async function reportProgress(
   onProgress: ProgressCallback | undefined,
   value: number,
@@ -49,7 +90,7 @@ async function reportProgress(
 
 async function deriveAesKey(password: string, salt: Uint8Array, usage: KeyUsage) {
   const passwordBytes = new TextEncoder().encode(password)
-  const normalizedSalt = Uint8Array.from(salt)
+  const normalizedSalt = cloneBytes(salt)
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
     passwordBytes,
@@ -157,6 +198,57 @@ export async function encryptFile(
   return {
     blob: new Blob([payload], { type: 'application/octet-stream' }),
     downloadName: buildDownloadName('encrypt', file.name),
+  }
+}
+
+export async function encryptText(
+  plainText: string,
+  password: string,
+): Promise<TextEncryptionResult> {
+  const normalizedText = plainText.trim()
+
+  if (!normalizedText) {
+    throw new CriptifyError(
+      'INVALID_FILE',
+      'Digite um texto antes de criptografar a mensagem.',
+    )
+  }
+
+  const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH))
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
+  const key = await deriveAesKey(password, salt, 'encrypt')
+  const source = new TextEncoder().encode(normalizedText)
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, source)
+
+  return {
+    ciphertext: encodeBytesToBase64(new Uint8Array(encrypted)),
+    iv,
+    salt,
+  }
+}
+
+export async function decryptText(
+  encryptedInput: TextDecryptionInput,
+  password: string,
+): Promise<string> {
+  try {
+    const key = await deriveAesKey(password, encryptedInput.salt, 'decrypt')
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: cloneBytes(encryptedInput.iv) },
+      key,
+      decodeBase64ToBytes(encryptedInput.ciphertext),
+    )
+
+    return new TextDecoder().decode(decrypted)
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'OperationError') {
+      throw new CriptifyError(
+        'INVALID_PASSWORD_OR_FILE',
+        'Senha incorreta ou mensagem invalida. Verifique a senha e tente novamente.',
+      )
+    }
+
+    throw error
   }
 }
 

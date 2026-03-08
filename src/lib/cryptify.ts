@@ -244,7 +244,7 @@ export async function decryptText(
     if (error instanceof DOMException && error.name === 'OperationError') {
       throw new CriptifyError(
         'INVALID_PASSWORD_OR_FILE',
-        'Senha incorreta ou mensagem invalida. Verifique a senha e tente novamente.',
+        'Senha incorreta ou mensagem inválida. Verifique a senha e tente novamente.',
       )
     }
 
@@ -262,7 +262,7 @@ export async function decryptFile(
   const source = new Uint8Array(await file.arrayBuffer())
 
   if (source.byteLength <= HEADER_BYTES.length + SALT_LENGTH + IV_LENGTH) {
-    throw new CriptifyError('INVALID_FILE', 'Arquivo invalido ou cabecalho incompleto.')
+    throw new CriptifyError('INVALID_FILE', 'Arquivo inválido ou cabeçalho incompleto.')
   }
 
   const incomingHeader = new TextDecoder().decode(source.slice(0, HEADER_BYTES.length))
@@ -270,7 +270,7 @@ export async function decryptFile(
   if (incomingHeader !== HEADER_TEXT) {
     throw new CriptifyError(
       'INVALID_FILE',
-      'Arquivo invalido. O cabecalho CRIPTIFY1 nao foi encontrado.',
+      'Arquivo inválido. O cabeçalho CRIPTIFY1 não foi encontrado.',
     )
   }
 
@@ -303,7 +303,7 @@ export async function decryptFile(
     if (error instanceof DOMException && error.name === 'OperationError') {
       throw new CriptifyError(
         'INVALID_PASSWORD_OR_FILE',
-        'Senha incorreta ou arquivo invalido. Verifique a chave e tente novamente.',
+        'Senha incorreta ou arquivo inválido. Verifique a chave e tente novamente.',
       )
     }
 

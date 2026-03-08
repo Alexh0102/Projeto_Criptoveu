@@ -4,16 +4,35 @@
 
 :root {
   color-scheme: dark;
-  font-family: 'Bahnschrift', 'Aptos', 'Segoe UI', sans-serif;
-  background:
+  --app-bg:
     radial-gradient(circle at top, rgba(82, 224, 255, 0.12), transparent 28%),
     radial-gradient(circle at 90% 10%, rgba(251, 191, 36, 0.12), transparent 26%),
     #05070b;
-  color: #f5f7fb;
+  --app-bg-solid: #05070b;
+  --app-text: #f5f7fb;
+  --panel-bg: rgba(255, 255, 255, 0.04);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --panel-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 24px 80px rgba(0, 0, 0, 0.45);
+  font-family: 'Bahnschrift', 'Aptos', 'Segoe UI', sans-serif;
+  background: var(--app-bg);
+  color: var(--app-text);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html[data-theme='light'] {
+  color-scheme: light;
+  --app-bg:
+    radial-gradient(circle at top, rgba(14, 165, 233, 0.12), transparent 30%),
+    radial-gradient(circle at 90% 8%, rgba(245, 158, 11, 0.1), transparent 24%),
+    #f3f7fb;
+  --app-bg-solid: #f3f7fb;
+  --app-text: #0f172a;
+  --panel-bg: rgba(255, 255, 255, 0.74);
+  --panel-border: rgba(15, 23, 42, 0.1);
+  --panel-shadow: 0 0 0 1px rgba(255, 255, 255, 0.45), 0 18px 54px rgba(15, 23, 42, 0.12);
 }
 
 * {
@@ -29,8 +48,9 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #05070b;
-  color: #f5f7fb;
+  background: var(--app-bg);
+  background-color: var(--app-bg-solid);
+  color: var(--app-text);
 }
 
 button,
@@ -57,7 +77,10 @@ select {
 
 @layer components {
   .panel-surface {
-    @apply border border-white/10 bg-white/[0.04] backdrop-blur-xl shadow-glow;
+    border-color: var(--panel-border);
+    background: var(--panel-bg);
+    box-shadow: var(--panel-shadow);
+    @apply backdrop-blur-xl;
   }
 }
 
@@ -85,4 +108,57 @@ select {
 .cryptify-progress::-moz-progress-bar {
   border-radius: 9999px;
   background: linear-gradient(90deg, #22d3ee 0%, #38bdf8 50%, #34d399 100%);
+}
+
+html[data-theme='light'] .app-shell .text-white,
+html[data-theme='light'] .app-shell .text-zinc-100 {
+  color: #0f172a !important;
+}
+
+html[data-theme='light'] .app-shell .text-zinc-300 {
+  color: #334155 !important;
+}
+
+html[data-theme='light'] .app-shell .text-zinc-400 {
+  color: #475569 !important;
+}
+
+html[data-theme='light'] .app-shell .text-zinc-500 {
+  color: #64748b !important;
+}
+
+html[data-theme='light'] .app-shell .border-white\/10,
+html[data-theme='light'] .app-shell .border-white\/15 {
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+html[data-theme='light'] .app-shell .bg-black\/25,
+html[data-theme='light'] .app-shell .bg-black\/20,
+html[data-theme='light'] .app-shell .bg-black\/40,
+html[data-theme='light'] .app-shell .bg-zinc-950\/95,
+html[data-theme='light'] .app-shell .bg-white\/5,
+html[data-theme='light'] .app-shell .bg-white\/\[0\.035\],
+html[data-theme='light'] .app-shell .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.78) !important;
+}
+
+html[data-theme='light'] .app-shell .bg-zinc-800 {
+  background-color: #d7e2ee !important;
+}
+
+html[data-theme='light'] .app-shell input,
+html[data-theme='light'] .app-shell textarea,
+html[data-theme='light'] .app-shell button,
+html[data-theme='light'] .app-shell select {
+  color: inherit;
+}
+
+html[data-theme='light'] .app-shell input::placeholder,
+html[data-theme='light'] .app-shell textarea::placeholder {
+  color: #64748b;
+}
+
+html[data-theme='light'] .cryptify-progress,
+html[data-theme='light'] .cryptify-progress::-webkit-progress-bar {
+  background: #dbe4ef;
 }

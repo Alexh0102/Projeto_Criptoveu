@@ -81,7 +81,7 @@ async function readImageData(file: File | Blob) {
   if (!context) {
     throw new SteganographyError(
       'CANVAS_UNAVAILABLE',
-      'O navegador nao conseguiu inicializar o canvas para processar a imagem.',
+      'O navegador não conseguiu inicializar o canvas para processar a imagem.',
     )
   }
 
@@ -182,7 +182,7 @@ export async function hideMessageInImage(
       `Imagem pequena demais! Ela suporta cerca de ${Math.max(
         capacityBytes,
         0,
-      )} bytes ocultos e a mensagem criptografada e maior do que isso.`,
+      )} bytes ocultos e a mensagem criptografada é maior do que isso.`,
     )
   }
 
@@ -210,7 +210,7 @@ export async function extractMessageFromImage(sourceImage: File): Promise<string
   if (capacityBits < HEADER_SIZE_BITS) {
     throw new SteganographyError(
       'INVALID_PAYLOAD',
-      'A imagem e pequena demais para conter uma mensagem oculta valida.',
+      'A imagem é pequena demais para conter uma mensagem oculta válida.',
     )
   }
 
@@ -234,7 +234,7 @@ export async function extractMessageFromImage(sourceImage: File): Promise<string
   if (!payloadLength || HEADER_SIZE_BITS + payloadBits > capacityBits) {
     throw new SteganographyError(
       'INVALID_PAYLOAD',
-      'Nenhuma mensagem valida foi encontrada nesta imagem.',
+      'Nenhuma mensagem válida foi encontrada nesta imagem.',
     )
   }
 
@@ -263,7 +263,7 @@ export async function extractMessageFromImage(sourceImage: File): Promise<string
   } catch {
     throw new SteganographyError(
       'INVALID_PAYLOAD',
-      'A imagem nao contem uma mensagem valida do Criptify.',
+      'A imagem não contém uma mensagem válida do Criptify.',
     )
   }
 }

@@ -428,7 +428,7 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell relative min-h-screen overflow-hidden bg-ink text-white">
+    <div className="app-shell relative min-h-screen overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-grid-fade bg-[size:36px_36px] opacity-20 [mask-image:linear-gradient(to_bottom,rgba(0,0,0,0.9),transparent)]" />
       <div className="pointer-events-none absolute -left-20 top-0 h-72 w-72 rounded-full bg-cyan-400/20 blur-3xl" />
       <div className="pointer-events-none absolute right-0 top-10 h-80 w-80 rounded-full bg-amber-400/15 blur-3xl" />

@@ -67,12 +67,21 @@ select {
 
 @layer base {
   body {
-    @apply bg-ink font-sans text-white;
+    @apply font-sans;
+    background: var(--app-bg);
+    background-color: var(--app-bg-solid);
+    color: var(--app-text);
   }
 
   #root {
     @apply min-h-screen;
   }
+}
+
+.app-shell {
+  background: var(--app-bg);
+  background-color: var(--app-bg-solid);
+  color: var(--app-text);
 }
 
 @layer components {
@@ -144,6 +153,11 @@ html[data-theme='light'] .app-shell .bg-white\/10 {
 
 html[data-theme='light'] .app-shell .bg-zinc-800 {
   background-color: #d7e2ee !important;
+}
+
+html[data-theme='light'] .bg-ink {
+  background: var(--app-bg) !important;
+  background-color: var(--app-bg-solid) !important;
 }
 
 html[data-theme='light'] .app-shell input,

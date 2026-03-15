@@ -6,6 +6,7 @@ import {
   FileArchive,
   KeyRound,
   LoaderCircle,
+  Link2,
   Lock,
   Maximize2,
   MoonStar,
@@ -31,9 +32,15 @@ import {
 } from './lib/cryptify'
 import QRCodeGenerator from './components/QRCodeGenerator'
 import SteganographyPanel from './components/SteganographyPanel'
+import AutoDestructLink from './components/AutoDestructLink'
+import {
+  readAutoDestructPayloadFromHash,
+  type AutoDestructReadResult,
+} from './lib/auto-destruct-link'
 
 type Mode = 'encrypt' | 'decrypt'
-type ActiveView = 'files' | 'steganography' | 'qrcode'
+type ActiveView = 'files' | 'steganography' | 'qrcode' | 'autodestruct'
+type ToolView = Exclude<ActiveView, 'files'>
 type Theme = 'dark' | 'light'
 type StatusTone = 'info' | 'success' | 'error'
 type PreviewKind = 'image' | 'none'
@@ -80,6 +87,45 @@ const STATUS_STYLES: Record<StatusTone, string> = {
   error: 'border-rose-500/25 bg-rose-500/10 text-rose-50',
 }
 
+const TOOL_COPY: Record<
+  ToolView,
+  {
+    eyebrow: string
+    title: string
+    description: string
+    cardTitle: string
+    cardDescription: string
+  }
+> = {
+  steganography: {
+    eyebrow: 'Esteganografia local',
+    title: 'Esconda texto criptografado dentro de imagens.',
+    description:
+      'Use LSB nos canais RGB com header de 32 bits para ocultar mensagens criptografadas. Tudo acontece 100% no navegador, sem servidor e sem bibliotecas pesadas.',
+    cardTitle: 'A mensagem ja sai criptografada antes de ser escondida.',
+    cardDescription:
+      'Primeiro o texto e criptografado com senha. Depois o payload cifrado e embutido na imagem e pode ser revelado mais tarde com a mesma senha.',
+  },
+  qrcode: {
+    eyebrow: 'QR Code secreto',
+    title: 'Criptografe um texto e leve o payload em QR Code.',
+    description:
+      'Criptografe um texto localmente, gere um QR Code com o payload completo e depois leia esse QR em qualquer dispositivo usando a mesma senha.',
+    cardTitle: 'O payload fica pronto para escanear ou baixar em PNG.',
+    cardDescription:
+      'O texto e protegido no navegador, convertido em QR Code localmente e pode ser lido depois no proprio Criptify.',
+  },
+  autodestruct: {
+    eyebrow: 'Link auto-destrutivo',
+    title: 'Compartilhe mensagens secretas via hash local.',
+    description:
+      'Criptografe um texto, gere um link com hash #msg=..., expiracao configuravel e limite de visualizacoes acompanhado pelo localStorage do navegador.',
+    cardTitle: 'O link leva o payload cifrado direto para a URL.',
+    cardDescription:
+      'Ao abrir o site com o hash, o Criptify detecta a mensagem automaticamente, pede a senha e aplica expiracao e contador de leituras.',
+  },
+}
+
 function downloadBlobUrl(url: string, fileName: string) {
   const anchor = document.createElement('a')
   anchor.href = url
@@ -124,6 +170,9 @@ export default function App() {
   const [isDragging, setIsDragging] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [incomingAutoDestructMessage, setIncomingAutoDestructMessage] =
+    useState<AutoDestructReadResult | null>(null)
+  const [incomingAutoDestructError, setIncomingAutoDestructError] = useState<string | null>(null)
   const fileInputId = useId()
   const passwordInputId = useId()
   const resultUrlRef = useRef<string | null>(null)
@@ -133,6 +182,8 @@ export default function App() {
 
   const strength = getPasswordStrength(password)
   const currentMode = MODE_COPY[mode]
+  const activeToolView = activeView === 'files' ? null : activeView
+  const activeToolCopy = activeToolView ? TOOL_COPY[activeToolView] : null
   const shellStyle =
     theme === 'light'
       ? {
@@ -159,6 +210,33 @@ export default function App() {
     document.body.style.background = nextBackground
     document.body.style.color = nextColor
   }, [theme])
+
+  useEffect(() => {
+    function syncAutoDestructHash() {
+      try {
+        const detectedMessage = readAutoDestructPayloadFromHash(window.location.hash)
+        setIncomingAutoDestructMessage(detectedMessage)
+        setIncomingAutoDestructError(null)
+
+        if (detectedMessage) {
+          setActiveView('autodestruct')
+        }
+      } catch (error) {
+        setIncomingAutoDestructMessage(null)
+        setIncomingAutoDestructError(
+          error instanceof Error
+            ? error.message
+            : 'Nao foi possivel interpretar a mensagem auto-destrutiva da URL.',
+        )
+        setActiveView('autodestruct')
+      }
+    }
+
+    syncAutoDestructHash()
+    window.addEventListener('hashchange', syncAutoDestructHash)
+
+    return () => window.removeEventListener('hashchange', syncAutoDestructHash)
+  }, [])
 
   useEffect(() => {
     if (!canUseSecureProcessing) {
@@ -350,6 +428,15 @@ export default function App() {
     setIsPreviewOpen(false)
   }
 
+  function handleClearIncomingHash() {
+    if (window.location.hash.startsWith('#msg=')) {
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`)
+    }
+
+    setIncomingAutoDestructMessage(null)
+    setIncomingAutoDestructError(null)
+  }
+
   async function handleProcess() {
     if (!canUseSecureProcessing) {
       setStatus({
@@ -432,8 +519,9 @@ export default function App() {
         ? AlertCircle
         : Sparkles
   const canExpandPreview = mode === 'decrypt' && Boolean(resultUrl) && preview.kind === 'image'
-  const isToolsView = activeView === 'steganography' || activeView === 'qrcode'
+  const isToolsView = activeView !== 'files'
   const isSteganographyView = activeView === 'steganography'
+  const isAutoDestructView = activeView === 'autodestruct'
 
   function renderPreviewImage(expanded: boolean) {
     if (!resultUrl) {
@@ -579,6 +667,31 @@ export default function App() {
                   </div>
                 </button>
 
+                <button
+                  type="button"
+                  onClick={() => setActiveView('autodestruct')}
+                  aria-pressed={activeView === 'autodestruct'}
+                  className={`rounded-[24px] border px-4 py-4 text-left transition ${
+                    activeView === 'autodestruct'
+                      ? 'border-cyan-400/35 bg-cyan-400/10'
+                      : 'border-white/10 bg-white/5 hover:bg-white/10'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-2 text-cyan-100">
+                      <Link2 className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">
+                        Link auto-destrutivo
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-zinc-400">
+                        Gere e leia mensagens secretas pela URL com expiracao local.
+                      </p>
+                    </div>
+                  </div>
+                </button>
+
                 <div className="rounded-[24px] border border-dashed border-white/10 bg-white/[0.035] p-4 text-sm leading-6 text-zinc-400">
                   As próximas funções ficarão nesta área lateral.
                 </div>
@@ -598,17 +711,13 @@ export default function App() {
 
                     <div className="space-y-4">
                       <p className="text-sm uppercase tracking-[0.45em] text-zinc-400">
-                        {isSteganographyView ? 'Esteganografia local' : 'QR Code secreto'}
+                        {activeToolCopy?.eyebrow}
                       </p>
                       <h2 className="max-w-3xl text-4xl font-semibold leading-none tracking-tight text-white sm:text-5xl">
-                        {isSteganographyView
-                          ? 'Esconda texto criptografado dentro de imagens.'
-                          : 'Criptografe um texto e leve o payload em QR Code.'}
+                        {activeToolCopy?.title}
                       </h2>
                       <p className="max-w-2xl text-base leading-7 text-zinc-300 sm:text-lg">
-                        {isSteganographyView
-                          ? 'Use LSB nos canais RGB com header de 32 bits para ocultar mensagens criptografadas. Tudo acontece 100% no navegador, sem servidor e sem bibliotecas pesadas.'
-                          : 'Criptografe um texto localmente, gere um QR Code com o payload completo e depois leia esse QR em qualquer dispositivo usando a mesma senha.'}
+                        {activeToolCopy?.description}
                       </p>
                     </div>
 
@@ -634,7 +743,17 @@ export default function App() {
                     </div>
                   </div>
 
-                  {isSteganographyView ? <SteganographyPanel /> : <QRCodeGenerator />}
+                  {isSteganographyView ? (
+                    <SteganographyPanel />
+                  ) : isAutoDestructView ? (
+                    <AutoDestructLink
+                      incomingHashMessage={incomingAutoDestructMessage}
+                      incomingHashError={incomingAutoDestructError}
+                      onClearIncomingHash={handleClearIncomingHash}
+                    />
+                  ) : (
+                    <QRCodeGenerator />
+                  )}
                 </div>
               </section>
             ) : (

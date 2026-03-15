@@ -116,7 +116,7 @@ const TOOL_COPY: Record<
       'O texto e protegido no navegador, convertido em QR Code localmente e pode ser lido depois no proprio Criptify.',
   },
   autodestruct: {
-    eyebrow: 'Link auto-destrutivo',
+    eyebrow: 'Mensagem auto destrutiva',
     title: 'Compartilhe mensagens secretas via hash local.',
     description:
       'Criptografe um texto, gere um link com hash #msg=..., expiracao configuravel e limite de visualizacoes acompanhado pelo localStorage do navegador.',
@@ -683,7 +683,7 @@ export default function App() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-white">
-                        Link auto-destrutivo
+                        Mensagem auto destrutiva
                       </p>
                       <p className="mt-1 text-xs leading-5 text-zinc-400">
                         Gere e leia mensagens secretas pela URL com expiracao local.

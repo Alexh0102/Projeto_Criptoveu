@@ -101,6 +101,34 @@ const VIEW_LIMIT_OPTIONS: Array<{
   },
 ]
 
+function OptionCard({
+  label,
+  helper,
+  selected,
+  onClick,
+}: {
+  label: string
+  helper: string
+  selected: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={`rounded-[24px] border px-4 py-4 text-left transition ${
+        selected
+          ? 'border-cyan-400/35 bg-cyan-400/10'
+          : 'border-white/10 bg-white/5 hover:bg-white/10'
+      }`}
+    >
+      <p className="text-sm font-semibold text-white">{label}</p>
+      <p className="mt-2 text-sm leading-6 text-zinc-400">{helper}</p>
+    </button>
+  )
+}
+
 function getFriendlyErrorMessage(error: unknown) {
   if (error instanceof AutoDestructLinkError || error instanceof CriptifyError) {
     return error.message
@@ -146,7 +174,7 @@ export default function AutoDestructLink({
   const [generateStatus, setGenerateStatus] = useState<StatusState>({
     tone: 'info',
     message:
-      'Criptografe um texto primeiro. Depois gere um link auto-destrutivo com expiracao e limite de visualizacoes.',
+      'Criptografe um texto primeiro. Depois gere uma mensagem auto destrutiva com expiracao e limite de visualizacoes.',
   })
   const [readInput, setReadInput] = useState('')
   const [resolvedEncodedPayload, setResolvedEncodedPayload] = useState('')
@@ -195,7 +223,7 @@ export default function AutoDestructLink({
     setReadStatus({
       tone: 'info',
       message:
-        'Uma mensagem auto-destrutiva foi detectada na URL. Digite a senha para tentar descriptografar.',
+        'Uma mensagem auto destrutiva foi detectada na URL. Digite a senha para tentar descriptografar.',
     })
   }, [incomingHashMessage])
 
@@ -241,7 +269,7 @@ export default function AutoDestructLink({
       setGenerateStatus({
         tone: 'success',
         message:
-          'Texto criptografado com sucesso. Agora voce ja pode gerar o link auto-destrutivo.',
+          'Texto criptografado com sucesso. Agora voce ja pode gerar a mensagem auto destrutiva.',
       })
     } catch (error) {
       setGenerateStatus({
@@ -257,7 +285,7 @@ export default function AutoDestructLink({
     if (!encryptedPayload) {
       setGenerateStatus({
         tone: 'error',
-        message: 'Criptografe o texto antes de gerar o link auto-destrutivo.',
+        message: 'Criptografe o texto antes de gerar a mensagem auto destrutiva.',
       })
       return
     }
@@ -277,7 +305,7 @@ export default function AutoDestructLink({
       setGenerateStatus({
         tone: 'success',
         message:
-          'Link auto-destrutivo gerado localmente. Copie ou abra o link para usar a mensagem secreta.',
+          'Mensagem auto destrutiva gerada localmente. Copie ou abra o link para usar a mensagem secreta.',
       })
     } catch (error) {
       setGenerateStatus({
@@ -298,7 +326,7 @@ export default function AutoDestructLink({
       await copyToClipboard(generatedLink)
       setGenerateStatus({
         tone: 'success',
-        message: 'Link auto-destrutivo copiado para a area de transferencia.',
+        message: 'Link da mensagem auto destrutiva copiado para a area de transferencia.',
       })
     } catch {
       setGenerateStatus({
@@ -406,10 +434,10 @@ export default function AutoDestructLink({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.32em] text-cyan-100/80">
-              Link auto-destrutivo
+              Mensagem auto destrutiva
             </p>
             <h2 className="mt-2 text-3xl font-semibold text-white">
-              Gere um link secreto com expiracao local
+              Gere uma mensagem secreta com expiracao local
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-300 sm:text-base">
               Criptografe um texto, gere um link com hash local e abra o mesmo site
@@ -508,46 +536,46 @@ export default function AutoDestructLink({
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">
-                    2. Gere o link auto-destrutivo
+                    2. Configure a mensagem auto destrutiva
                   </p>
                   <p className="mt-1 text-sm text-zinc-400">
-                    Defina expiracao, visualizacoes e gere o hash local.
+                    Escolha expiracao e limite de visualizacoes antes de gerar o hash local.
                   </p>
                 </div>
               </div>
 
               <div className="mt-4 grid gap-3">
-                <label className="text-sm text-zinc-300">
-                  Expiracao
-                  <select
-                    value={expiresIn}
-                    onChange={(event) =>
-                      setExpiresIn(event.target.value as AutoDestructExpiration)
-                    }
-                    className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-white outline-none transition focus:border-cyan-400/50 focus:bg-white/10 focus:ring-2 focus:ring-cyan-400/20"
-                  >
+                <div>
+                  <p className="text-sm font-medium text-white">Expiracao</p>
+                  <div className="mt-3 grid gap-3">
                     {EXPIRATION_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
+                      <OptionCard
+                        key={option.value}
+                        label={option.label}
+                        helper={option.helper}
+                        selected={expiresIn === option.value}
+                        onClick={() => setExpiresIn(option.value)}
+                      />
                     ))}
-                  </select>
-                </label>
+                  </div>
+                </div>
 
-                <label className="text-sm text-zinc-300">
-                  Limite de visualizacoes
-                  <select
-                    value={maxViewsValue}
-                    onChange={(event) => setMaxViewsValue(event.target.value)}
-                    className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-white outline-none transition focus:border-cyan-400/50 focus:bg-white/10 focus:ring-2 focus:ring-cyan-400/20"
-                  >
+                <div>
+                  <p className="text-sm font-medium text-white">
+                    Limite de visualizacoes
+                  </p>
+                  <div className="mt-3 grid gap-3">
                     {VIEW_LIMIT_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
+                      <OptionCard
+                        key={option.value}
+                        label={option.label}
+                        helper={option.helper}
+                        selected={maxViewsValue === option.value}
+                        onClick={() => setMaxViewsValue(option.value)}
+                      />
                     ))}
-                  </select>
-                </label>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -573,7 +601,7 @@ export default function AutoDestructLink({
                 ) : (
                   <Link2 className="h-5 w-5" />
                 )}
-                Gerar link auto-destrutivo
+                Gerar mensagem auto destrutiva
               </button>
 
               {generatedLink ? (

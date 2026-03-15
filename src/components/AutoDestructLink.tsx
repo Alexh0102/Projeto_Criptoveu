@@ -1,5 +1,6 @@
 import {
   AlertCircle,
+  ChevronDown,
   CheckCircle2,
   Copy,
   ExternalLink,
@@ -129,6 +130,10 @@ function OptionCard({
   )
 }
 
+function summarizeSelection(expirationLabel: string, viewLimitLabel: string) {
+  return `${expirationLabel} • ${viewLimitLabel}`
+}
+
 function getFriendlyErrorMessage(error: unknown) {
   if (error instanceof AutoDestructLinkError || error instanceof CriptifyError) {
     return error.message
@@ -169,6 +174,7 @@ export default function AutoDestructLink({
   const [maxViewsValue, setMaxViewsValue] = useState('1')
   const [generatedEncodedPayload, setGeneratedEncodedPayload] = useState('')
   const [generatedLink, setGeneratedLink] = useState('')
+  const [isConfigOpen, setIsConfigOpen] = useState(false)
   const [isEncrypting, setIsEncrypting] = useState(false)
   const [isGeneratingLink, setIsGeneratingLink] = useState(false)
   const [generateStatus, setGenerateStatus] = useState<StatusState>({
@@ -545,36 +551,68 @@ export default function AutoDestructLink({
               </div>
 
               <div className="mt-4 grid gap-3">
-                <div>
-                  <p className="text-sm font-medium text-white">Expiracao</p>
-                  <div className="mt-3 grid gap-3">
-                    {EXPIRATION_OPTIONS.map((option) => (
-                      <OptionCard
-                        key={option.value}
-                        label={option.label}
-                        helper={option.helper}
-                        selected={expiresIn === option.value}
-                        onClick={() => setExpiresIn(option.value)}
-                      />
-                    ))}
-                  </div>
-                </div>
+                <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsConfigOpen((currentValue) => !currentValue)}
+                    aria-expanded={isConfigOpen}
+                    className="flex w-full items-center justify-between gap-3 text-left"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-white">
+                        Configuracoes da mensagem
+                      </p>
+                      <p className="mt-1 text-sm text-zinc-400">
+                        {summarizeSelection(
+                          selectedExpiration.label,
+                          selectedViewLimit.label,
+                        )}
+                      </p>
+                    </div>
 
-                <div>
-                  <p className="text-sm font-medium text-white">
-                    Limite de visualizacoes
-                  </p>
-                  <div className="mt-3 grid gap-3">
-                    {VIEW_LIMIT_OPTIONS.map((option) => (
-                      <OptionCard
-                        key={option.value}
-                        label={option.label}
-                        helper={option.helper}
-                        selected={maxViewsValue === option.value}
-                        onClick={() => setMaxViewsValue(option.value)}
+                    <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] text-zinc-300">
+                      {isConfigOpen ? 'Ocultar' : 'Configurar'}
+                      <ChevronDown
+                        className={`h-4 w-4 transition ${isConfigOpen ? 'rotate-180' : ''}`}
                       />
-                    ))}
-                  </div>
+                    </span>
+                  </button>
+
+                  {isConfigOpen ? (
+                    <div className="mt-4 space-y-4 border-t border-white/10 pt-4">
+                      <div>
+                        <p className="text-sm font-medium text-white">Duracao</p>
+                        <div className="mt-3 grid gap-3">
+                          {EXPIRATION_OPTIONS.map((option) => (
+                            <OptionCard
+                              key={option.value}
+                              label={option.label}
+                              helper={option.helper}
+                              selected={expiresIn === option.value}
+                              onClick={() => setExpiresIn(option.value)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-medium text-white">
+                          Quantas visualizacoes
+                        </p>
+                        <div className="mt-3 grid gap-3">
+                          {VIEW_LIMIT_OPTIONS.map((option) => (
+                            <OptionCard
+                              key={option.value}
+                              label={option.label}
+                              helper={option.helper}
+                              selected={maxViewsValue === option.value}
+                              onClick={() => setMaxViewsValue(option.value)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               </div>
 

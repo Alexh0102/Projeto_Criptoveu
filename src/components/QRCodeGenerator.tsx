@@ -567,7 +567,7 @@ export default function QRCodeGenerator() {
 
       {isModalOpen ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 py-6 backdrop-blur-sm"
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/80 px-4 py-4 backdrop-blur-sm sm:px-6 sm:py-6"
           role="dialog"
           aria-modal="true"
           aria-label="QR Code secreto"
@@ -579,7 +579,8 @@ export default function QRCodeGenerator() {
             aria-label="Fechar modal do QR Code"
           />
 
-          <div className="relative z-10 flex w-full max-w-xl flex-col gap-5 rounded-[32px] border border-white/10 bg-zinc-950/95 p-6 shadow-2xl shadow-black/40">
+          <div className="relative z-10 mx-auto flex min-h-full w-full items-start justify-center py-2 sm:items-center">
+            <div className="relative flex w-full max-w-xl flex-col gap-5 rounded-[32px] border border-white/10 bg-zinc-950/95 p-5 shadow-2xl shadow-black/40 sm:p-6 max-h-[calc(100vh-2rem)] overflow-y-auto">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.32em] text-cyan-100/80">
@@ -639,6 +640,7 @@ export default function QRCodeGenerator() {
                 <Download className="h-4 w-4" />
                 Baixar PNG
               </button>
+            </div>
             </div>
           </div>
         </div>

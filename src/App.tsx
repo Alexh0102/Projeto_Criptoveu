@@ -54,6 +54,15 @@ type PreviewState = {
   kind: PreviewKind
 }
 
+type ResultItem = {
+  id: string
+  name: string
+  url: string
+  size: number
+  sourceName: string
+  preview: PreviewState
+}
+
 const MODE_COPY: Record<
   Mode,
   {
@@ -155,17 +164,16 @@ export default function App() {
 
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   const [password, setPassword] = useState('')
   const [progress, setProgress] = useState(0)
   const [progressLabel, setProgressLabel] = useState('Pronto para processar')
   const [status, setStatus] = useState<StatusState>({
     tone: 'info',
-    message: 'Selecione um arquivo, informe a senha e processe tudo localmente.',
+    message: 'Selecione um ou mais arquivos, informe a senha e processe tudo localmente.',
   })
-  const [resultUrl, setResultUrl] = useState<string | null>(null)
-  const [resultName, setResultName] = useState('')
-  const [preview, setPreview] = useState<PreviewState>({ kind: 'none' })
+  const [results, setResults] = useState<ResultItem[]>([])
+  const [previewItem, setPreviewItem] = useState<ResultItem | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -175,7 +183,7 @@ export default function App() {
   const [incomingAutoDestructError, setIncomingAutoDestructError] = useState<string | null>(null)
   const fileInputId = useId()
   const passwordInputId = useId()
-  const resultUrlRef = useRef<string | null>(null)
+  const resultUrlRef = useRef<string | string[] | null>(null)
   const canUseSecureProcessing =
     window.isSecureContext && typeof window.crypto?.subtle !== 'undefined'
   const hasClipboardSupport = typeof navigator.clipboard?.writeText === 'function'
@@ -184,6 +192,10 @@ export default function App() {
   const currentMode = MODE_COPY[mode]
   const activeToolView = activeView === 'files' ? null : activeView
   const activeToolCopy = activeToolView ? TOOL_COPY[activeToolView] : null
+  const totalSelectedSize = files.reduce((sum, currentFile) => sum + currentFile.size, 0)
+  const resultUrl = previewItem?.url ?? results[0]?.url ?? null
+  const resultName = previewItem?.name ?? results[0]?.name ?? ''
+  const preview = previewItem?.preview ?? results[0]?.preview ?? { kind: 'none' }
   const shellStyle =
     theme === 'light'
       ? {
@@ -281,21 +293,32 @@ export default function App() {
 
   useEffect(() => {
     return () => {
-      if (resultUrlRef.current) {
-        URL.revokeObjectURL(resultUrlRef.current)
+      const urls = Array.isArray(resultUrlRef.current)
+        ? resultUrlRef.current
+        : resultUrlRef.current
+          ? [resultUrlRef.current]
+          : []
+
+      for (const url of urls) {
+        URL.revokeObjectURL(url)
       }
     }
   }, [])
 
-  function clearResult() {
-    if (resultUrlRef.current) {
-      URL.revokeObjectURL(resultUrlRef.current)
-      resultUrlRef.current = null
+  function clearResults() {
+    const urls = Array.isArray(resultUrlRef.current)
+      ? resultUrlRef.current
+      : resultUrlRef.current
+        ? [resultUrlRef.current]
+        : []
+
+    for (const url of urls) {
+      URL.revokeObjectURL(url)
     }
 
-    setResultUrl(null)
-    setResultName('')
-    setPreview({ kind: 'none' })
+    resultUrlRef.current = null
+    setResults([])
+    setPreviewItem(null)
     setIsPreviewOpen(false)
   }
 
@@ -314,43 +337,62 @@ export default function App() {
           ? 'Modo de criptografia ativo. O arquivo será convertido para .cryptify.'
           : 'Modo de descriptografia ativo. Selecione o arquivo .cryptify e use a mesma senha.',
     })
-    clearResult()
+    setFiles([])
+    clearResults()
   }
 
-  function handleSelectedFile(selectedFile: File | null | undefined) {
-    if (!selectedFile) {
+  function handleSelectedFiles(selectedFiles: FileList | File[] | null | undefined) {
+    const nextFiles = Array.from(selectedFiles ?? [])
+
+    if (nextFiles.length === 0) {
       return
     }
 
-    if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
-      setFile(null)
-      clearResult()
+    const validFiles = nextFiles.filter((selectedFile) => selectedFile.size <= MAX_FILE_SIZE_BYTES)
+    const rejectedFiles = nextFiles.filter(
+      (selectedFile) => selectedFile.size > MAX_FILE_SIZE_BYTES,
+    )
+
+    if (validFiles.length === 0) {
+      setFiles([])
+      clearResults()
       setStatus({
         tone: 'error',
-        message: `Arquivo acima do limite de ${formatFileSize(MAX_FILE_SIZE_BYTES)}. Use um arquivo menor.`,
+        message: `Todos os arquivos enviados estao acima do limite de ${formatFileSize(
+          MAX_FILE_SIZE_BYTES,
+        )}. Selecione arquivos menores para continuar.`,
       })
       return
     }
 
-    setFile(selectedFile)
+    setFiles(validFiles)
     setProgress(0)
-    setProgressLabel('Arquivo pronto para processamento')
+    setProgressLabel(
+      validFiles.length === 1
+        ? 'Arquivo pronto para processamento'
+        : 'Arquivos prontos para processamento',
+    )
     setStatus({
-      tone: 'info',
-      message: `${selectedFile.name} carregado com sucesso. Tudo continua 100% no navegador.`,
+      tone: rejectedFiles.length > 0 ? 'error' : 'info',
+      message:
+        rejectedFiles.length > 0
+          ? `${validFiles.length} arquivo(s) carregado(s). ${rejectedFiles.length} arquivo(s) foram ignorado(s) por exceder o limite de ${formatFileSize(
+              MAX_FILE_SIZE_BYTES,
+            )}.`
+          : `${validFiles.length} arquivo(s) carregado(s) com sucesso. Tudo continua 100% no navegador.`,
     })
-    clearResult()
+    clearResults()
   }
 
   function handleFileInputChange(event: ChangeEvent<HTMLInputElement>) {
-    handleSelectedFile(event.target.files?.[0])
+    handleSelectedFiles(event.target.files)
     event.target.value = ''
   }
 
   function handleDrop(event: DragEvent<HTMLLabelElement>) {
     event.preventDefault()
     setIsDragging(false)
-    handleSelectedFile(event.dataTransfer.files?.[0])
+    handleSelectedFiles(event.dataTransfer.files)
   }
 
   function handleDragOver(event: DragEvent<HTMLLabelElement>) {
@@ -408,24 +450,44 @@ export default function App() {
     })
   }
 
-  function handleDownload() {
-    if (!resultUrl || !resultName) {
-      return
-    }
-
-    downloadBlobUrl(resultUrl, resultName)
+  function handleDownloadResult(result: ResultItem) {
+    downloadBlobUrl(result.url, result.name)
   }
 
-  function handleOpenPreview() {
-    if (!resultUrl || preview.kind !== 'image') {
+  function handleDownload() {
+    const targetResult = previewItem ?? results[0] ?? null
+
+    if (!targetResult) {
       return
     }
 
+    handleDownloadResult(targetResult)
+  }
+
+  function handleDownloadAll() {
+    if (results.length === 0) {
+      return
+    }
+
+    results.forEach((result, index) => {
+      window.setTimeout(() => {
+        downloadBlobUrl(result.url, result.name)
+      }, index * 120)
+    })
+  }
+
+  function handleOpenPreview(result: ResultItem | null = results[0] ?? null) {
+    if (!result || result.preview.kind !== 'image') {
+      return
+    }
+
+    setPreviewItem(result)
     setIsPreviewOpen(true)
   }
 
   function handleClosePreview() {
     setIsPreviewOpen(false)
+    setPreviewItem(null)
   }
 
   function handleClearIncomingHash() {
@@ -438,6 +500,8 @@ export default function App() {
   }
 
   async function handleProcess() {
+    await handleProcessBatch()
+    /*
     if (!canUseSecureProcessing) {
       setStatus({
         tone: 'error',
@@ -447,10 +511,10 @@ export default function App() {
       return
     }
 
-    if (!file || !password) {
+    if (files.length === 0 || !password) {
       setStatus({
         tone: 'error',
-        message: 'Selecione um arquivo e informe uma senha ou chave para continuar.',
+        message: 'Selecione um ou mais arquivos e informe uma senha ou chave para continuar.',
       })
       return
     }
@@ -462,10 +526,10 @@ export default function App() {
       tone: 'info',
       message:
         mode === 'encrypt'
-          ? 'Criptografando arquivo localmente com Web Crypto API...'
-          : 'Descriptografando arquivo localmente com Web Crypto API...',
+          ? 'Criptografando arquivos localmente com Web Crypto API...'
+          : 'Descriptografando arquivos localmente com Web Crypto API...',
     })
-    clearResult()
+    clearResults()
 
     try {
       const operation = mode === 'encrypt' ? encryptFile : decryptFile
@@ -509,6 +573,136 @@ export default function App() {
     } finally {
       setIsProcessing(false)
     }
+    */
+  }
+
+  async function handleProcessBatch() {
+    if (!canUseSecureProcessing) {
+      setStatus({
+        tone: 'error',
+        message:
+          'Processamento bloqueado: abra o site em HTTPS ou localhost para habilitar a Web Crypto API.',
+      })
+      return
+    }
+
+    if (files.length === 0 || !password) {
+      setStatus({
+        tone: 'error',
+        message: 'Selecione um ou mais arquivos e informe uma senha ou chave para continuar.',
+      })
+      return
+    }
+
+    setIsProcessing(true)
+    setProgress(4)
+    setProgressLabel('Preparando ambiente seguro')
+    setStatus({
+      tone: 'info',
+      message:
+        mode === 'encrypt'
+          ? 'Criptografando arquivos localmente com Web Crypto API...'
+          : 'Descriptografando arquivos localmente com Web Crypto API...',
+    })
+    clearResults()
+
+    try {
+      const operation = mode === 'encrypt' ? encryptFile : decryptFile
+      const processedResults: ResultItem[] = []
+      const failures: string[] = []
+
+      for (const [index, currentFile] of files.entries()) {
+        const currentStep = index + 1
+
+        try {
+          const { blob, downloadName } = await operation(currentFile, password, (value, label) => {
+            const startProgress = (index / files.length) * 100
+            const endProgress = ((index + 1) / files.length) * 100
+            const aggregateProgress =
+              startProgress + ((endProgress - startProgress) * value) / 100
+
+            setProgress(Math.round(aggregateProgress))
+            setProgressLabel(
+              files.length === 1 ? label : `Arquivo ${currentStep}/${files.length} - ${label}`,
+            )
+          })
+
+          const nextUrl = URL.createObjectURL(blob)
+          const nextPreview: PreviewState =
+            mode === 'decrypt' ? getPreviewState(blob.type) : { kind: 'none' }
+
+          processedResults.push({
+            id: `${downloadName}-${index}-${blob.size}`,
+            name: downloadName,
+            url: nextUrl,
+            size: blob.size,
+            sourceName: currentFile.name,
+            preview: nextPreview,
+          })
+
+          if (mode === 'encrypt') {
+            downloadBlobUrl(nextUrl, downloadName)
+          }
+        } catch (error) {
+          failures.push(
+            `${currentFile.name}: ${
+              error instanceof CriptifyError
+                ? error.message
+                : 'Falha inesperada ao processar este arquivo.'
+            }`,
+          )
+          setProgress(Math.round(((index + 1) / files.length) * 100))
+        }
+      }
+
+      resultUrlRef.current = processedResults.map((result) => result.url)
+      setResults(processedResults)
+      setPreviewItem(null)
+
+      if (processedResults.length === 0) {
+        setProgress(0)
+        setProgressLabel('Falha no processamento')
+        setStatus({
+          tone: 'error',
+          message: failures[0] ?? 'Nenhum arquivo foi processado com sucesso.',
+        })
+        return
+      }
+
+      const previewableResults = processedResults.filter((result) => result.preview.kind === 'image')
+
+      setProgress(100)
+      setProgressLabel(
+        processedResults.length === 1
+          ? 'Processo concluido'
+          : `${processedResults.length} arquivos concluidos`,
+      )
+      setStatus({
+        tone: failures.length > 0 ? 'error' : 'success',
+        message:
+          mode === 'encrypt'
+            ? failures.length > 0
+              ? `${processedResults.length} arquivo(s) criptografado(s) com sucesso. ${failures.length} falhou(ram) durante o processamento.`
+              : `${processedResults.length} arquivo(s) criptografado(s) com sucesso. Os downloads .cryptify foram iniciados.`
+            : failures.length > 0
+              ? `${processedResults.length} arquivo(s) descriptografado(s) com sucesso. ${failures.length} falhou(ram).`
+              : previewableResults.length > 0
+                ? `${processedResults.length} arquivo(s) descriptografado(s) com sucesso. ${previewableResults.length} imagem(ns) podem ser revisadas antes do download.`
+                : `${processedResults.length} arquivo(s) descriptografado(s) com sucesso. Use os downloads manuais para abrir o conteudo no app adequado.`,
+      })
+    } catch (error) {
+      setProgress(0)
+      setProgressLabel('Falha no processamento')
+      setStatus({
+        tone: 'error',
+        message:
+          error instanceof CriptifyError
+            ? error.message
+            : 'Ocorreu um erro inesperado ao processar os arquivos.',
+      })
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const StatusIcon = isProcessing
@@ -518,22 +712,27 @@ export default function App() {
       : status.tone === 'error'
         ? AlertCircle
         : Sparkles
-  const canExpandPreview = mode === 'decrypt' && Boolean(resultUrl) && preview.kind === 'image'
+  const canExpandPreview =
+    mode === 'decrypt' && Boolean(previewItem ?? results[0]) && preview.kind === 'image'
   const isToolsView = activeView !== 'files'
   const isSteganographyView = activeView === 'steganography'
   const isAutoDestructView = activeView === 'autodestruct'
 
-  function renderPreviewImage(expanded: boolean) {
-    if (!resultUrl) {
+  function renderPreviewImage(targetResult: ResultItem | boolean, expanded = false) {
+    const resolvedTarget =
+      typeof targetResult === 'boolean' ? (previewItem ?? results[0] ?? null) : targetResult
+    const isExpanded = typeof targetResult === 'boolean' ? targetResult : expanded
+
+    if (!resolvedTarget || resolvedTarget.preview.kind !== 'image') {
       return null
     }
 
     return (
       <img
-        src={resultUrl}
-        alt={`Previa de ${resultName}`}
+        src={resolvedTarget.url}
+        alt={`Previa de ${resolvedTarget.name}`}
         className={`w-full rounded-2xl object-contain ${
-          expanded ? 'max-h-[76vh]' : 'max-h-[420px]'
+          isExpanded ? 'max-h-[76vh]' : 'max-h-[420px]'
         }`}
       />
     )
@@ -934,6 +1133,7 @@ export default function App() {
                   id={fileInputId}
                   type="file"
                   className="hidden"
+                  multiple
                   accept={mode === 'decrypt' ? '.cryptify' : undefined}
                   onChange={handleFileInputChange}
                 />
@@ -945,7 +1145,7 @@ export default function App() {
                     </div>
                     <div>
                       <p className="text-base font-medium text-white">
-                        Arraste e solte um arquivo aqui
+                        Arraste e solte um ou mais arquivos aqui
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
                         {currentMode.hint}
@@ -954,7 +1154,7 @@ export default function App() {
                   </div>
 
                   <span className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition group-hover:border-cyan-400/30 group-hover:bg-cyan-400/10">
-                    Escolher arquivo
+                    Escolher arquivos
                   </span>
                 </div>
 
@@ -966,19 +1166,43 @@ export default function App() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-                          Arquivo selecionado
+                          Arquivos selecionados
                         </p>
-                        <p className="mt-2 truncate text-sm font-medium text-white">
-                          {file ? file.name : 'Nenhum arquivo carregado'}
+                        <p className="mt-2 text-sm font-medium text-white">
+                          {files.length > 0
+                            ? `${files.length} arquivo(s) pronto(s) para processamento`
+                            : 'Nenhum arquivo carregado'}
                         </p>
                         <p className="mt-1 text-xs text-zinc-500">
                           Limite recomendado: {formatFileSize(MAX_FILE_SIZE_BYTES)}
                         </p>
+
+                        {files.length > 0 ? (
+                          <div className="mt-3 space-y-2">
+                            {files.slice(0, 4).map((selectedFile) => (
+                              <div
+                                key={`${selectedFile.name}-${selectedFile.size}-${selectedFile.lastModified}`}
+                                className="flex items-center justify-between gap-3 text-xs text-zinc-400"
+                              >
+                                <span className="truncate">{selectedFile.name}</span>
+                                <span className="shrink-0 font-mono uppercase tracking-[0.2em] text-zinc-500">
+                                  {formatFileSize(selectedFile.size)}
+                                </span>
+                              </div>
+                            ))}
+
+                            {files.length > 4 ? (
+                              <p className="text-xs text-zinc-500">
+                                + {files.length - 4} arquivo(s) adicional(is)
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </div>
                     </div>
 
                     <p className="shrink-0 font-mono text-xs uppercase tracking-[0.2em] text-zinc-400">
-                      {file ? formatFileSize(file.size) : '0 B'}
+                      {files.length > 0 ? formatFileSize(totalSelectedSize) : '0 B'}
                     </p>
                   </div>
                 </div>
@@ -1086,7 +1310,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={handleProcess}
-                  disabled={!file || !password || isProcessing || !canUseSecureProcessing}
+                  disabled={files.length === 0 || !password || isProcessing || !canUseSecureProcessing}
                   className="inline-flex items-center justify-center gap-2 rounded-[22px] bg-white px-5 py-3.5 text-sm font-semibold text-zinc-950 transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isProcessing ? (
@@ -1101,22 +1325,22 @@ export default function App() {
 
                 <button
                   type="button"
-                  onClick={handleDownload}
-                  disabled={!resultUrl}
+                  onClick={handleDownloadAll}
+                  disabled={results.length === 0}
                   className="inline-flex items-center justify-center gap-2 rounded-[22px] border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-medium text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Download className="h-4 w-4" />
-                  {mode === 'decrypt' ? 'Baixar descriptografado' : 'Download'}
+                  Baixar todos
                 </button>
               </div>
 
-              {resultName ? (
+              {results.length > 0 ? (
                 <p className="text-sm text-emerald-300">
-                  Arquivo pronto: <span className="font-mono text-xs">{resultName}</span>
+                  {results.length} arquivo(s) pronto(s) para download.
                 </p>
               ) : null}
 
-              {mode === 'decrypt' && resultUrl && preview.kind === 'image' ? (
+              {mode === 'decrypt' && results.length === 1 && resultUrl && preview.kind === 'image' ? (
                 <div className="rounded-[28px] border border-white/10 bg-black/25 p-5">
                   <div className="flex items-start gap-3">
                     <div className="rounded-2xl border border-white/10 bg-white/5 p-2 text-cyan-100">
@@ -1138,7 +1362,7 @@ export default function App() {
                       <p>Clique na prévia para ampliar.</p>
                       <button
                         type="button"
-                        onClick={handleOpenPreview}
+                        onClick={() => handleOpenPreview()}
                         className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-medium text-white transition hover:bg-white/10"
                       >
                         <Maximize2 className="h-3.5 w-3.5" />
@@ -1150,12 +1374,108 @@ export default function App() {
                   <div className="mt-4 rounded-[24px] border border-white/10 bg-black/20 p-4">
                     <button
                       type="button"
-                      onClick={handleOpenPreview}
+                      onClick={() => handleOpenPreview()}
                         className="block w-full cursor-zoom-in rounded-2xl transition hover:opacity-95"
                         aria-label="Ampliar prévia da imagem"
                       >
                       {renderPreviewImage(false)}
                     </button>
+                  </div>
+                </div>
+              ) : null}
+
+              {results.length > 1 || (results.length > 0 && mode === 'encrypt') ? (
+                <div className="rounded-[28px] border border-white/10 bg-black/25 p-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-white">
+                        Resultados do processamento local
+                      </p>
+                      <p className="mt-1 text-sm text-zinc-400">
+                        Cada item pode ser baixado separadamente. Em lotes maiores, use
+                        o download em massa quando preferir.
+                      </p>
+                    </div>
+
+                    {results.length > 1 ? (
+                      <button
+                        type="button"
+                        onClick={handleDownloadAll}
+                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10"
+                      >
+                        <Download className="h-4 w-4" />
+                        Baixar todos
+                      </button>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-5 space-y-4">
+                    {results.map((result) => (
+                      <article
+                        key={result.id}
+                        className="rounded-[24px] border border-white/10 bg-black/20 p-4"
+                      >
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="min-w-0">
+                            <p className="text-xs uppercase tracking-[0.28em] text-zinc-500">
+                              {mode === 'encrypt'
+                                ? 'Pacote gerado'
+                                : result.preview.kind === 'image'
+                                  ? 'Imagem pronta para revisar'
+                                  : 'Arquivo pronto'}
+                            </p>
+                            <p className="mt-2 truncate text-sm font-semibold text-white">
+                              {result.name}
+                            </p>
+                            <p className="mt-1 text-xs text-zinc-400">
+                              Origem: {result.sourceName}
+                            </p>
+                          </div>
+
+                          <div className="flex flex-wrap gap-3">
+                            {mode === 'decrypt' && result.preview.kind === 'image' ? (
+                              <button
+                                type="button"
+                                onClick={() => handleOpenPreview(result)}
+                                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10"
+                              >
+                                <Maximize2 className="h-4 w-4" />
+                                Visualizar
+                              </button>
+                            ) : null}
+
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadResult(result)}
+                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10"
+                            >
+                              <Download className="h-4 w-4" />
+                              Baixar
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 flex items-center justify-between gap-3 text-xs text-zinc-500">
+                          <span>{formatFileSize(result.size)}</span>
+                          {mode === 'decrypt' && result.preview.kind === 'image' ? (
+                            <span>Clique na miniatura para ampliar</span>
+                          ) : null}
+                        </div>
+
+                        {mode === 'decrypt' && result.preview.kind === 'image' ? (
+                          <div className="mt-4 rounded-[24px] border border-white/10 bg-black/25 p-4">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenPreview(result)}
+                              className="block w-full cursor-zoom-in rounded-2xl transition hover:opacity-95"
+                              aria-label={`Ampliar previa de ${result.name}`}
+                            >
+                              {renderPreviewImage(result, false)}
+                            </button>
+                          </div>
+                        ) : null}
+                      </article>
+                    ))}
                   </div>
                 </div>
               ) : null}

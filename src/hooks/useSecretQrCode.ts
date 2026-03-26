@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import QRCode from 'qrcode'
 
 type UseSecretQrCodeOptions = {
@@ -19,7 +19,7 @@ export function useSecretQrCode(options: UseSecretQrCodeOptions = {}) {
 
   async function generateQrCode(secretPayload: string) {
     if (!secretPayload.trim()) {
-      const nextError = 'Criptografe um texto antes de gerar o QR Code secreto.'
+      const nextError = 'Digite um texto antes de gerar o QR Code secreto.'
       setError(nextError)
       setQrCodeDataUrl(null)
       return null
@@ -43,7 +43,7 @@ export function useSecretQrCode(options: UseSecretQrCodeOptions = {}) {
       return nextDataUrl
     } catch {
       const nextError =
-        'Nao foi possivel gerar o QR Code deste payload. Tente novamente.'
+        'Não foi possível gerar o QR desta mensagem. Tente novamente.'
       setError(nextError)
       setQrCodeDataUrl(null)
       return null
@@ -79,3 +79,7 @@ export function useSecretQrCode(options: UseSecretQrCodeOptions = {}) {
     downloadQrCode,
   }
 }
+
+
+
+

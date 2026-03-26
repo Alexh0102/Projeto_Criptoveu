@@ -1,4 +1,4 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -13,6 +13,32 @@
   --panel-bg: rgba(255, 255, 255, 0.04);
   --panel-border: rgba(255, 255, 255, 0.1);
   --panel-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 24px 80px rgba(0, 0, 0, 0.45);
+  --surface-primary-bg: linear-gradient(180deg, rgba(10, 18, 28, 0.92), rgba(6, 10, 16, 0.88));
+  --surface-primary-border: rgba(82, 224, 255, 0.16);
+  --surface-primary-shadow: 0 28px 70px rgba(3, 8, 18, 0.46);
+  --surface-secondary-bg: rgba(255, 255, 255, 0.035);
+  --surface-secondary-border: rgba(255, 255, 255, 0.08);
+  --surface-technical-bg: rgba(255, 255, 255, 0.025);
+  --surface-technical-border: rgba(255, 255, 255, 0.07);
+  --surface-upload-bg: rgba(255, 255, 255, 0.03);
+  --surface-upload-border: rgba(255, 255, 255, 0.14);
+  --surface-upload-hover-bg: rgba(255, 255, 255, 0.055);
+  --surface-upload-hover-border: rgba(82, 224, 255, 0.34);
+  --input-bg: rgba(255, 255, 255, 0.055);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-placeholder: #71717a;
+  --btn-primary-bg: linear-gradient(135deg, #f8fbff 0%, #d8efff 100%);
+  --btn-primary-text: #08111d;
+  --btn-primary-shadow: 0 16px 42px rgba(34, 211, 238, 0.16);
+  --btn-secondary-bg: rgba(255, 255, 255, 0.055);
+  --btn-secondary-border: rgba(255, 255, 255, 0.1);
+  --btn-secondary-text: #f5f7fb;
+  --btn-accent-bg: rgba(34, 211, 238, 0.12);
+  --btn-accent-border: rgba(34, 211, 238, 0.26);
+  --btn-accent-text: #ecfeff;
+  --hero-badge-bg: rgba(34, 211, 238, 0.12);
+  --hero-badge-border: rgba(34, 211, 238, 0.26);
+  --hero-badge-text: #cffafe;
   font-family: 'Bahnschrift', 'Aptos', 'Segoe UI', sans-serif;
   background: var(--app-bg);
   color: var(--app-text);
@@ -25,14 +51,40 @@
 html[data-theme='light'] {
   color-scheme: light;
   --app-bg:
-    radial-gradient(circle at top, rgba(14, 165, 233, 0.12), transparent 30%),
-    radial-gradient(circle at 90% 8%, rgba(245, 158, 11, 0.1), transparent 24%),
-    #f3f7fb;
-  --app-bg-solid: #f3f7fb;
-  --app-text: #0f172a;
-  --panel-bg: rgba(255, 255, 255, 0.74);
-  --panel-border: rgba(15, 23, 42, 0.1);
-  --panel-shadow: 0 0 0 1px rgba(255, 255, 255, 0.45), 0 18px 54px rgba(15, 23, 42, 0.12);
+    radial-gradient(circle at 14% 0%, rgba(56, 189, 248, 0.16), transparent 30%),
+    radial-gradient(circle at 88% 10%, rgba(34, 197, 94, 0.12), transparent 22%),
+    linear-gradient(180deg, #eef4f7 0%, #e4edf3 100%);
+  --app-bg-solid: #e7eff4;
+  --app-text: #12263c;
+  --panel-bg: rgba(232, 241, 248, 0.76);
+  --panel-border: rgba(20, 56, 92, 0.1);
+  --panel-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35), 0 18px 48px rgba(20, 56, 92, 0.1);
+  --surface-primary-bg: linear-gradient(180deg, rgba(240, 247, 252, 0.94), rgba(228, 238, 246, 0.92));
+  --surface-primary-border: rgba(23, 69, 107, 0.12);
+  --surface-primary-shadow: 0 22px 52px rgba(20, 56, 92, 0.1);
+  --surface-secondary-bg: linear-gradient(180deg, rgba(234, 242, 247, 0.88), rgba(226, 236, 243, 0.86));
+  --surface-secondary-border: rgba(20, 56, 92, 0.08);
+  --surface-technical-bg: rgba(220, 231, 240, 0.9);
+  --surface-technical-border: rgba(20, 56, 92, 0.08);
+  --surface-upload-bg: linear-gradient(180deg, rgba(241, 247, 252, 0.82), rgba(233, 241, 247, 0.78));
+  --surface-upload-border: rgba(20, 56, 92, 0.12);
+  --surface-upload-hover-bg: linear-gradient(180deg, rgba(232, 243, 250, 0.94), rgba(221, 236, 244, 0.9));
+  --surface-upload-hover-border: rgba(34, 197, 94, 0.22);
+  --input-bg: rgba(246, 250, 253, 0.92);
+  --input-border: rgba(20, 56, 92, 0.1);
+  --input-placeholder: #6a7f94;
+  --btn-primary-bg: linear-gradient(135deg, #12314d 0%, #184566 100%);
+  --btn-primary-text: #f8fafc;
+  --btn-primary-shadow: 0 16px 34px rgba(20, 56, 92, 0.16);
+  --btn-secondary-bg: rgba(235, 243, 248, 0.88);
+  --btn-secondary-border: rgba(20, 56, 92, 0.12);
+  --btn-secondary-text: #18344f;
+  --btn-accent-bg: rgba(34, 197, 94, 0.12);
+  --btn-accent-border: rgba(34, 197, 94, 0.22);
+  --btn-accent-text: #166534;
+  --hero-badge-bg: rgba(34, 197, 94, 0.1);
+  --hero-badge-border: rgba(34, 197, 94, 0.18);
+  --hero-badge-text: #166534;
 }
 
 * {
@@ -91,6 +143,117 @@ select {
     box-shadow: var(--panel-shadow);
     @apply backdrop-blur-xl;
   }
+
+  .surface-primary {
+    background: var(--surface-primary-bg);
+    border: 1px solid var(--surface-primary-border);
+    box-shadow: var(--surface-primary-shadow);
+    @apply backdrop-blur-xl;
+  }
+
+  .surface-secondary {
+    background: var(--surface-secondary-bg);
+    border: 1px solid var(--surface-secondary-border);
+    @apply backdrop-blur-lg;
+  }
+
+  .surface-technical {
+    background: var(--surface-technical-bg);
+    border: 1px solid var(--surface-technical-border);
+    @apply backdrop-blur-lg;
+  }
+
+  .surface-upload {
+    background: var(--surface-upload-bg);
+    border: 1px dashed var(--surface-upload-border);
+    @apply backdrop-blur-lg;
+  }
+
+  .surface-upload:hover,
+  .surface-upload:focus-within {
+    background: var(--surface-upload-hover-bg);
+    border-color: var(--surface-upload-hover-border);
+  }
+
+  .hero-badge {
+    background: var(--hero-badge-bg);
+    border: 1px solid var(--hero-badge-border);
+    color: var(--hero-badge-text);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    @apply inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs uppercase tracking-[0.3em];
+  }
+
+  .icon-chip {
+    @apply inline-flex items-center justify-center rounded-2xl p-3;
+    background: var(--hero-badge-bg);
+    border: 1px solid var(--hero-badge-border);
+    color: var(--hero-badge-text);
+  }
+
+  .btn-primary {
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    box-shadow: var(--btn-primary-shadow);
+    @apply inline-flex items-center justify-center gap-2 rounded-[22px] px-5 py-3.5 text-sm font-semibold transition duration-200;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    filter: saturate(1.04);
+  }
+
+  .btn-primary:disabled {
+    @apply cursor-not-allowed opacity-60;
+    transform: none;
+    filter: none;
+  }
+
+  .btn-secondary {
+    background: var(--btn-secondary-bg);
+    border: 1px solid var(--btn-secondary-border);
+    color: var(--btn-secondary-text);
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition duration-200 backdrop-blur-lg;
+  }
+
+  .btn-secondary:hover {
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary:disabled,
+  .btn-accent:disabled {
+    @apply cursor-not-allowed opacity-60;
+    transform: none;
+  }
+
+  .btn-accent {
+    background: var(--btn-accent-bg);
+    border: 1px solid var(--btn-accent-border);
+    color: var(--btn-accent-text);
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition duration-200 backdrop-blur-lg;
+  }
+
+  .btn-accent:hover {
+    transform: translateY(-1px);
+  }
+
+  .tool-input,
+  .tool-textarea {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: inherit;
+    @apply w-full rounded-2xl px-4 py-3.5 text-sm outline-none transition;
+  }
+
+  .tool-input::placeholder,
+  .tool-textarea::placeholder {
+    color: var(--input-placeholder);
+  }
+
+  .tool-input:focus,
+  .tool-textarea:focus {
+    border-color: rgba(34, 211, 238, 0.34);
+    box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.08);
+  }
 }
 
 .cryptify-progress {
@@ -121,38 +284,80 @@ select {
 
 html[data-theme='light'] .app-shell .text-white,
 html[data-theme='light'] .app-shell .text-zinc-100 {
-  color: #0f172a !important;
+  color: #12263c !important;
 }
 
 html[data-theme='light'] .app-shell .text-zinc-300 {
-  color: #334155 !important;
+  color: #334e68 !important;
 }
 
 html[data-theme='light'] .app-shell .text-zinc-400 {
-  color: #475569 !important;
+  color: #48637e !important;
 }
 
 html[data-theme='light'] .app-shell .text-zinc-500 {
-  color: #64748b !important;
+  color: #687f93 !important;
+}
+
+html[data-theme='light'] .app-shell .text-cyan-100,
+html[data-theme='light'] .app-shell .text-cyan-100\/80,
+html[data-theme='light'] .app-shell .text-cyan-50 {
+  color: #17456b !important;
+}
+
+html[data-theme='light'] .app-shell .text-emerald-50 {
+  color: #166534 !important;
+}
+
+html[data-theme='light'] .app-shell .text-rose-50,
+html[data-theme='light'] .app-shell .text-rose-100 {
+  color: #8b1e3f !important;
 }
 
 html[data-theme='light'] .app-shell .border-white\/10,
 html[data-theme='light'] .app-shell .border-white\/15 {
-  border-color: rgba(15, 23, 42, 0.1) !important;
+  border-color: rgba(20, 56, 92, 0.12) !important;
+}
+
+html[data-theme='light'] .app-shell .border-cyan-500\/25 {
+  border-color: rgba(23, 69, 107, 0.16) !important;
+}
+
+html[data-theme='light'] .app-shell .border-emerald-500\/25 {
+  border-color: rgba(22, 101, 52, 0.16) !important;
+}
+
+html[data-theme='light'] .app-shell .border-rose-500\/25 {
+  border-color: rgba(136, 28, 61, 0.16) !important;
 }
 
 html[data-theme='light'] .app-shell .bg-black\/25,
 html[data-theme='light'] .app-shell .bg-black\/20,
 html[data-theme='light'] .app-shell .bg-black\/40,
-html[data-theme='light'] .app-shell .bg-zinc-950\/95,
+html[data-theme='light'] .app-shell .bg-zinc-950\/95 {
+  background-color: rgba(225, 236, 244, 0.84) !important;
+}
+
 html[data-theme='light'] .app-shell .bg-white\/5,
 html[data-theme='light'] .app-shell .bg-white\/\[0\.035\],
 html[data-theme='light'] .app-shell .bg-white\/10 {
-  background-color: rgba(255, 255, 255, 0.78) !important;
+  background-color: rgba(241, 247, 251, 0.84) !important;
+}
+
+html[data-theme='light'] .app-shell .bg-cyan-500\/10 {
+  background-color: rgba(125, 211, 252, 0.2) !important;
+}
+
+html[data-theme='light'] .app-shell .bg-emerald-500\/10 {
+  background-color: rgba(134, 239, 172, 0.18) !important;
+}
+
+html[data-theme='light'] .app-shell .bg-rose-500\/10 {
+  background-color: rgba(251, 207, 232, 0.24) !important;
 }
 
 html[data-theme='light'] .app-shell .bg-zinc-800 {
-  background-color: #d7e2ee !important;
+  background-color: #c7d5e0 !important;
 }
 
 html[data-theme='light'] .bg-ink {
@@ -169,10 +374,10 @@ html[data-theme='light'] .app-shell select {
 
 html[data-theme='light'] .app-shell input::placeholder,
 html[data-theme='light'] .app-shell textarea::placeholder {
-  color: #64748b;
+  color: #6a7f94;
 }
 
 html[data-theme='light'] .cryptify-progress,
 html[data-theme='light'] .cryptify-progress::-webkit-progress-bar {
-  background: #dbe4ef;
+  background: #cfdae3;
 }

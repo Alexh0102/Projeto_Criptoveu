@@ -1,4 +1,4 @@
-import {
+﻿import {
   decodeBase64ToBytes,
   encodeBytesToBase64,
   type TextDecryptionInput,
@@ -64,7 +64,7 @@ function decodeJsonFromBase64(value: string) {
   } catch {
     throw new AutoDestructLinkError(
       'INVALID_PAYLOAD',
-      'O link da mensagem esta corrompido ou incompleto.',
+      'O link da mensagem está corrompido ou incompleto.',
     )
   }
 }
@@ -74,7 +74,7 @@ function isExpirationValue(value: unknown): value is AutoDestructExpiration {
 }
 
 function getStorageKey(encodedPayload: string) {
-  // Hash simples para nao guardar o payload completo na chave do localStorage.
+  // Hash simples para não guardar o payload completo na chave do localStorage.
   let hash = 5381
 
   for (let index = 0; index < encodedPayload.length; index += 1) {
@@ -144,7 +144,7 @@ export function parseAutoDestructPayload(encodedPayload: string): AutoDestructPa
   ) {
     throw new AutoDestructLinkError(
       'INVALID_PAYLOAD',
-      'O payload do link auto-destrutivo nao tem o formato esperado.',
+      'Os dados da mensagem não estão no formato esperado.',
     )
   }
 
@@ -181,7 +181,7 @@ export function readAutoDestructPayloadFromHash(hash: string) {
   if (!rawValue) {
     throw new AutoDestructLinkError(
       'INVALID_LINK',
-      'O hash da URL nao contem uma mensagem valida.',
+      'O hash da URL não contém uma mensagem válida.',
     )
   }
 
@@ -200,7 +200,7 @@ export function readAutoDestructPayloadFromInput(value: string): AutoDestructRea
   if (!normalizedValue) {
     throw new AutoDestructLinkError(
       'INVALID_LINK',
-      'Cole um link ou hash antes de tentar carregar a mensagem.',
+      'Cole um link ou o trecho da mensagem antes de continuar.',
     )
   }
 
@@ -210,7 +210,7 @@ export function readAutoDestructPayloadFromInput(value: string): AutoDestructRea
     if (!fromHash) {
       throw new AutoDestructLinkError(
         'INVALID_LINK',
-        'Nao foi possivel encontrar uma mensagem valida nesse hash.',
+        'Não foi possível encontrar uma mensagem válida nesse trecho.',
       )
     }
 
@@ -225,7 +225,7 @@ export function readAutoDestructPayloadFromInput(value: string): AutoDestructRea
       if (!fromHash) {
         throw new AutoDestructLinkError(
           'INVALID_LINK',
-          'Esse link nao contem uma mensagem auto-destrutiva do Criptify.',
+          'Esse link não contém uma mensagem válida do Criptify.',
         )
       }
 
@@ -237,7 +237,7 @@ export function readAutoDestructPayloadFromInput(value: string): AutoDestructRea
 
       throw new AutoDestructLinkError(
         'INVALID_LINK',
-        'O link informado nao e valido.',
+        'O link informado não é válido.',
       )
     }
   }
@@ -286,7 +286,7 @@ export function incrementAutoDestructViews(encodedPayload: string) {
   } catch {
     throw new AutoDestructLinkError(
       'STORAGE_UNAVAILABLE',
-      'Nao foi possivel registrar a visualizacao desta mensagem no navegador.',
+      'Não foi possível registrar a visualização desta mensagem no navegador.',
     )
   }
 
@@ -323,3 +323,9 @@ export function assertAutoDestructAvailability(
 
   return viewState
 }
+
+
+
+
+
+

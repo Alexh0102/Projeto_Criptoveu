@@ -1,17 +1,14 @@
-import {
+﻿import {
   AlertCircle,
-  ChevronDown,
   CheckCircle2,
   Copy,
   ExternalLink,
   Link2,
-  LoaderCircle,
-  Lock,
   Search,
   Sparkles,
   Trash2,
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   AutoDestructLinkError,
@@ -26,12 +23,11 @@ import {
   readAutoDestructPayloadFromInput,
   serializeAutoDestructPayload,
 } from '../lib/auto-destruct-link'
-import {
-  CriptifyError,
-  decryptText,
-  encryptText,
-  type TextEncryptionResult,
-} from '../lib/cryptify'
+import { CriptifyError, decryptText, encryptText } from '../lib/cryptify'
+import AdvancedOptions from './ui/AdvancedOptions'
+import MobileStickyCTA from './ui/MobileStickyCTA'
+import ResultPanel from './ui/ResultPanel'
+import SegmentedMode from './ui/SegmentedMode'
 
 type Tab = 'generate' | 'read'
 type Tone = 'info' | 'success' | 'error'
@@ -42,6 +38,7 @@ type StatusState = {
 }
 
 type Props = {
+  compact?: boolean
   incomingHashMessage: AutoDestructReadResult | null
   incomingHashError: string | null
   onClearIncomingHash: () => void
@@ -61,17 +58,17 @@ const EXPIRATION_OPTIONS: Array<{
   {
     value: '24h',
     label: 'Expira em 24h',
-    helper: 'Ideal para mensagens temporarias que somem no dia seguinte.',
+    helper: 'A mensagem fica disponível por 24 horas.',
   },
   {
     value: '7d',
     label: 'Expira em 7 dias',
-    helper: 'Mantem o link valido por uma semana a partir da geracao.',
+    helper: 'A mensagem fica disponível por 7 dias.',
   },
   {
     value: 'never',
     label: 'Nunca expira',
-    helper: 'O limite passa a ser apenas o numero maximo de visualizacoes.',
+    helper: 'Só o limite de visualizações continua valendo.',
   },
 ]
 
@@ -82,23 +79,23 @@ const VIEW_LIMIT_OPTIONS: Array<{
 }> = [
   {
     value: '1',
-    label: '1 visualizacao',
-    helper: 'A mensagem expira logo apos a primeira leitura bem-sucedida.',
+    label: '1 visualização',
+    helper: 'Some após a primeira leitura.',
   },
   {
     value: '3',
-    label: '3 visualizacoes',
-    helper: 'Permite ate tres leituras antes de expirar.',
+    label: '3 visualizações',
+    helper: 'Permite até três leituras.',
   },
   {
     value: '5',
-    label: '5 visualizacoes',
-    helper: 'Boa opcao para compartilhar com um grupo pequeno.',
+    label: '5 visualizações',
+    helper: 'Boa opção para um grupo pequeno.',
   },
   {
     value: 'unlimited',
     label: 'Sem limite',
-    helper: 'Nao bloqueia pela contagem de leituras locais.',
+    helper: 'Não bloqueia pela contagem de leituras locais.',
   },
 ]
 
@@ -118,20 +115,12 @@ function OptionCard({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`rounded-[24px] border px-4 py-4 text-left transition ${
-        selected
-          ? 'border-cyan-400/35 bg-cyan-400/10'
-          : 'border-white/10 bg-white/5 hover:bg-white/10'
-      }`}
+      className={(selected ? 'surface-primary' : 'surface-secondary') + ' rounded-[24px] px-4 py-4 text-left transition'}
     >
       <p className="text-sm font-semibold text-white">{label}</p>
       <p className="mt-2 text-sm leading-6 text-zinc-400">{helper}</p>
     </button>
   )
-}
-
-function summarizeSelection(expirationLabel: string, viewLimitLabel: string) {
-  return `${expirationLabel} • ${viewLimitLabel}`
 }
 
 function getFriendlyErrorMessage(error: unknown) {
@@ -143,7 +132,7 @@ function getFriendlyErrorMessage(error: unknown) {
     return error.message
   }
 
-  return 'Ocorreu um erro inesperado ao processar o link auto-destrutivo.'
+  return 'Ocorreu um erro inesperado ao processar o link secreto.'
 }
 
 function resolveMaxViews(value: string) {
@@ -162,6 +151,7 @@ async function copyToClipboard(value: string) {
 }
 
 export default function AutoDestructLink({
+  compact = false,
   incomingHashMessage,
   incomingHashError,
   onClearIncomingHash,
@@ -169,18 +159,13 @@ export default function AutoDestructLink({
   const [tab, setTab] = useState<Tab>('generate')
   const [plainText, setPlainText] = useState('')
   const [generatePassword, setGeneratePassword] = useState('')
-  const [encryptedPayload, setEncryptedPayload] = useState<TextEncryptionResult | null>(null)
   const [expiresIn, setExpiresIn] = useState<AutoDestructExpiration>('24h')
   const [maxViewsValue, setMaxViewsValue] = useState('1')
-  const [generatedEncodedPayload, setGeneratedEncodedPayload] = useState('')
   const [generatedLink, setGeneratedLink] = useState('')
-  const [isConfigOpen, setIsConfigOpen] = useState(false)
-  const [isEncrypting, setIsEncrypting] = useState(false)
   const [isGeneratingLink, setIsGeneratingLink] = useState(false)
   const [generateStatus, setGenerateStatus] = useState<StatusState>({
     tone: 'info',
-    message:
-      'Criptografe um texto primeiro. Depois gere uma mensagem auto destrutiva com expiracao e limite de visualizacoes.',
+    message: 'Escreva a mensagem, defina a senha e gere o link.',
   })
   const [readInput, setReadInput] = useState('')
   const [resolvedEncodedPayload, setResolvedEncodedPayload] = useState('')
@@ -189,10 +174,10 @@ export default function AutoDestructLink({
   const [viewCount, setViewCount] = useState<number | null>(null)
   const [readStatus, setReadStatus] = useState<StatusState>({
     tone: 'info',
-    message:
-      'Abra o site com um hash #msg=... ou cole um link do Criptify para descriptografar a mensagem localmente.',
+    message: 'Cole o link e use a senha para abrir a mensagem.',
   })
   const [isDecrypting, setIsDecrypting] = useState(false)
+  const generateResultRef = useRef<HTMLDivElement | null>(null)
 
   const selectedExpiration = useMemo(
     () => EXPIRATION_OPTIONS.find((option) => option.value === expiresIn) ?? EXPIRATION_OPTIONS[0],
@@ -228,8 +213,7 @@ export default function AutoDestructLink({
     setViewCount(getAutoDestructViewState(incomingHashMessage.encodedPayload).views)
     setReadStatus({
       tone: 'info',
-      message:
-        'Uma mensagem auto destrutiva foi detectada na URL. Digite a senha para tentar descriptografar.',
+      message: 'Uma mensagem foi detectada na URL. Digite a senha para tentar abrir.',
     })
   }, [incomingHashMessage])
 
@@ -248,11 +232,19 @@ export default function AutoDestructLink({
     })
   }, [incomingHashError])
 
-  async function handleEncryptText() {
+  useEffect(() => {
+    if (!generatedLink) {
+      return
+    }
+
+    generateResultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [generatedLink])
+
+  async function handleGenerateLink() {
     if (!plainText.trim()) {
       setGenerateStatus({
         tone: 'error',
-        message: 'Digite um texto antes de criptografar a mensagem do link.',
+        message: 'Digite uma mensagem antes de gerar o link secreto.',
       })
       return
     }
@@ -260,45 +252,16 @@ export default function AutoDestructLink({
     if (!generatePassword) {
       setGenerateStatus({
         tone: 'error',
-        message: 'Digite uma senha antes de criptografar a mensagem do link.',
-      })
-      return
-    }
-
-    setIsEncrypting(true)
-    setGeneratedEncodedPayload('')
-    setGeneratedLink('')
-
-    try {
-      const encrypted = await encryptText(plainText, generatePassword)
-      setEncryptedPayload(encrypted)
-      setGenerateStatus({
-        tone: 'success',
-        message:
-          'Texto criptografado com sucesso. Agora voce ja pode gerar a mensagem auto destrutiva.',
-      })
-    } catch (error) {
-      setGenerateStatus({
-        tone: 'error',
-        message: getFriendlyErrorMessage(error),
-      })
-    } finally {
-      setIsEncrypting(false)
-    }
-  }
-
-  async function handleGenerateLink() {
-    if (!encryptedPayload) {
-      setGenerateStatus({
-        tone: 'error',
-        message: 'Criptografe o texto antes de gerar a mensagem auto destrutiva.',
+        message: 'Digite uma senha para proteger a mensagem do link.',
       })
       return
     }
 
     setIsGeneratingLink(true)
+    setGeneratedLink('')
 
     try {
+      const encryptedPayload = await encryptText(plainText, generatePassword)
       const encodedPayload = serializeAutoDestructPayload(encryptedPayload, {
         createdAt: Date.now(),
         expiresIn,
@@ -306,12 +269,10 @@ export default function AutoDestructLink({
       })
       const link = buildAutoDestructLink(encodedPayload)
 
-      setGeneratedEncodedPayload(encodedPayload)
       setGeneratedLink(link)
       setGenerateStatus({
         tone: 'success',
-        message:
-          'Mensagem auto destrutiva gerada localmente. Copie ou abra o link para usar a mensagem secreta.',
+        message: 'Link secreto gerado localmente. Agora você pode copiar ou abrir a mensagem protegida.',
       })
     } catch (error) {
       setGenerateStatus({
@@ -332,12 +293,12 @@ export default function AutoDestructLink({
       await copyToClipboard(generatedLink)
       setGenerateStatus({
         tone: 'success',
-        message: 'Link da mensagem auto destrutiva copiado para a area de transferencia.',
+        message: 'Link secreto copiado para a área de transferência.',
       })
     } catch {
       setGenerateStatus({
         tone: 'error',
-        message: 'Nao foi possivel copiar o link neste navegador.',
+        message: 'Não foi possível copiar o link neste navegador.',
       })
     }
   }
@@ -358,8 +319,7 @@ export default function AutoDestructLink({
       setViewCount(getAutoDestructViewState(resolved.encodedPayload).views)
       setReadStatus({
         tone: 'info',
-        message:
-          'Link carregado com sucesso. Agora digite a senha e descriptografe a mensagem.',
+        message: 'Link carregado com sucesso. Agora digite a senha para abrir a mensagem.',
       })
     } catch (error) {
       setResolvedEncodedPayload('')
@@ -376,7 +336,7 @@ export default function AutoDestructLink({
     if (!resolvedEncodedPayload) {
       setReadStatus({
         tone: 'error',
-        message: 'Carregue um link ou hash valido antes de descriptografar.',
+        message: 'Carregue um link válido antes de abrir a mensagem.',
       })
       return
     }
@@ -384,7 +344,7 @@ export default function AutoDestructLink({
     if (!readPassword) {
       setReadStatus({
         tone: 'error',
-        message: 'Digite a senha correta antes de descriptografar a mensagem.',
+        message: 'Digite a senha correta antes de abrir a mensagem.',
       })
       return
     }
@@ -408,7 +368,7 @@ export default function AutoDestructLink({
       try {
         nextViews = incrementAutoDestructViews(resolved.encodedPayload).views
       } catch {
-        // O contador e opcional; se o storage falhar, ainda mostramos a mensagem.
+        // Contador local opcional.
       }
 
       setViewCount(nextViews)
@@ -416,12 +376,12 @@ export default function AutoDestructLink({
 
       const viewCopy =
         resolved.payload.maxViews === null
-          ? `Visualizacoes registradas localmente: ${nextViews}.`
-          : `Visualizacao ${nextViews} de ${resolved.payload.maxViews}.`
+          ? `Aberturas registradas neste navegador: ${nextViews}.`
+          : `Abertura ${nextViews} de ${resolved.payload.maxViews}.`
 
       setReadStatus({
         tone: 'success',
-        message: `Mensagem descriptografada com sucesso. ${viewCopy}`,
+        message: `Mensagem aberta com sucesso. ${viewCopy}`,
       })
     } catch (error) {
       setRevealedText('')
@@ -435,20 +395,16 @@ export default function AutoDestructLink({
   }
 
   return (
-    <section className="panel-surface rounded-[32px] p-4 sm:p-6">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-start justify-between gap-4">
+    <section className="panel-surface rounded-[32px] p-4 pb-28 sm:p-6 lg:pb-6">
+      <div className="flex flex-col gap-6">
+        <div className={compact ? 'hidden' : 'flex items-start justify-between gap-4'}>
           <div>
-            <p className="text-xs uppercase tracking-[0.32em] text-cyan-100/80">
-              Mensagem auto destrutiva
-            </p>
+            <p className="text-xs uppercase tracking-[0.32em] text-cyan-100/80">Link secreto</p>
             <h2 className="mt-2 text-3xl font-semibold text-white">
-              Gere uma mensagem secreta com expiracao local
+              Crie ou abra uma mensagem protegida por senha
             </h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-300 sm:text-base">
-              Criptografe um texto, gere um link com hash local e abra o mesmo site
-              para descriptografar a mensagem com senha, expiracao e contador de
-              visualizacoes salvos no navegador.
+              Crie um link para compartilhar uma mensagem protegida ou abra um link recebido.
             </p>
           </div>
 
@@ -457,249 +413,172 @@ export default function AutoDestructLink({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 rounded-3xl border border-white/10 bg-black/20 p-1.5">
-          <button
-            type="button"
-            aria-pressed={tab === 'generate'}
-            onClick={() => setTab('generate')}
-            className={`flex items-center justify-center gap-2 rounded-[18px] px-4 py-3 text-sm font-medium transition ${
-              tab === 'generate'
-                ? 'bg-white text-zinc-950 shadow-lg shadow-cyan-500/10'
-                : 'text-zinc-300 hover:bg-white/5'
-            }`}
-          >
-            <Lock className="h-4 w-4" />
-            Gerar link
-          </button>
-
-          <button
-            type="button"
-            aria-pressed={tab === 'read'}
-            onClick={() => setTab('read')}
-            className={`flex items-center justify-center gap-2 rounded-[18px] px-4 py-3 text-sm font-medium transition ${
-              tab === 'read'
-                ? 'bg-white text-zinc-950 shadow-lg shadow-cyan-500/10'
-                : 'text-zinc-300 hover:bg-white/5'
-            }`}
-          >
-            <Search className="h-4 w-4" />
-            Ler link
-          </button>
-        </div>
+        <SegmentedMode
+          label="Modo"
+          value={tab}
+          onChange={(nextValue) => setTab(nextValue as Tab)}
+          sticky
+          options={[
+            { value: 'generate', label: 'Gerar link', icon: <Link2 className="h-4 w-4" /> },
+            { value: 'read', label: 'Ler link', icon: <Search className="h-4 w-4" /> },
+          ]}
+        />
 
         {tab === 'generate' ? (
-          <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="rounded-[28px] border border-white/10 bg-black/25 p-5">
-              <div className="flex items-start gap-3">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-2 text-cyan-100">
-                  <Lock className="h-5 w-5" />
+          <>
+            <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+              <div className="surface-primary rounded-[28px] p-5">
+                <div className="flex items-start gap-3">
+                  <div className="icon-chip p-2">
+                    <Link2 className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">Criar link secreto</p>
+                    <p className="mt-1 text-sm text-zinc-400">
+                      Escreva a mensagem, defina a senha e gere o link em um clique.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-white">
-                    1. Criptografe o texto
-                  </p>
-                  <p className="mt-1 text-sm text-zinc-400">
-                    A mensagem e protegida localmente antes de virar link.
-                  </p>
-                </div>
-              </div>
 
-              <textarea
-                value={plainText}
-                onChange={(event) => setPlainText(event.target.value)}
-                rows={8}
-                placeholder="Digite aqui o texto secreto que sera protegido antes de gerar o link."
-                className="mt-4 min-h-[200px] w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-cyan-400/50 focus:bg-white/10 focus:ring-2 focus:ring-cyan-400/20"
-              />
+                <textarea
+                  value={plainText}
+                  onChange={(event) => setPlainText(event.target.value)}
+                  rows={6}
+                  placeholder="Digite aqui a mensagem secreta que será protegida antes de gerar o link."
+                  className="tool-textarea mt-4 min-h-[140px] sm:min-h-[180px]"
+                />
 
-              <input
-                type="password"
-                value={generatePassword}
-                onChange={(event) => setGeneratePassword(event.target.value)}
-                placeholder="Digite a senha da mensagem secreta"
-                className="mt-4 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-cyan-400/50 focus:bg-white/10 focus:ring-2 focus:ring-cyan-400/20"
-              />
+                <input
+                  type="password"
+                  value={generatePassword}
+                  onChange={(event) => setGeneratePassword(event.target.value)}
+                  placeholder="Digite a senha da mensagem secreta"
+                  className="tool-input mt-4"
+                />
 
-              <button
-                type="button"
-                onClick={handleEncryptText}
-                disabled={isEncrypting}
-                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-[24px] border border-cyan-300/25 bg-cyan-300/10 px-5 py-4 text-base font-semibold text-cyan-50 transition hover:bg-cyan-300/15 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isEncrypting ? (
-                  <LoaderCircle className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Lock className="h-5 w-5" />
-                )}
-                Criptografar texto
-              </button>
-            </div>
-
-            <div className="rounded-[28px] border border-white/10 bg-black/25 p-5">
-              <div className="flex items-start gap-3">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-2 text-cyan-100">
-                  <Sparkles className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">
-                    2. Configure a mensagem auto destrutiva
-                  </p>
-                  <p className="mt-1 text-sm text-zinc-400">
-                    Escolha expiracao e limite de visualizacoes antes de gerar o hash local.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-4 grid gap-3">
-                <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsConfigOpen((currentValue) => !currentValue)}
-                    aria-expanded={isConfigOpen}
-                    className="flex w-full items-center justify-between gap-3 text-left"
-                  >
-                    <div>
-                      <p className="text-sm font-semibold text-white">
-                        Configuracoes da mensagem
-                      </p>
-                      <p className="mt-1 text-sm text-zinc-400">
-                        {summarizeSelection(
-                          selectedExpiration.label,
-                          selectedViewLimit.label,
-                        )}
-                      </p>
-                    </div>
-
-                    <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-2 text-xs font-medium uppercase tracking-[0.2em] text-zinc-300">
-                      {isConfigOpen ? 'Ocultar' : 'Configurar'}
-                      <ChevronDown
-                        className={`h-4 w-4 transition ${isConfigOpen ? 'rotate-180' : ''}`}
-                      />
-                    </span>
-                  </button>
-
-                  {isConfigOpen ? (
-                    <div className="mt-4 space-y-4 border-t border-white/10 pt-4">
-                      <div>
-                        <p className="text-sm font-medium text-white">Duracao</p>
-                        <div className="mt-3 grid gap-3">
-                          {EXPIRATION_OPTIONS.map((option) => (
-                            <OptionCard
-                              key={option.value}
-                              label={option.label}
-                              helper={option.helper}
-                              selected={expiresIn === option.value}
-                              onClick={() => setExpiresIn(option.value)}
-                            />
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <p className="text-sm font-medium text-white">
-                          Quantas visualizacoes
-                        </p>
-                        <div className="mt-3 grid gap-3">
-                          {VIEW_LIMIT_OPTIONS.map((option) => (
-                            <OptionCard
-                              key={option.value}
-                              label={option.label}
-                              helper={option.helper}
-                              selected={maxViewsValue === option.value}
-                              onClick={() => setMaxViewsValue(option.value)}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.26em] text-zinc-500">
-                  Configuracao selecionada
-                </p>
-                <p className="mt-2 text-sm leading-7 text-zinc-300">
-                  {selectedExpiration.helper}
-                </p>
-                <p className="mt-1 text-sm leading-7 text-zinc-400">
-                  {selectedViewLimit.helper}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleGenerateLink}
-                disabled={!encryptedPayload || isGeneratingLink}
-                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-[24px] bg-white px-5 py-4 text-base font-semibold text-zinc-950 transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isGeneratingLink ? (
-                  <LoaderCircle className="h-5 w-5 animate-spin" />
-                ) : (
+                <button
+                  type="button"
+                  onClick={handleGenerateLink}
+                  disabled={isGeneratingLink}
+                  className="btn-primary mt-4 hidden w-full lg:inline-flex"
+                >
                   <Link2 className="h-5 w-5" />
-                )}
-                Gerar mensagem auto destrutiva
-              </button>
+                  Gerar link secreto
+                </button>
 
-              {generatedLink ? (
-                <div className="mt-4 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-4">
-                  <p className="text-xs uppercase tracking-[0.26em] text-emerald-100/90">
-                    Link pronto
-                  </p>
-                  <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3">
-                    <p className="break-all font-mono text-xs leading-6 text-emerald-50">
-                      {generatedLink}
-                    </p>
-                  </div>
-
-                  <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">
-                      Payload do hash
-                    </p>
-                    <p className="mt-2 break-all font-mono text-[11px] leading-6 text-zinc-300">
-                      {generatedEncodedPayload.slice(0, 240)}
-                      {generatedEncodedPayload.length > 240 ? '...' : ''}
-                    </p>
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      onClick={handleCopyGeneratedLink}
-                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
-                    >
-                      <Copy className="h-4 w-4" />
-                      Copiar link
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleOpenGeneratedLink}
-                      className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-3 text-sm font-semibold text-cyan-50 transition hover:bg-cyan-300/15"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      Abrir link
-                    </button>
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className={`mt-4 rounded-[24px] border p-4 text-sm ${STATUS_STYLES[generateStatus.tone]}`}
+                >
+                  <div className="flex items-start gap-3">
+                    {generateStatus.tone === 'success' ? (
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
+                    ) : generateStatus.tone === 'error' ? (
+                      <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                    ) : (
+                      <Sparkles className="mt-0.5 h-5 w-5 shrink-0" />
+                    )}
+                    <p className="leading-6">{generateStatus.message}</p>
                   </div>
                 </div>
-              ) : null}
+              </div>
+
+              <div className="space-y-4">
+                <AdvancedOptions
+                  title="Ajustes do link"
+                  helper="Defina validade e limite de visualizações."
+                >
+                  <div className="grid gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-white">Expiração</p>
+                      <div className="mt-3 grid gap-3">
+                        {EXPIRATION_OPTIONS.map((option) => (
+                          <OptionCard
+                            key={option.value}
+                            label={option.label}
+                            helper={option.helper}
+                            selected={expiresIn === option.value}
+                            onClick={() => setExpiresIn(option.value)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-medium text-white">Limite de visualizações</p>
+                      <div className="mt-3 grid gap-3">
+                        {VIEW_LIMIT_OPTIONS.map((option) => (
+                          <OptionCard
+                            key={option.value}
+                            label={option.label}
+                            helper={option.helper}
+                            selected={maxViewsValue === option.value}
+                            onClick={() => setMaxViewsValue(option.value)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </AdvancedOptions>
+
+                <div ref={generateResultRef}>
+                  {generatedLink ? (
+                    <ResultPanel
+                      title="Link secreto pronto"
+                      description="Copie o link e compartilhe quando quiser."
+                      actions={
+                        <button
+                          type="button"
+                          onClick={handleOpenGeneratedLink}
+                          className="btn-accent"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          Abrir link
+                        </button>
+                      }
+                    >
+                      <div className="surface-technical rounded-2xl p-3">
+                        <p className="break-all font-mono text-xs leading-6 text-emerald-50">
+                          {generatedLink}
+                        </p>
+                      </div>
+
+                      <p className="mt-4 text-sm leading-7 text-zinc-300">
+                        {selectedExpiration.label}. {selectedViewLimit.label}.
+                      </p>
+
+                      <div className="mt-4 flex flex-wrap gap-3">
+                        <button
+                          type="button"
+                          onClick={handleCopyGeneratedLink}
+                          className="btn-secondary"
+                        >
+                          <Copy className="h-4 w-4" />
+                          Copiar link
+                        </button>
+                      </div>
+                    </ResultPanel>
+                  ) : (
+                    <div className="surface-secondary rounded-[24px] p-5 text-sm leading-7 text-zinc-400">
+                      O link vai aparecer aqui assim que estiver pronto.
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          </>
         ) : (
           <div className="grid gap-4 lg:grid-cols-[0.92fr_1.08fr]">
-            <div className="rounded-[28px] border border-white/10 bg-black/25 p-5">
+            <div className="surface-primary rounded-[28px] p-5">
               <div className="flex items-start gap-3">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-2 text-cyan-100">
+                <div className="icon-chip p-2">
                   <Search className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">
-                    1. Carregue o link ou use o hash atual
-                  </p>
+                  <p className="text-sm font-medium text-white">Abrir link secreto</p>
                   <p className="mt-1 text-sm text-zinc-400">
-                    Se o site abriu com #msg=..., a mensagem sera detectada
-                    automaticamente.
+                    Se a página abriu com #msg=..., a mensagem será carregada automaticamente.
                   </p>
                 </div>
               </div>
@@ -708,15 +587,15 @@ export default function AutoDestructLink({
                 value={readInput}
                 onChange={(event) => setReadInput(event.target.value)}
                 rows={4}
-                placeholder="Cole aqui um link do Criptify, um hash #msg=... ou o payload em base64."
-                className="mt-4 min-h-[140px] w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-cyan-400/50 focus:bg-white/10 focus:ring-2 focus:ring-cyan-400/20"
+                placeholder="Cole aqui um link do Criptify ou o trecho que começa com #msg=..."
+                className="tool-textarea mt-4 min-h-[140px]"
               />
 
               <div className="mt-4 flex flex-wrap gap-3">
                 <button
                   type="button"
                   onClick={handleLoadLink}
-                  className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-3 text-sm font-semibold text-cyan-50 transition hover:bg-cyan-300/15"
+                  className="btn-accent"
                 >
                   <Link2 className="h-4 w-4" />
                   Carregar link
@@ -732,11 +611,10 @@ export default function AutoDestructLink({
                     setViewCount(null)
                     setReadStatus({
                       tone: 'info',
-                      message:
-                        'Hash removido da URL. Agora voce pode colar outro link manualmente.',
+                      message: 'Hash removido da URL. Agora você pode colar outro link manualmente.',
                     })
                   }}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+                  className="btn-secondary"
                 >
                   <Trash2 className="h-4 w-4" />
                   Limpar hash da URL
@@ -748,21 +626,17 @@ export default function AutoDestructLink({
                 value={readPassword}
                 onChange={(event) => setReadPassword(event.target.value)}
                 placeholder="Digite a senha da mensagem secreta"
-                className="mt-4 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-cyan-400/50 focus:bg-white/10 focus:ring-2 focus:ring-cyan-400/20"
+                className="tool-input mt-4"
               />
 
               <button
                 type="button"
                 onClick={handleDecryptMessage}
                 disabled={!resolvedEncodedPayload || !readPassword || isDecrypting}
-                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-[24px] bg-white px-5 py-4 text-base font-semibold text-zinc-950 transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
+                className="btn-primary mt-4 hidden w-full lg:inline-flex"
               >
-                {isDecrypting ? (
-                  <LoaderCircle className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Search className="h-5 w-5" />
-                )}
-                Descriptografar mensagem
+                <Search className="h-5 w-5" />
+                Abrir mensagem
               </button>
 
               <div
@@ -771,9 +645,7 @@ export default function AutoDestructLink({
                 className={`mt-4 rounded-[24px] border p-4 text-sm ${STATUS_STYLES[readStatus.tone]}`}
               >
                 <div className="flex items-start gap-3">
-                  {isDecrypting ? (
-                    <LoaderCircle className="mt-0.5 h-5 w-5 shrink-0 animate-spin" />
-                  ) : readStatus.tone === 'success' ? (
+                  {readStatus.tone === 'success' ? (
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
                   ) : readStatus.tone === 'error' ? (
                     <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
@@ -785,94 +657,79 @@ export default function AutoDestructLink({
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-white/10 bg-black/25 p-5">
-              <p className="text-sm font-medium text-white">
-                2. Estado da mensagem
-              </p>
+            <div className="surface-secondary rounded-[28px] p-5">
+              <p className="text-sm font-medium text-white">Status da mensagem</p>
               <p className="mt-2 text-sm leading-7 text-zinc-400">
-                O hash traz ciphertext, iv, salt e createdAt. A expiracao e o contador
-                de visualizacoes sao avaliados localmente neste navegador.
+                Validade e leituras são verificadas neste navegador.
               </p>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.26em] text-zinc-500">
-                    Expiracao
-                  </p>
+                <div className="surface-secondary rounded-2xl p-4">
+                  <p className="text-xs uppercase tracking-[0.26em] text-zinc-500">Expiração</p>
                   <p className="mt-2 text-sm text-white">
-                    {resolvedReadPayload
-                      ? getExpirationLabel(resolvedReadPayload.expiresIn)
-                      : '-'}
+                    {resolvedReadPayload ? getExpirationLabel(resolvedReadPayload.expiresIn) : '-'}
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.26em] text-zinc-500">
-                    Visualizacoes locais
-                  </p>
+                <div className="surface-secondary rounded-2xl p-4">
+                  <p className="text-xs uppercase tracking-[0.26em] text-zinc-500">Visualizações locais</p>
+                  <p className="mt-2 text-sm text-white">{viewCount ?? 0}</p>
+                </div>
+
+                <div className="surface-secondary rounded-2xl p-4">
+                  <p className="text-xs uppercase tracking-[0.26em] text-zinc-500">Criada em</p>
                   <p className="mt-2 text-sm text-white">
-                    {viewCount ?? 0}
+                    {resolvedReadPayload ? formatCreatedAt(resolvedReadPayload.createdAt) : '-'}
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.26em] text-zinc-500">
-                    Criada em
-                  </p>
-                  <p className="mt-2 text-sm text-white">
-                    {resolvedReadPayload
-                      ? formatCreatedAt(resolvedReadPayload.createdAt)
-                      : '-'}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.26em] text-zinc-500">
-                    Limite de leituras
-                  </p>
+                <div className="surface-secondary rounded-2xl p-4">
+                  <p className="text-xs uppercase tracking-[0.26em] text-zinc-500">Limite de leituras</p>
                   <p className="mt-2 text-sm text-white">
                     {resolvedReadPayload
                       ? resolvedReadPayload.maxViews === null
                         ? 'Sem limite'
-                        : `${resolvedReadPayload.maxViews} visualizacoes`
+                        : `${resolvedReadPayload.maxViews} visualizações`
                       : '-'}
                   </p>
                 </div>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
-                <p className="text-xs uppercase tracking-[0.26em] text-zinc-500">
-                  Texto descriptografado
-                </p>
-                <div className="mt-3 min-h-[220px] rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm leading-7 text-white">
-                  {revealedText || 'Nenhuma mensagem foi descriptografada ainda.'}
+              <div className="mt-4 surface-technical rounded-2xl p-4">
+                <p className="text-xs uppercase tracking-[0.26em] text-zinc-500">Mensagem revelada</p>
+                <div className="surface-secondary mt-3 min-h-[140px] rounded-2xl px-4 py-3.5 text-sm leading-7 text-white sm:min-h-[220px]">
+                  {revealedText || 'Nenhuma mensagem foi aberta ainda.'}
                 </div>
               </div>
             </div>
           </div>
         )}
-
-        {tab === 'generate' ? (
-          <div
-            role="status"
-            aria-live="polite"
-            className={`rounded-[24px] border p-4 text-sm ${STATUS_STYLES[generateStatus.tone]}`}
-          >
-            <div className="flex items-start gap-3">
-              {isEncrypting || isGeneratingLink ? (
-                <LoaderCircle className="mt-0.5 h-5 w-5 shrink-0 animate-spin" />
-              ) : generateStatus.tone === 'success' ? (
-                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
-              ) : generateStatus.tone === 'error' ? (
-                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
-              ) : (
-                <Sparkles className="mt-0.5 h-5 w-5 shrink-0" />
-              )}
-              <p className="leading-6">{generateStatus.message}</p>
-            </div>
-          </div>
-        ) : null}
       </div>
+
+      <MobileStickyCTA
+        label={tab === 'generate' ? 'Gerar link secreto' : 'Abrir mensagem'}
+        icon={tab === 'generate' ? <Link2 className="h-5 w-5" /> : <Search className="h-5 w-5" />}
+        onClick={tab === 'generate' ? handleGenerateLink : handleDecryptMessage}
+        disabled={
+          tab === 'generate'
+            ? !plainText.trim() || !generatePassword || isGeneratingLink
+            : !resolvedEncodedPayload || !readPassword || isDecrypting
+        }
+        loading={tab === 'generate' ? isGeneratingLink : isDecrypting}
+      />
     </section>
   )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

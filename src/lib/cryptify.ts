@@ -1,4 +1,4 @@
-const HEADER_TEXT = 'CRIPTIFY1'
+﻿const HEADER_TEXT = 'CRIPTIFY1'
 const HEADER_BYTES = new TextEncoder().encode(HEADER_TEXT)
 const SALT_LENGTH = 16
 const IV_LENGTH = 12
@@ -178,15 +178,15 @@ export async function encryptFile(
   await reportProgress(onProgress, 10, 'Lendo arquivo')
   const source = new Uint8Array(await file.arrayBuffer())
 
-  await reportProgress(onProgress, 32, 'Derivando chave com PBKDF2')
+  await reportProgress(onProgress, 32, 'Preparando proteção')
   const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH))
   const key = await deriveAesKey(password, salt, 'encrypt')
 
-  await reportProgress(onProgress, 72, 'Aplicando AES-256-GCM')
+  await reportProgress(onProgress, 72, 'Protegendo conteúdo')
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
   const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, source)
 
-  await reportProgress(onProgress, 92, 'Empacotando arquivo .cryptify')
+  await reportProgress(onProgress, 92, 'Finalizando arquivo protegido')
   const payload = new Uint8Array(
     HEADER_BYTES.length + SALT_LENGTH + IV_LENGTH + encrypted.byteLength,
   )
@@ -210,7 +210,7 @@ export async function encryptText(
   if (!normalizedText) {
     throw new CriptifyError(
       'INVALID_FILE',
-      'Digite um texto antes de criptografar a mensagem.',
+      'Digite um texto antes de proteger a mensagem.',
     )
   }
 
@@ -262,7 +262,7 @@ export async function decryptFile(
   const source = new Uint8Array(await file.arrayBuffer())
 
   if (source.byteLength <= HEADER_BYTES.length + SALT_LENGTH + IV_LENGTH) {
-    throw new CriptifyError('INVALID_FILE', 'Arquivo inválido ou cabeçalho incompleto.')
+    throw new CriptifyError('INVALID_FILE', 'Arquivo inválido ou incompleto.')
   }
 
   const incomingHeader = new TextDecoder().decode(source.slice(0, HEADER_BYTES.length))
@@ -270,7 +270,7 @@ export async function decryptFile(
   if (incomingHeader !== HEADER_TEXT) {
     throw new CriptifyError(
       'INVALID_FILE',
-      'Arquivo inválido. O cabeçalho CRIPTIFY1 não foi encontrado.',
+      'Arquivo inválido. Não foi possível reconhecer este pacote protegido.',
     )
   }
 
@@ -281,10 +281,10 @@ export async function decryptFile(
   )
   const encrypted = source.slice(HEADER_BYTES.length + SALT_LENGTH + IV_LENGTH)
 
-  await reportProgress(onProgress, 36, 'Derivando chave com PBKDF2')
+  await reportProgress(onProgress, 36, 'Preparando recuperação')
   const key = await deriveAesKey(password, new Uint8Array(salt), 'decrypt')
 
-  await reportProgress(onProgress, 76, 'Validando e descriptografando payload')
+  await reportProgress(onProgress, 76, 'Abrindo conteúdo protegido')
 
   try {
     const decrypted = await crypto.subtle.decrypt(
@@ -367,7 +367,7 @@ export function getPasswordStrength(password: string): PasswordStrength {
     },
     3: {
       level,
-      label: 'Media',
+      label: 'Média',
       barClass: 'bg-yellow-500',
       textClass: 'font-medium text-yellow-300',
     },
@@ -405,3 +405,8 @@ export function formatFileSize(bytes: number) {
   const decimals = size >= 100 || unitIndex === 0 ? 0 : size >= 10 ? 1 : 2
   return `${size.toFixed(decimals)} ${units[unitIndex]}`
 }
+
+
+
+
+

@@ -1,4 +1,4 @@
-import {
+﻿import {
   decodeBase64ToBytes,
   encodeBytesToBase64,
   type TextDecryptionInput,
@@ -50,7 +50,7 @@ export function parseEncryptedTextPayload(payload: string): TextDecryptionInput 
 
   if (!prefix) {
     throw new SecretTextPayloadError(
-      'O payload lido nao pertence a uma mensagem secreta reconhecivel do Criptify.',
+      'Os dados lidos não pertencem a uma mensagem reconhecida pelo Criptify.',
     )
   }
 
@@ -60,7 +60,7 @@ export function parseEncryptedTextPayload(payload: string): TextDecryptionInput 
     parsed = JSON.parse(payload.slice(prefix.length)) as Partial<SerializedSecretTextPayload>
   } catch {
     throw new SecretTextPayloadError(
-      'O payload secreto esta corrompido ou incompleto.',
+      'Os dados da mensagem estão corrompidos ou incompletos.',
     )
   }
 
@@ -71,7 +71,7 @@ export function parseEncryptedTextPayload(payload: string): TextDecryptionInput 
     typeof parsed.salt !== 'string'
   ) {
     throw new SecretTextPayloadError(
-      'O payload secreto nao tem o formato esperado.',
+      'Os dados da mensagem não estão no formato esperado.',
     )
   }
 
@@ -81,3 +81,6 @@ export function parseEncryptedTextPayload(payload: string): TextDecryptionInput 
     salt: decodeBase64ToBytes(parsed.salt),
   }
 }
+
+
+

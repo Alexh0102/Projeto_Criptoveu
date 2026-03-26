@@ -1,3 +1,22 @@
+﻿[[redirects]]
+  from = "/arquivos"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/qr-secreto"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/link-secreto"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/esteganografia"
+  to = "/index.html"
+  status = 200
 [[headers]]
   for = "/*"
 
@@ -34,3 +53,4 @@
 
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+

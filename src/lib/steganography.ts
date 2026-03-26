@@ -1,4 +1,4 @@
-export const MAX_STEG_IMAGE_SIZE_BYTES = 10 * 1024 * 1024
+﻿export const MAX_STEG_IMAGE_SIZE_BYTES = 10 * 1024 * 1024
 export const STEGANOGRAPHY_PAYLOAD_PREFIX = 'CRIPTIFY_STEG_V1:'
 
 const HEADER_SIZE_BYTES = 4
@@ -59,7 +59,7 @@ async function loadImageElement(file: File | Blob) {
         reject(
           new SteganographyError(
             'INVALID_IMAGE',
-            'Nao foi possivel ler a imagem enviada. Tente outro arquivo.',
+            'Não foi possível ler a imagem enviada. Tente outro arquivo.',
           ),
         )
       }
@@ -102,7 +102,7 @@ function buildPayloadBytes(message: string) {
   if (!messageBytes.length) {
     throw new SteganographyError(
       'INVALID_MESSAGE',
-      'Nao existe mensagem criptografada para esconder na imagem.',
+      'Não existe mensagem para esconder na imagem.',
     )
   }
 
@@ -158,7 +158,7 @@ async function canvasToPngBlob(canvas: HTMLCanvasElement) {
   if (!blob) {
     throw new SteganographyError(
       'CANVAS_UNAVAILABLE',
-      'Nao foi possivel gerar a imagem secreta. Tente novamente.',
+      'Não foi possível gerar a imagem secreta. Tente novamente.',
     )
   }
 
@@ -175,14 +175,9 @@ export async function hideMessageInImage(
   const requiredBits = payload.length * 8
 
   if (requiredBits > capacityBits) {
-    const capacityBytes = Math.floor((capacityBits - HEADER_SIZE_BITS) / 8)
-
     throw new SteganographyError(
       'IMAGE_TOO_SMALL',
-      `Imagem pequena demais! Ela suporta cerca de ${Math.max(
-        capacityBytes,
-        0,
-      )} bytes ocultos e a mensagem criptografada é maior do que isso.`,
+      'Imagem pequena demais para essa mensagem. Tente uma imagem maior ou um texto menor.',
     )
   }
 
@@ -263,7 +258,12 @@ export async function extractMessageFromImage(sourceImage: File): Promise<string
   } catch {
     throw new SteganographyError(
       'INVALID_PAYLOAD',
-      'A imagem não contém uma mensagem válida do Criptify.',
+      'A imagem não contém uma mensagem compatível com o Criptify.',
     )
   }
 }
+
+
+
+
+

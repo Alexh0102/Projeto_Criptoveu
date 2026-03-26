@@ -1,0 +1,189 @@
+﻿import { Grid2x2, Menu, MoonStar, SunMedium, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
+import { Link, NavLink } from 'react-router-dom'
+
+import { toolDefinitions } from '../../config/tools'
+import { useTheme } from '../../context/theme'
+
+type Props = {
+  children: ReactNode
+}
+
+export default function ToolPageLayout({ children }: Props) {
+  const { theme, toggleTheme, shellStyle } = useTheme()
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isDrawerOpen) {
+      return
+    }
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsDrawerOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isDrawerOpen])
+
+  return (
+    <div className="app-shell relative min-h-screen overflow-hidden" style={shellStyle}>
+      <div className="pointer-events-none absolute inset-0 bg-grid-fade bg-[size:34px_34px] opacity-15 [mask-image:linear-gradient(to_bottom,rgba(0,0,0,0.9),transparent)]" />
+      <div className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-cyan-400/18 blur-3xl" />
+      <div className="pointer-events-none absolute right-0 top-8 h-80 w-80 rounded-full bg-amber-300/12 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" />
+
+      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+        <header className="panel-surface sticky top-3 z-40 rounded-[30px] px-4 py-4 sm:px-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-3">
+              <Link
+                to="/"
+                className="icon-chip h-12 w-12 rounded-2xl"
+                aria-label="Abrir a home do Criptify"
+              >
+                <Grid2x2 className="h-5 w-5" />
+              </Link>
+
+              <div>
+                <p className="text-xs uppercase tracking-[0.38em] text-cyan-100/80">Criptify</p>
+                <p className="mt-1 text-sm text-zinc-400">
+                  Ferramentas locais, cada uma na sua própria rota.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3">
+              <nav className="hidden flex-wrap items-center gap-2 lg:flex">
+                <NavLink
+                  to="/"
+                  className={({ isActive }) =>
+                    isActive ? 'btn-accent' : 'btn-secondary'
+                  }
+                >
+                  Home
+                </NavLink>
+
+                {toolDefinitions.map((tool) => (
+                  <NavLink
+                    key={tool.path}
+                    to={tool.path}
+                    className={({ isActive }) =>
+                      isActive ? 'btn-accent' : 'btn-secondary'
+                    }
+                  >
+                    {tool.shortTitle}
+                  </NavLink>
+                ))}
+              </nav>
+
+              <button
+                type="button"
+                onClick={() => setIsDrawerOpen(true)}
+                className="btn-secondary lg:hidden"
+                aria-label="Abrir menu de ferramentas"
+              >
+                <Menu className="h-4 w-4" />
+                Ferramentas
+              </button>
+
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="btn-secondary"
+                aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
+              >
+                {theme === 'dark' ? (
+                  <>
+                    <SunMedium className="h-4 w-4" />
+                    Tema claro
+                  </>
+                ) : (
+                  <>
+                    <MoonStar className="h-4 w-4" />
+                    Tema escuro
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 py-6 sm:py-7">{children}</main>
+
+        <footer className="mt-auto flex flex-col gap-3 border-t border-white/10 pt-5 text-sm text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
+          <p>100% no navegador. Nada sai do seu dispositivo.</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.32em] text-zinc-500">
+            Arquivos • QR • Link • Esteganografia
+          </p>
+        </footer>
+      </div>
+
+      {isDrawerOpen ? (
+        <div className="fixed inset-0 z-50 lg:hidden" aria-modal="true" role="dialog">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/60"
+            aria-label="Fechar menu de ferramentas"
+            onClick={() => setIsDrawerOpen(false)}
+          />
+
+          <div className="absolute inset-x-0 bottom-0 rounded-t-[32px] border border-white/10 bg-zinc-950/95 p-5 backdrop-blur-xl">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.32em] text-cyan-100/80">Ferramentas</p>
+                <p className="mt-2 text-sm text-zinc-400">Escolha para onde você quer ir.</p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsDrawerOpen(false)}
+                className="btn-secondary h-11 w-11 rounded-full px-0 py-0"
+                aria-label="Fechar drawer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="mt-5 grid gap-3">
+              <NavLink
+                to="/"
+                onClick={() => setIsDrawerOpen(false)}
+                className={({ isActive }) =>
+                  `${isActive ? 'surface-primary' : 'surface-secondary'} rounded-[24px] px-4 py-4 text-left transition`
+                }
+              >
+                <p className="text-sm font-medium text-white">Home</p>
+                <p className="mt-1 text-sm text-zinc-400">Voltar para o hub com todas as ferramentas.</p>
+              </NavLink>
+
+              {toolDefinitions.map((tool) => (
+                <NavLink
+                  key={tool.path}
+                  to={tool.path}
+                  onClick={() => setIsDrawerOpen(false)}
+                  className={({ isActive }) =>
+                    `${isActive ? 'surface-primary' : 'surface-secondary'} rounded-[24px] px-4 py-4 text-left transition`
+                  }
+                >
+                  <p className="text-sm font-medium text-white">{tool.title}</p>
+                  <p className="mt-1 text-sm text-zinc-400">{tool.helper}</p>
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  )
+}

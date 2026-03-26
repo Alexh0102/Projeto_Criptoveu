@@ -1,4 +1,4 @@
-import jsQR from 'jsqr'
+﻿import jsQR from 'jsqr'
 
 export const MAX_QR_IMAGE_SIZE_BYTES = 10 * 1024 * 1024
 
@@ -36,7 +36,7 @@ function assertSupportedQrImage(file: File | Blob) {
   if ('type' in file && file.type && !file.type.startsWith('image/')) {
     throw new QRCodeSecretError(
       'INVALID_IMAGE',
-      'Envie uma imagem valida para ler o QR Code.',
+      'Envie uma imagem válida para ler o QR Code.',
     )
   }
 }
@@ -53,7 +53,7 @@ async function loadImageElement(file: File | Blob) {
         reject(
           new QRCodeSecretError(
             'INVALID_IMAGE',
-            'Nao foi possivel abrir a imagem do QR Code.',
+            'Não foi possível abrir a imagem do QR Code.',
           ),
         )
       }
@@ -75,7 +75,7 @@ async function readQrImageData(file: File | Blob) {
   if (!context) {
     throw new QRCodeSecretError(
       'CANVAS_UNAVAILABLE',
-      'O navegador nao conseguiu preparar o canvas para ler o QR Code.',
+      'O navegador não conseguiu preparar o canvas para ler o QR Code.',
     )
   }
 
@@ -95,9 +95,11 @@ export async function extractSecretPayloadFromQrImage(file: File | Blob) {
   if (!decoded?.data?.trim()) {
     throw new QRCodeSecretError(
       'QR_NOT_FOUND',
-      'Nenhum QR Code valido foi encontrado na imagem enviada.',
+      'Nenhum QR Code válido foi encontrado na imagem enviada.',
     )
   }
 
   return decoded.data.trim()
 }
+
+

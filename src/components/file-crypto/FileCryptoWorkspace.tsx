@@ -1,4 +1,4 @@
-﻿import {
+import {
   AlertCircle,
   CheckCircle2,
   Copy,
@@ -133,6 +133,24 @@ export default function FileCryptoWorkspace() {
   const resultName = previewItem?.name ?? results[0]?.name ?? ''
   const preview = previewItem?.preview ?? results[0]?.preview ?? { kind: 'none' }
   const canExpandPreview = Boolean(previewItem ?? results[0]) && preview.kind === 'image'
+  const quickFacts = [
+    {
+      label: 'Formatos suportados',
+      value: mode === 'encrypt' ? 'Qualquer arquivo' : 'Arquivos .cryptify',
+    },
+    {
+      label: 'Limite recomendado',
+      value: formatFileSize(MAX_FILE_SIZE_BYTES),
+    },
+    {
+      label: 'Processamento',
+      value: 'Local no navegador',
+    },
+    {
+      label: 'Envio',
+      value: 'Sem envio ao servidor',
+    },
+  ]
 
   useEffect(() => {
     if (!canUseSecureProcessing) {
@@ -320,7 +338,7 @@ export default function FileCryptoWorkspace() {
     setCopied(false)
     setStatus({
       tone: 'info',
-      message: 'Chave gerada localmente.',
+      message: 'Chave longa gerada localmente.',
     })
   }
 
@@ -517,7 +535,7 @@ export default function FileCryptoWorkspace() {
 
   return (
     <>
-      <div className="grid gap-6 pb-28 xl:grid-cols-[1.1fr_0.9fr] lg:pb-0">
+      <div className="grid gap-5 pb-28 xl:grid-cols-[1.08fr_0.92fr] lg:pb-0">
         <section className="panel-surface rounded-[32px] p-5 sm:p-6">
           <div className="space-y-5">
             <SegmentedMode
@@ -642,9 +660,9 @@ export default function FileCryptoWorkspace() {
 
             <div className="surface-primary rounded-[28px] p-5">
               <FieldBlock
-                label="Senha ou chave"
+                label="Senha de proteção"
                 htmlFor={passwordInputId}
-                helper="Use uma senha forte ou gere uma chave longa para os arquivos."
+                helper="Você também pode gerar uma chave longa."
               >
                 <div className="space-y-3">
                   <input
@@ -656,8 +674,8 @@ export default function FileCryptoWorkspace() {
                     onChange={(event) => setPassword(event.target.value)}
                     placeholder={
                       mode === 'encrypt'
-                        ? 'Digite uma senha forte para proteger o arquivo'
-                        : 'Digite a mesma senha usada para proteger o arquivo'
+                        ? 'Digite uma senha para proteger os arquivos'
+                        : 'Digite a senha usada para proteger os arquivos'
                     }
                     className="tool-input w-full"
                   />
@@ -670,7 +688,7 @@ export default function FileCryptoWorkspace() {
                       className="btn-accent"
                     >
                       <Sparkles className="h-4 w-4" />
-                      Gerar chave
+                      Gerar chave longa
                     </button>
 
                     <button
@@ -680,9 +698,13 @@ export default function FileCryptoWorkspace() {
                       className="btn-secondary"
                     >
                       <Copy className="h-4 w-4" />
-                      {copied ? 'Copiado' : 'Copiar chave'}
+                      {copied ? 'Copiado' : 'Copiar valor'}
                     </button>
                   </div>
+
+                  <p className="text-xs leading-6 text-zinc-500">
+                    Use a mesma senha ou chave para recuperar os arquivos depois.
+                  </p>
                 </div>
               </FieldBlock>
 
@@ -705,38 +727,70 @@ export default function FileCryptoWorkspace() {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-              <button
-                type="button"
-                onClick={handleProcess}
-                disabled={files.length === 0 || !password || isProcessing || !canUseSecureProcessing}
-                className="btn-primary hidden lg:inline-flex"
-              >
-                {isProcessing ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
-                ) : mode === 'encrypt' ? (
-                  <Lock className="h-4 w-4" />
-                ) : (
-                  <Unlock className="h-4 w-4" />
-                )}
-                {currentMode.action}
-              </button>
+            <div className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                <button
+                  type="button"
+                  onClick={handleProcess}
+                  disabled={files.length === 0 || !password || isProcessing || !canUseSecureProcessing}
+                  className="btn-primary hidden lg:inline-flex"
+                >
+                  {isProcessing ? (
+                    <LoaderCircle className="h-4 w-4 animate-spin" />
+                  ) : mode === 'encrypt' ? (
+                    <Lock className="h-4 w-4" />
+                  ) : (
+                    <Unlock className="h-4 w-4" />
+                  )}
+                  {currentMode.action}
+                </button>
 
-              <button
-                type="button"
-                onClick={handleDownloadAll}
-                disabled={results.length === 0}
-                className="btn-secondary"
-              >
-                <Download className="h-4 w-4" />
-                Baixar todos
-              </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadAll}
+                  disabled={results.length === 0}
+                  className="btn-secondary"
+                >
+                  <Download className="h-4 w-4" />
+                  Baixar todos
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-2 text-xs leading-6 text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
+                <p>Guarde a senha: voc? vai precisar dela para recuperar o conte?do.</p>
+                <p>
+                  {results.length === 0
+                    ? 'Baixar todos fica dispon?vel ap?s o processamento.'
+                    : 'Use Baixar todos para salvar tudo de uma vez.'}
+                </p>
+              </div>
             </div>
           </div>
         </section>
 
-        <div className="space-y-6">
-          <section className="surface-primary rounded-[28px] p-5">
+        <div className="space-y-5">
+          <section className="surface-secondary rounded-[28px] p-4 sm:p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.28em] text-zinc-500">Guia r?pido</p>
+                <p className="mt-2 text-sm font-medium text-white">Antes de processar</p>
+              </div>
+              <div className="icon-chip p-2">
+                <Sparkles className="h-4 w-4" />
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {quickFacts.map((item) => (
+                <div key={item.label} className="surface-technical rounded-[20px] p-3.5">
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">{item.label}</p>
+                  <p className="mt-2 text-sm font-medium text-white">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="surface-primary rounded-[28px] p-4 sm:p-5">
             <div className="flex items-center justify-between gap-4 text-sm">
               <span className="text-zinc-300">Processamento local</span>
               <span className="font-mono text-xs uppercase tracking-[0.25em] text-zinc-400">

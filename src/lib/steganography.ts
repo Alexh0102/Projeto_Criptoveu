@@ -1,4 +1,4 @@
-﻿export const MAX_STEG_IMAGE_SIZE_BYTES = 10 * 1024 * 1024
+export const MAX_STEG_IMAGE_SIZE_BYTES = 10 * 1024 * 1024
 export const STEGANOGRAPHY_PAYLOAD_PREFIX = 'CRIPTIFY_STEG_V1:'
 
 const HEADER_SIZE_BYTES = 4
@@ -258,7 +258,7 @@ export async function extractMessageFromImage(sourceImage: File): Promise<string
   } catch {
     throw new SteganographyError(
       'INVALID_PAYLOAD',
-      'A imagem não contém uma mensagem compatível com o Criptify.',
+      'A imagem não contém uma mensagem compatível com o Arcasilo.',
     )
   }
 }

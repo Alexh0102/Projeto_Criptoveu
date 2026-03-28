@@ -1,4 +1,4 @@
-﻿import {
+import {
   AlertCircle,
   CheckCircle2,
   Copy,
@@ -132,7 +132,7 @@ function getFriendlyErrorMessage(error: unknown) {
     return error.message
   }
 
-  return 'Ocorreu um erro inesperado ao processar o link secreto.'
+  return 'Ocorreu um erro inesperado ao processar o link protegido.'
 }
 
 function resolveMaxViews(value: string) {
@@ -244,7 +244,7 @@ export default function AutoDestructLink({
     if (!plainText.trim()) {
       setGenerateStatus({
         tone: 'error',
-        message: 'Digite uma mensagem antes de gerar o link secreto.',
+        message: 'Digite uma mensagem antes de gerar o link protegido.',
       })
       return
     }
@@ -272,7 +272,7 @@ export default function AutoDestructLink({
       setGeneratedLink(link)
       setGenerateStatus({
         tone: 'success',
-        message: 'Link secreto gerado localmente. Agora você pode copiar ou abrir a mensagem protegida.',
+        message: 'Link protegido gerado localmente. Agora você pode copiar ou abrir a mensagem protegida.',
       })
     } catch (error) {
       setGenerateStatus({
@@ -293,7 +293,7 @@ export default function AutoDestructLink({
       await copyToClipboard(generatedLink)
       setGenerateStatus({
         tone: 'success',
-        message: 'Link secreto copiado para a área de transferência.',
+        message: 'Link protegido copiado para a área de transferência.',
       })
     } catch {
       setGenerateStatus({
@@ -399,7 +399,7 @@ export default function AutoDestructLink({
       <div className="flex flex-col gap-6">
         <div className={compact ? 'hidden' : 'flex items-start justify-between gap-4'}>
           <div>
-            <p className="text-xs uppercase tracking-[0.32em] text-cyan-100/80">Link secreto</p>
+            <p className="text-xs uppercase tracking-[0.32em] text-cyan-100/80">Link protegido</p>
             <h2 className="mt-2 text-3xl font-semibold text-white">
               Crie ou abra uma mensagem protegida por senha
             </h2>
@@ -433,7 +433,7 @@ export default function AutoDestructLink({
                     <Link2 className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-white">Criar link secreto</p>
+                    <p className="text-sm font-medium text-white">Criar link protegido</p>
                     <p className="mt-1 text-sm text-zinc-400">
                       Escreva a mensagem, defina a senha e gere o link em um clique.
                     </p>
@@ -444,7 +444,7 @@ export default function AutoDestructLink({
                   value={plainText}
                   onChange={(event) => setPlainText(event.target.value)}
                   rows={6}
-                  placeholder="Digite aqui a mensagem secreta que será protegida antes de gerar o link."
+                  placeholder="Digite aqui a mensagem protegida que será usada para gerar o link."
                   className="tool-textarea mt-4 min-h-[140px] sm:min-h-[180px]"
                 />
 
@@ -452,7 +452,7 @@ export default function AutoDestructLink({
                   type="password"
                   value={generatePassword}
                   onChange={(event) => setGeneratePassword(event.target.value)}
-                  placeholder="Digite a senha da mensagem secreta"
+                  placeholder="Digite a senha da mensagem"
                   className="tool-input mt-4"
                 />
 
@@ -463,7 +463,7 @@ export default function AutoDestructLink({
                   className="btn-primary mt-4 hidden w-full lg:inline-flex"
                 >
                   <Link2 className="h-5 w-5" />
-                  Gerar link secreto
+                  Gerar link protegido
                 </button>
 
                 <div
@@ -525,7 +525,7 @@ export default function AutoDestructLink({
                 <div ref={generateResultRef}>
                   {generatedLink ? (
                     <ResultPanel
-                      title="Link secreto pronto"
+                      title="Link protegido pronto"
                       description="Copie o link e compartilhe quando quiser."
                       actions={
                         <button
@@ -576,7 +576,7 @@ export default function AutoDestructLink({
                   <Search className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">Abrir link secreto</p>
+                  <p className="text-sm font-medium text-white">Abrir link protegido</p>
                   <p className="mt-1 text-sm text-zinc-400">
                     Se a página abriu com #msg=..., a mensagem será carregada automaticamente.
                   </p>
@@ -587,7 +587,7 @@ export default function AutoDestructLink({
                 value={readInput}
                 onChange={(event) => setReadInput(event.target.value)}
                 rows={4}
-                placeholder="Cole aqui um link do Criptify ou o trecho que começa com #msg=..."
+                placeholder="Cole aqui um link do Arcasilo ou o trecho que começa com #msg=..."
                 className="tool-textarea mt-4 min-h-[140px]"
               />
 
@@ -625,7 +625,7 @@ export default function AutoDestructLink({
                 type="password"
                 value={readPassword}
                 onChange={(event) => setReadPassword(event.target.value)}
-                placeholder="Digite a senha da mensagem secreta"
+                placeholder="Digite a senha da mensagem"
                 className="tool-input mt-4"
               />
 
@@ -707,7 +707,7 @@ export default function AutoDestructLink({
       </div>
 
       <MobileStickyCTA
-        label={tab === 'generate' ? 'Gerar link secreto' : 'Abrir mensagem'}
+        label={tab === 'generate' ? 'Gerar link protegido' : 'Abrir mensagem'}
         icon={tab === 'generate' ? <Link2 className="h-5 w-5" /> : <Search className="h-5 w-5" />}
         onClick={tab === 'generate' ? handleGenerateLink : handleDecryptMessage}
         disabled={

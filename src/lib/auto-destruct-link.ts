@@ -1,4 +1,4 @@
-﻿import {
+import {
   decodeBase64ToBytes,
   encodeBytesToBase64,
   type TextDecryptionInput,
@@ -225,7 +225,7 @@ export function readAutoDestructPayloadFromInput(value: string): AutoDestructRea
       if (!fromHash) {
         throw new AutoDestructLinkError(
           'INVALID_LINK',
-          'Esse link não contém uma mensagem válida do Criptify.',
+          'Esse link não contém uma mensagem válida do Arcasilo.',
         )
       }
 

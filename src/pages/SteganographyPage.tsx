@@ -1,4 +1,4 @@
-﻿import SteganographyPanel from '../components/SteganographyPanel'
+import SteganographyPanel from '../components/SteganographyPanel'
 import ToolPageLayout from '../components/layout/ToolPageLayout'
 import HelpAccordion from '../components/ui/HelpAccordion'
 import ToolHeroCompact from '../components/ui/ToolHeroCompact'
@@ -8,9 +8,9 @@ export default function SteganographyPage() {
     <ToolPageLayout>
       <div className="space-y-6">
         <ToolHeroCompact
-          eyebrow="Esteganografia"
+          eyebrow="Mensagem oculta em imagem"
           title="Esconda uma mensagem protegida dentro de uma imagem."
-          description="Crie uma imagem com mensagem secreta ou revele uma imagem recebida em uma tela mais simples."
+          description="Crie uma imagem com mensagem protegida ou revele uma imagem recebida em uma tela mais simples."
         />
 
         <SteganographyPanel compact />

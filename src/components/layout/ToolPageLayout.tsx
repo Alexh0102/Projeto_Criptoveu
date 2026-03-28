@@ -1,4 +1,4 @@
-﻿import { Grid2x2, Menu, MoonStar, SunMedium, X } from 'lucide-react'
+import { Grid2x2, MoonStar, SunMedium, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, NavLink } from 'react-router-dom'
@@ -44,56 +44,31 @@ export default function ToolPageLayout({ children }: Props) {
       <div className="pointer-events-none absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" />
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
-        <header className="panel-surface sticky top-3 z-40 rounded-[30px] px-4 py-4 sm:px-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <header className="panel-surface sticky top-3 z-40 rounded-[26px] px-4 py-3 sm:px-5">
+          <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <Link
                 to="/"
-                className="icon-chip h-12 w-12 rounded-2xl"
-                aria-label="Abrir a home do Criptify"
+                className="icon-chip h-10 w-10 rounded-2xl"
+                aria-label="Abrir a home do Arcasilo"
               >
-                <Grid2x2 className="h-5 w-5" />
+                <Grid2x2 className="h-4 w-4" />
               </Link>
 
               <div>
-                <p className="text-xs uppercase tracking-[0.38em] text-cyan-100/80">Criptify</p>
-                <p className="mt-1 text-sm text-zinc-400">
-                  Ferramentas locais, cada uma na sua própria rota.
-                </p>
+                <p className="text-xs uppercase tracking-[0.34em] text-cyan-100/80">Arcasilo</p>
+                <p className="mt-1 text-xs text-zinc-400 sm:text-sm">Privacidade local no navegador</p>
               </div>
             </div>
 
             <div className="flex items-center justify-end gap-3">
-              <nav className="hidden flex-wrap items-center gap-2 lg:flex">
-                <NavLink
-                  to="/"
-                  className={({ isActive }) =>
-                    isActive ? 'btn-accent' : 'btn-secondary'
-                  }
-                >
-                  Home
-                </NavLink>
-
-                {toolDefinitions.map((tool) => (
-                  <NavLink
-                    key={tool.path}
-                    to={tool.path}
-                    className={({ isActive }) =>
-                      isActive ? 'btn-accent' : 'btn-secondary'
-                    }
-                  >
-                    {tool.shortTitle}
-                  </NavLink>
-                ))}
-              </nav>
-
               <button
                 type="button"
                 onClick={() => setIsDrawerOpen(true)}
-                className="btn-secondary lg:hidden"
-                aria-label="Abrir menu de ferramentas"
+                className="btn-secondary"
+                aria-label="Abrir lista de ferramentas"
               >
-                <Menu className="h-4 w-4" />
+                <Grid2x2 className="h-4 w-4" />
                 Ferramentas
               </button>
 
@@ -106,12 +81,12 @@ export default function ToolPageLayout({ children }: Props) {
                 {theme === 'dark' ? (
                   <>
                     <SunMedium className="h-4 w-4" />
-                    Tema claro
+                    Tema
                   </>
                 ) : (
                   <>
                     <MoonStar className="h-4 w-4" />
-                    Tema escuro
+                    Tema
                   </>
                 )}
               </button>
@@ -122,15 +97,15 @@ export default function ToolPageLayout({ children }: Props) {
         <main className="flex-1 py-6 sm:py-7">{children}</main>
 
         <footer className="mt-auto flex flex-col gap-3 border-t border-white/10 pt-5 text-sm text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
-          <p>100% no navegador. Nada sai do seu dispositivo.</p>
+          <p>Privacidade local para arquivos, mensagens, QR Codes e imagens.</p>
           <p className="font-mono text-[11px] uppercase tracking-[0.32em] text-zinc-500">
-            Arquivos • QR • Link • Esteganografia
+            Ferramentas locais • Fluxo direto • Uso no navegador
           </p>
         </footer>
       </div>
 
       {isDrawerOpen ? (
-        <div className="fixed inset-0 z-50 lg:hidden" aria-modal="true" role="dialog">
+        <div className="fixed inset-0 z-50" aria-modal="true" role="dialog">
           <button
             type="button"
             className="absolute inset-0 bg-black/60"
@@ -138,11 +113,11 @@ export default function ToolPageLayout({ children }: Props) {
             onClick={() => setIsDrawerOpen(false)}
           />
 
-          <div className="absolute inset-x-0 bottom-0 rounded-t-[32px] border border-white/10 bg-zinc-950/95 p-5 backdrop-blur-xl">
+          <div className="absolute inset-x-0 bottom-0 rounded-t-[32px] border border-white/10 bg-zinc-950/95 p-5 backdrop-blur-xl sm:inset-y-4 sm:right-4 sm:left-auto sm:w-[420px] sm:rounded-[32px]">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.32em] text-cyan-100/80">Ferramentas</p>
-                <p className="mt-2 text-sm text-zinc-400">Escolha para onde você quer ir.</p>
+                <p className="mt-2 text-sm text-zinc-400">Escolha a tela certa para a sua tarefa.</p>
               </div>
 
               <button
@@ -164,7 +139,7 @@ export default function ToolPageLayout({ children }: Props) {
                 }
               >
                 <p className="text-sm font-medium text-white">Home</p>
-                <p className="mt-1 text-sm text-zinc-400">Voltar para o hub com todas as ferramentas.</p>
+                <p className="mt-1 text-sm text-zinc-400">Voltar para a visão geral do Arcasilo.</p>
               </NavLink>
 
               {toolDefinitions.map((tool) => (
@@ -180,6 +155,29 @@ export default function ToolPageLayout({ children }: Props) {
                   <p className="mt-1 text-sm text-zinc-400">{tool.helper}</p>
                 </NavLink>
               ))}
+            </div>
+
+            <div className="mt-5 border-t border-white/10 pt-5">
+              <p className="text-xs uppercase tracking-[0.32em] text-zinc-500">Transparência</p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {[
+                  { to: '/privacidade', label: 'Privacidade' },
+                  { to: '/seguranca', label: 'Segurança' },
+                  { to: '/detalhes-tecnicos', label: 'Detalhes técnicos' },
+                  { to: '/sobre', label: 'Sobre o projeto' },
+                ].map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setIsDrawerOpen(false)}
+                    className={({ isActive }) =>
+                      `${isActive ? 'surface-primary' : 'surface-secondary'} rounded-[20px] px-4 py-3 text-sm font-medium text-white transition`
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
             </div>
           </div>
         </div>

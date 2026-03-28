@@ -1,4 +1,4 @@
-﻿import {
+import {
   AlertCircle,
   CheckCircle2,
   Download,
@@ -333,7 +333,7 @@ export default function SteganographyPanel({ compact = false }: Props) {
                   type="password"
                   value={hidePassword}
                   onChange={(event) => setHidePassword(event.target.value)}
-                  placeholder="Digite a senha da mensagem secreta"
+                  placeholder="Digite a senha da mensagem protegida"
                   className="tool-input mt-4"
                 />
 

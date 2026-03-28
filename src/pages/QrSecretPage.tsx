@@ -1,4 +1,4 @@
-﻿import HelpAccordion from '../components/ui/HelpAccordion'
+import HelpAccordion from '../components/ui/HelpAccordion'
 import ToolHeroCompact from '../components/ui/ToolHeroCompact'
 import ToolPageLayout from '../components/layout/ToolPageLayout'
 import QRCodeGenerator from '../components/QRCodeGenerator'
@@ -8,7 +8,7 @@ export default function QrSecretPage() {
     <ToolPageLayout>
       <div className="space-y-6">
         <ToolHeroCompact
-          eyebrow="QR secreto"
+          eyebrow="QR protegido"
           title="Crie um QR com mensagem protegida por senha."
           description="Escreva a mensagem, defina a senha e gere o QR em uma tela simples e direta."
         />

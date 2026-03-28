@@ -1,4 +1,4 @@
-﻿import {
+import {
   AlertCircle,
   CheckCircle2,
   Download,
@@ -103,7 +103,7 @@ export default function QRCodeGenerator({ compact = false }: Props) {
   } = useSecretQrCode({
     size: 300,
     margin: 1,
-    downloadFileName: 'qr-code-secreto.png',
+    downloadFileName: 'qr-protegido.png',
   })
 
   useEffect(() => {
@@ -118,7 +118,7 @@ export default function QRCodeGenerator({ compact = false }: Props) {
     if (!plainText.trim()) {
       setGenerateStatus({
         tone: 'error',
-        message: 'Preencha a mensagem antes de gerar o QR secreto.',
+        message: 'Preencha a mensagem antes de gerar o QR protegido.',
       })
       return
     }
@@ -144,8 +144,8 @@ export default function QRCodeGenerator({ compact = false }: Props) {
       setGenerateStatus({
         tone: generated ? 'success' : 'error',
         message: generated
-          ? 'QR secreto gerado localmente. Baixe o PNG ou escaneie quando quiser.'
-          : 'Não foi possível gerar o QR secreto com a mensagem informada.',
+          ? 'QR protegido gerado localmente. Baixe o PNG ou escaneie quando quiser.'
+          : 'Não foi possível gerar o QR protegido com a mensagem informada.',
       })
     } catch (error) {
       setGenerateStatus({
@@ -246,7 +246,7 @@ export default function QRCodeGenerator({ compact = false }: Props) {
       <div className="flex flex-col gap-6">
         <div className={compact ? 'hidden' : 'flex items-start justify-between gap-4'}>
           <div>
-            <p className="text-xs uppercase tracking-[0.32em] text-cyan-100/80">QR Code secreto</p>
+            <p className="text-xs uppercase tracking-[0.32em] text-cyan-100/80">QR protegido</p>
             <h2 className="mt-2 text-3xl font-semibold text-white">
               Crie ou leia um QR com mensagem protegida por senha
             </h2>
@@ -275,7 +275,7 @@ export default function QRCodeGenerator({ compact = false }: Props) {
           <>
             <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
               <div className="surface-primary rounded-[24px] p-4 sm:p-5">
-                <p className="text-sm font-medium text-white">Criar QR secreto</p>
+                <p className="text-sm font-medium text-white">Criar QR protegido</p>
                 <p className="mt-2 text-sm leading-7 text-zinc-400">
                   Escreva a mensagem, defina a senha e gere o QR em um clique.
                 </p>
@@ -303,7 +303,7 @@ export default function QRCodeGenerator({ compact = false }: Props) {
                   className="btn-primary mt-4 hidden w-full lg:inline-flex"
                 >
                   {isSubmittingGenerate || isGenerating ? <Sparkles className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
-                  Gerar QR secreto
+                  Gerar QR protegido
                 </button>
 
                 <div
@@ -340,12 +340,12 @@ export default function QRCodeGenerator({ compact = false }: Props) {
             <div ref={generateResultRef}>
               {isGenerating || qrCodeDataUrl ? (
                 <ResultPanel
-                  title="QR secreto pronto"
+                  title="QR protegido pronto"
                   description="Baixe o PNG ou escaneie a imagem exibida abaixo."
                   actions={
                     <button
                       type="button"
-                      onClick={() => downloadQrCode('qr-code-secreto.png')}
+                      onClick={() => downloadQrCode('qr-protegido.png')}
                       disabled={!qrCodeDataUrl}
                       className="btn-secondary"
                     >
@@ -358,7 +358,7 @@ export default function QRCodeGenerator({ compact = false }: Props) {
                     {isGenerating ? (
                       <div className="flex flex-col items-center gap-3 text-zinc-300">
                         <Sparkles className="h-8 w-8 text-cyan-100" />
-                        <p className="text-sm">Gerando QR secreto localmente...</p>
+                        <p className="text-sm">Gerando QR protegido localmente...</p>
                       </div>
                     ) : qrCodeDataUrl ? (
                       <img
@@ -375,7 +375,7 @@ export default function QRCodeGenerator({ compact = false }: Props) {
         ) : (
           <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
             <div className="surface-primary rounded-[24px] p-4 sm:p-5">
-              <p className="text-sm font-medium text-white">Abrir QR secreto</p>
+              <p className="text-sm font-medium text-white">Abrir QR protegido</p>
               <p className="mt-2 text-sm leading-7 text-zinc-400">
                 Envie a imagem com QR ou cole uma captura com Ctrl+V.
               </p>
@@ -481,7 +481,7 @@ export default function QRCodeGenerator({ compact = false }: Props) {
       </div>
 
       <MobileStickyCTA
-        label={tab === 'generate' ? 'Gerar QR secreto' : 'Abrir mensagem do QR'}
+        label={tab === 'generate' ? 'Gerar QR protegido' : 'Abrir mensagem do QR'}
         icon={tab === 'generate' ? <Sparkles className="h-5 w-5" /> : <Search className="h-5 w-5" />}
         onClick={tab === 'generate' ? handleGenerateQr : handleReadQrCode}
         disabled={

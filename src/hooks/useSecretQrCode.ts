@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import QRCode from 'qrcode'
 
 type UseSecretQrCodeOptions = {
@@ -11,7 +11,7 @@ export function useSecretQrCode(options: UseSecretQrCodeOptions = {}) {
   const {
     size = 300,
     margin = 1,
-    downloadFileName = 'qr-code-secreto.png',
+    downloadFileName = 'qr-protegido.png',
   } = options
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -19,7 +19,7 @@ export function useSecretQrCode(options: UseSecretQrCodeOptions = {}) {
 
   async function generateQrCode(secretPayload: string) {
     if (!secretPayload.trim()) {
-      const nextError = 'Digite um texto antes de gerar o QR Code secreto.'
+      const nextError = 'Digite um texto antes de gerar o QR protegido.'
       setError(nextError)
       setQrCodeDataUrl(null)
       return null

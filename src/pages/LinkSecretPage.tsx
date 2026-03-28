@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import AutoDestructLink from '../components/AutoDestructLink'
 import ToolPageLayout from '../components/layout/ToolPageLayout'
@@ -25,7 +25,7 @@ export default function LinkSecretPage() {
         setIncomingHashError(
           error instanceof Error
             ? error.message
-            : 'Não foi possível interpretar a mensagem secreta presente na URL.',
+            : 'Não foi possível interpretar a mensagem protegida presente na URL.',
         )
       }
     }
@@ -48,9 +48,9 @@ export default function LinkSecretPage() {
     <ToolPageLayout>
       <div className="space-y-6">
         <ToolHeroCompact
-          eyebrow="Link secreto"
+          eyebrow="Link protegido"
           title="Crie ou abra um link com mensagem protegida."
-          description="Use uma tela dedicada para gerar um link secreto ou abrir um link recebido com mais clareza."
+          description="Use uma tela dedicada para gerar um link protegido ou abrir um link recebido com mais clareza."
         />
 
         <AutoDestructLink

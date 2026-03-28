@@ -1,4 +1,4 @@
-﻿import {
+import {
   decodeBase64ToBytes,
   encodeBytesToBase64,
   type TextDecryptionInput,
@@ -50,7 +50,7 @@ export function parseEncryptedTextPayload(payload: string): TextDecryptionInput 
 
   if (!prefix) {
     throw new SecretTextPayloadError(
-      'Os dados lidos não pertencem a uma mensagem reconhecida pelo Criptify.',
+      'Os dados lidos não pertencem a uma mensagem reconhecida pelo Arcasilo.',
     )
   }
 

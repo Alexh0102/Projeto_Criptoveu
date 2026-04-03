@@ -4,11 +4,11 @@ export default function AboutPage() {
   return (
     <InfoPage
       eyebrow="Sobre o projeto"
-      title="O Arcasilo reúne ferramentas locais para tarefas sensíveis"
+      title="O CriptoVéu reúne ferramentas locais para tarefas sensíveis"
       description="O projeto foi pensado para proteger arquivos, mensagens, links e imagens com uma interface direta, foco em clareza e processamento local no navegador."
       sections={[
         {
-          title: 'Objetivo do Arcasilo',
+          title: 'Objetivo do CriptoVéu',
           items: [
             {
               title: 'Resolver tarefas sensíveis com menos atrito',

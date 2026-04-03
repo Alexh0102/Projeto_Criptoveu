@@ -4,8 +4,8 @@ export default function PrivacyPage() {
   return (
     <InfoPage
       eyebrow="Privacidade"
-      title="O que é processado localmente no Arcasilo"
-      description="O Arcasilo foi pensado para tarefas sensíveis com processamento principal no navegador, mantendo o fluxo mais direto e com menos exposição desnecessária."
+      title="O que é processado localmente no CriptoVéu"
+      description="O CriptoVéu foi pensado para tarefas sensíveis com processamento principal no navegador, mantendo o fluxo mais direto e com menos exposição desnecessária."
       sections={[
         {
           title: 'O que acontece localmente',

@@ -151,7 +151,7 @@ const transparencyLinks = [
   {
     to: '/sobre',
     title: 'Sobre o projeto',
-    description: 'Objetivo do Arcasilo, contexto do produto e direção da plataforma.',
+    description: 'Objetivo do CriptoVéu, contexto do produto e direção da plataforma.',
   },
 ]
 
@@ -207,7 +207,7 @@ export default function HomePage() {
 
         <section className="surface-secondary rounded-[32px] p-4 sm:p-5">
           <p className="text-xs uppercase tracking-[0.32em] text-zinc-500">Casos de uso</p>
-          <h2 className="mt-2 text-xl font-semibold text-white sm:text-[1.9rem]">Onde o Arcasilo ajuda</h2>
+          <h2 className="mt-2 text-xl font-semibold text-white sm:text-[1.9rem]">Onde o CriptoVéu ajuda</h2>
           <p className="mt-2.5 max-w-3xl text-sm leading-6 text-zinc-400 sm:text-base">
             Proteja conteúdo sensível antes de enviar, compartilhar ou armazenar.
           </p>
@@ -222,7 +222,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="ferramentas" className="space-y-3.5">
+        <section id="ferramentas" className="scroll-mt-36 space-y-3.5 sm:scroll-mt-32">
           <div>
             <p className="text-xs uppercase tracking-[0.32em] text-zinc-500">Ferramentas</p>
             <h2 className="mt-2 text-2xl font-semibold text-white sm:text-[2rem]">
@@ -289,7 +289,7 @@ export default function HomePage() {
         <section className="surface-secondary rounded-[32px] p-4 sm:p-5">
           <p className="text-xs uppercase tracking-[0.32em] text-zinc-500">Perfil de uso</p>
           <h2 className="mt-2 text-xl font-semibold text-white sm:text-[1.9rem]">
-            Para quem o Arcasilo foi feito
+            Para quem o CriptoVéu foi feito
           </h2>
 
           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -321,7 +321,7 @@ export default function HomePage() {
           <p className="text-xs uppercase tracking-[0.32em] text-zinc-500">Transparência</p>
           <h2 className="mt-2 text-xl font-semibold text-white sm:text-[1.9rem]">Transparência e segurança</h2>
           <p className="mt-2.5 max-w-3xl text-sm leading-6 text-zinc-400 sm:text-base">
-            O Arcasilo foi pensado para tarefas sensíveis com processamento local no navegador. Para
+            O CriptoVéu foi pensado para tarefas sensíveis com processamento local no navegador. Para
             entender melhor como cada ferramenta funciona, consulte as páginas de privacidade,
             segurança e detalhes técnicos.
           </p>

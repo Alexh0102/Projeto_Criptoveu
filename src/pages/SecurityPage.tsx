@@ -4,7 +4,7 @@ export default function SecurityPage() {
   return (
     <InfoPage
       eyebrow="Segurança"
-      title="Boas práticas para usar o Arcasilo com mais segurança"
+      title="Boas práticas para usar o CriptoVéu com mais segurança"
       description="As ferramentas ajudam a reduzir exposição, mas o resultado depende também da forma como você define a senha, compartilha o conteúdo e organiza o uso."
       sections={[
         {

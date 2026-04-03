@@ -258,7 +258,7 @@ export async function extractMessageFromImage(sourceImage: File): Promise<string
   } catch {
     throw new SteganographyError(
       'INVALID_PAYLOAD',
-      'A imagem não contém uma mensagem compatível com o Arcasilo.',
+      'A imagem não contém uma mensagem compatível com o CriptoVéu.',
     )
   }
 }

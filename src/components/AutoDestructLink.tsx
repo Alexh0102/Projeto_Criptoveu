@@ -587,7 +587,7 @@ export default function AutoDestructLink({
                 value={readInput}
                 onChange={(event) => setReadInput(event.target.value)}
                 rows={4}
-                placeholder="Cole aqui um link do Arcasilo ou o trecho que começa com #msg=..."
+                placeholder="Cole aqui um link do CriptoVéu ou o trecho que começa com #msg=..."
                 className="tool-textarea mt-4 min-h-[140px]"
               />
 

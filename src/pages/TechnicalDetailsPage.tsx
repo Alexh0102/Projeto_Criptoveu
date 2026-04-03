@@ -5,7 +5,7 @@ export default function TechnicalDetailsPage() {
     <InfoPage
       eyebrow="Detalhes técnicos"
       title="Visão geral das rotas, do fluxo e das decisões de interface"
-      description="A estrutura do Arcasilo foi desenhada para separar tarefas por rota, reduzir ruído e manter o uso claro no desktop e no mobile."
+      description="A estrutura do CriptoVéu foi desenhada para separar tarefas por rota, reduzir ruído e manter o uso claro no desktop e no mobile."
       sections={[
         {
           title: 'Rotas e organização da experiência',

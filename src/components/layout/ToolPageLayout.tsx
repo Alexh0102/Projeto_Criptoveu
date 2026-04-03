@@ -45,27 +45,31 @@ export default function ToolPageLayout({ children }: Props) {
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
         <header className="panel-surface sticky top-3 z-40 rounded-[26px] px-4 py-3 sm:px-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
               <Link
                 to="/"
-                className="icon-chip h-10 w-10 rounded-2xl"
-                aria-label="Abrir a home do Arcasilo"
+                className="icon-chip h-10 w-10 shrink-0 rounded-2xl"
+                aria-label="Abrir a home do CriptoVéu"
               >
                 <Grid2x2 className="h-4 w-4" />
               </Link>
 
-              <div>
-                <p className="text-xs uppercase tracking-[0.34em] text-cyan-100/80">Arcasilo</p>
-                <p className="mt-1 text-xs text-zinc-400 sm:text-sm">Privacidade local no navegador</p>
+              <div className="min-w-0">
+                <p className="truncate text-[11px] uppercase tracking-[0.34em] text-cyan-100/80 sm:text-xs">
+                  CriptoVéu
+                </p>
+                <p className="mt-1 hidden truncate text-xs text-zinc-400 min-[421px]:block sm:text-sm">
+                  Privacidade local no navegador
+                </p>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:justify-end sm:gap-3">
               <button
                 type="button"
                 onClick={() => setIsDrawerOpen(true)}
-                className="btn-secondary"
+                className="btn-secondary w-full justify-center px-3 sm:w-auto"
                 aria-label="Abrir lista de ferramentas"
               >
                 <Grid2x2 className="h-4 w-4" />
@@ -75,18 +79,18 @@ export default function ToolPageLayout({ children }: Props) {
               <button
                 type="button"
                 onClick={toggleTheme}
-                className="btn-secondary"
+                className="btn-secondary h-11 w-11 shrink-0 justify-center rounded-full px-0 py-0 sm:h-auto sm:w-auto sm:rounded-[999px] sm:px-4 sm:py-3"
                 aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
               >
                 {theme === 'dark' ? (
                   <>
                     <SunMedium className="h-4 w-4" />
-                    Tema
+                    <span className="hidden sm:inline">Tema</span>
                   </>
                 ) : (
                   <>
                     <MoonStar className="h-4 w-4" />
-                    Tema
+                    <span className="hidden sm:inline">Tema</span>
                   </>
                 )}
               </button>
@@ -139,7 +143,7 @@ export default function ToolPageLayout({ children }: Props) {
                 }
               >
                 <p className="text-sm font-medium text-white">Home</p>
-                <p className="mt-1 text-sm text-zinc-400">Voltar para a visão geral do Arcasilo.</p>
+                <p className="mt-1 text-sm text-zinc-400">Voltar para a visão geral do CriptoVéu.</p>
               </NavLink>
 
               {toolDefinitions.map((tool) => (

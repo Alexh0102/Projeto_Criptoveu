@@ -14,7 +14,9 @@ import { CriptifyError, decryptText, encryptText, formatFileSize } from '../lib/
 import {
   MAX_QR_IMAGE_SIZE_BYTES,
   QRCodeSecretError,
+  buildSecretQrUrl,
   extractSecretPayloadFromQrImage,
+  readSecretPayloadFromQrInput,
 } from '../lib/qr-secret'
 import {
   SecretTextPayloadError,
@@ -28,6 +30,9 @@ import SegmentedMode from './ui/SegmentedMode'
 
 type Props = {
   compact?: boolean
+  incomingHashPayload?: string | null
+  incomingHashError?: string | null
+  onClearIncomingHash?: () => void
 }
 
 type Tab = 'generate' | 'read'
@@ -74,14 +79,19 @@ function getClipboardImageFile(clipboardData: DataTransfer | null) {
   return null
 }
 
-export default function QRCodeGenerator({ compact = false }: Props) {
+export default function QRCodeGenerator({
+  compact = false,
+  incomingHashPayload = null,
+  incomingHashError = null,
+  onClearIncomingHash,
+}: Props) {
   const [tab, setTab] = useState<Tab>('generate')
   const [plainText, setPlainText] = useState('')
   const [generatePassword, setGeneratePassword] = useState('')
   const [isSubmittingGenerate, setIsSubmittingGenerate] = useState(false)
   const [qrImage, setQrImage] = useState<File | null>(null)
   const [readPassword, setReadPassword] = useState('')
-  const [decodedPayload, setDecodedPayload] = useState('')
+  const [resolvedPayload, setResolvedPayload] = useState('')
   const [revealedText, setRevealedText] = useState('')
   const [isReading, setIsReading] = useState(false)
   const [generateStatus, setGenerateStatus] = useState<StatusState>({
@@ -90,7 +100,7 @@ export default function QRCodeGenerator({ compact = false }: Props) {
   })
   const [readStatus, setReadStatus] = useState<StatusState>({
     tone: 'info',
-    message: 'Envie a imagem com QR e use a senha para abrir a mensagem.',
+    message: 'Envie a imagem com QR ou escaneie o código e use a senha para abrir a mensagem.',
   })
   const fileInputId = useId()
   const generateResultRef = useRef<HTMLDivElement | null>(null)
@@ -113,6 +123,35 @@ export default function QRCodeGenerator({ compact = false }: Props) {
 
     generateResultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [qrCodeDataUrl])
+
+  useEffect(() => {
+    if (!incomingHashPayload) {
+      return
+    }
+
+    setTab('read')
+    setQrImage(null)
+    setResolvedPayload(incomingHashPayload)
+    setRevealedText('')
+    setReadStatus({
+      tone: 'info',
+      message: 'Mensagem carregada automaticamente do QR. Agora digite a senha para abrir.',
+    })
+  }, [incomingHashPayload])
+
+  useEffect(() => {
+    if (!incomingHashError) {
+      return
+    }
+
+    setTab('read')
+    setResolvedPayload('')
+    setRevealedText('')
+    setReadStatus({
+      tone: 'error',
+      message: incomingHashError,
+    })
+  }, [incomingHashError])
 
   async function handleGenerateQr() {
     if (!plainText.trim()) {
@@ -137,14 +176,15 @@ export default function QRCodeGenerator({ compact = false }: Props) {
     try {
       const encrypted = await encryptText(plainText, generatePassword)
       const serialized = serializeEncryptedTextPayload(encrypted)
+      const qrUrl = buildSecretQrUrl(serialized)
       setReadPassword((currentPassword) => currentPassword || generatePassword)
 
-      const generated = await generateQrCode(serialized)
+      const generated = await generateQrCode(qrUrl)
 
       setGenerateStatus({
         tone: generated ? 'success' : 'error',
         message: generated
-          ? 'QR protegido gerado localmente. Baixe o PNG ou escaneie quando quiser.'
+          ? 'QR protegido gerado localmente. Ao escanear, o site abre com a mensagem pronta para pedir a senha.'
           : 'Não foi possível gerar o QR protegido com a mensagem informada.',
       })
     } catch (error) {
@@ -166,7 +206,7 @@ export default function QRCodeGenerator({ compact = false }: Props) {
     }
 
     setQrImage(selected)
-    setDecodedPayload('')
+    setResolvedPayload('')
     setRevealedText('')
     setReadStatus({
       tone: 'info',
@@ -191,7 +231,7 @@ export default function QRCodeGenerator({ compact = false }: Props) {
     })
 
     setQrImage(normalizedFile)
-    setDecodedPayload('')
+    setResolvedPayload('')
     setRevealedText('')
     setReadStatus({
       tone: 'info',
@@ -200,10 +240,10 @@ export default function QRCodeGenerator({ compact = false }: Props) {
   }
 
   async function handleReadQrCode() {
-    if (!qrImage) {
+    if (!resolvedPayload && !qrImage) {
       setReadStatus({
         tone: 'error',
-        message: 'Envie ou cole uma imagem antes de tentar ler o QR Code.',
+        message: 'Envie uma imagem com QR ou abra o link vindo do QR antes de continuar.',
       })
       return
     }
@@ -217,15 +257,16 @@ export default function QRCodeGenerator({ compact = false }: Props) {
     }
 
     setIsReading(true)
-    setDecodedPayload('')
     setRevealedText('')
 
     try {
-      const extractedPayload = await extractSecretPayloadFromQrImage(qrImage)
+      const extractedPayload =
+        resolvedPayload ||
+        readSecretPayloadFromQrInput(await extractSecretPayloadFromQrImage(qrImage as File))
       const encrypted = parseEncryptedTextPayload(extractedPayload)
       const decrypted = await decryptText(encrypted, readPassword)
 
-      setDecodedPayload(extractedPayload)
+      setResolvedPayload(extractedPayload)
       setRevealedText(decrypted)
       setReadStatus({
         tone: 'success',
@@ -341,7 +382,7 @@ export default function QRCodeGenerator({ compact = false }: Props) {
               {isGenerating || qrCodeDataUrl ? (
                 <ResultPanel
                   title="QR protegido pronto"
-                  description="Baixe o PNG ou escaneie a imagem exibida abaixo."
+                  description="Baixe o PNG ou escaneie a imagem para abrir o site com a mensagem já carregada."
                   actions={
                     <button
                       type="button"
@@ -377,7 +418,7 @@ export default function QRCodeGenerator({ compact = false }: Props) {
             <div className="surface-primary rounded-[24px] p-4 sm:p-5">
               <p className="text-sm font-medium text-white">Abrir QR protegido</p>
               <p className="mt-2 text-sm leading-7 text-zinc-400">
-                Envie a imagem com QR ou cole uma captura com Ctrl+V.
+                Envie a imagem com QR, cole uma captura com Ctrl+V ou abra o link depois de escanear.
               </p>
 
               <label
@@ -425,10 +466,20 @@ export default function QRCodeGenerator({ compact = false }: Props) {
                 className="tool-input mt-4"
               />
 
+              {incomingHashPayload && onClearIncomingHash ? (
+                <button
+                  type="button"
+                  onClick={onClearIncomingHash}
+                  className="btn-secondary mt-4"
+                >
+                  Limpar mensagem da URL
+                </button>
+              ) : null}
+
               <button
                 type="button"
                 onClick={handleReadQrCode}
-                disabled={!qrImage || !readPassword || isReading}
+                disabled={(!resolvedPayload && !qrImage) || !readPassword || isReading}
                 className="btn-primary mt-4 hidden w-full lg:inline-flex"
               >
                 <Search className="h-5 w-5" />
@@ -466,12 +517,12 @@ export default function QRCodeGenerator({ compact = false }: Props) {
                 </div>
               </div>
 
-              {decodedPayload ? (
+              {resolvedPayload ? (
                 <div className="mt-4 surface-technical rounded-2xl p-4">
                   <p className="text-xs uppercase tracking-[0.26em] text-zinc-500">Dados protegidos do QR</p>
                   <p className="mt-2 break-all font-mono text-xs text-zinc-300">
-                    {decodedPayload.slice(0, 220)}
-                    {decodedPayload.length > 220 ? '...' : ''}
+                    {resolvedPayload.slice(0, 220)}
+                    {resolvedPayload.length > 220 ? '...' : ''}
                   </p>
                 </div>
               ) : null}
@@ -487,7 +538,7 @@ export default function QRCodeGenerator({ compact = false }: Props) {
         disabled={
           tab === 'generate'
             ? !plainText.trim() || !generatePassword || isSubmittingGenerate || isGenerating
-            : !qrImage || !readPassword || isReading
+            : (!resolvedPayload && !qrImage) || !readPassword || isReading
         }
         loading={tab === 'generate' ? isSubmittingGenerate || isGenerating : isReading}
       />

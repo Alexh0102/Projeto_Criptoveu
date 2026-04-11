@@ -21,6 +21,7 @@
   for = "/*"
 
   [headers.values]
+    Access-Control-Allow-Origin = "https://www.xn--criptovu-h1a.com"
     Content-Security-Policy = "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; frame-src 'none'; img-src 'self' data: blob:; manifest-src 'self'; media-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests; block-all-mixed-content"
     Cross-Origin-Embedder-Policy = "require-corp"
     Cross-Origin-Opener-Policy = "same-origin"
@@ -28,6 +29,7 @@
     Origin-Agent-Cluster = "?1"
     Permissions-Policy = "accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), magnetometer=(), microphone=(), midi=(), payment=(), publickey-credentials-get=(), serial=(), usb=(), web-share=(), xr-spatial-tracking=()"
     Referrer-Policy = "no-referrer"
+    Vary = "Origin"
     Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
     X-Content-Type-Options = "nosniff"
     X-DNS-Prefetch-Control = "off"
@@ -40,13 +42,17 @@
   for = "/"
 
   [headers.values]
-    Cache-Control = "no-store, max-age=0"
+    Cache-Control = "private, no-cache, no-store, max-age=0, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
 
 [[headers]]
   for = "/index.html"
 
   [headers.values]
-    Cache-Control = "no-store, max-age=0"
+    Cache-Control = "private, no-cache, no-store, max-age=0, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
 
 [[headers]]
   for = "/assets/*"

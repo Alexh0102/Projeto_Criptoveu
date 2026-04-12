@@ -1,4 +1,4 @@
-# Criptify
+# Criptoveu
 
 Site publico de criptografia e descriptografia de arquivos 100% client-side, inspirado no ecossistema `.crypt15` do WhatsApp para demonstrar seguranca real no navegador com React + TypeScript + Web Crypto API.
 
@@ -91,11 +91,3 @@ Nao existe forma de esconder 100% o codigo de um site client-side. O navegador s
 - bloquear segredos no frontend
 - endurecer headers e politicas do navegador
 
-Nunca coloque chaves privadas, tokens secretos ou credenciais dentro do bundle do frontend.
-
-## Deploy
-
-1. Publique o repositorio no GitHub.
-2. Importe o projeto no Vercel ou Netlify.
-3. O deploy e estatico e nao exige backend.
-4. Para um passo a passo seguro de publicacao, veja `DEPLOY.md`.

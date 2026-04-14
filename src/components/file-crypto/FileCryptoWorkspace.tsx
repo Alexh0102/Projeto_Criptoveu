@@ -757,10 +757,10 @@ export default function FileCryptoWorkspace() {
               </div>
 
               <div className="flex flex-col gap-2 text-xs leading-6 text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
-                <p>Guarde a senha: voc? vai precisar dela para recuperar o conte?do.</p>
+                <p>Guarde a senha: você vai precisar dela para recuperar o conteúdo.</p>
                 <p>
                   {results.length === 0
-                    ? 'Baixar todos fica dispon?vel ap?s o processamento.'
+                    ? 'Baixar todos fica disponível após o processamento.'
                     : 'Use Baixar todos para salvar tudo de uma vez.'}
                 </p>
               </div>
@@ -772,7 +772,7 @@ export default function FileCryptoWorkspace() {
           <section className="surface-secondary rounded-[28px] p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.28em] text-zinc-500">Guia r?pido</p>
+                <p className="text-xs uppercase tracking-[0.28em] text-zinc-500">Guia rápido</p>
                 <p className="mt-2 text-sm font-medium text-white">Antes de processar</p>
               </div>
               <div className="icon-chip p-2">

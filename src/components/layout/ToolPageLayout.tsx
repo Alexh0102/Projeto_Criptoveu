@@ -5,6 +5,7 @@ import { Link, NavLink } from 'react-router-dom'
 
 import { toolDefinitions } from '../../config/tools'
 import { useTheme } from '../../context/theme'
+import BrandLogo from '../ui/BrandLogo'
 
 type Props = {
   children: ReactNode
@@ -46,24 +47,13 @@ export default function ToolPageLayout({ children }: Props) {
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
         <header className="panel-surface sticky top-3 z-40 rounded-[26px] px-4 py-3 sm:px-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-center gap-3">
-              <Link
-                to="/"
-                className="icon-chip h-10 w-10 shrink-0 rounded-2xl"
-                aria-label="Abrir a home do CriptoVéu"
-              >
-                <Grid2x2 className="h-4 w-4" />
-              </Link>
-
-              <div className="min-w-0">
-                <p className="truncate text-[11px] uppercase tracking-[0.34em] text-cyan-100/80 sm:text-xs">
-                  CriptoVéu
-                </p>
-                <p className="mt-1 hidden truncate text-xs text-zinc-400 min-[421px]:block sm:text-sm">
-                  Privacidade local no navegador
-                </p>
-              </div>
-            </div>
+            <Link
+              to="/"
+              className="block min-w-0 transition hover:opacity-95"
+              aria-label="Abrir a home do CriptoVéu"
+            >
+              <BrandLogo variant="header" showTagline />
+            </Link>
 
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:justify-end sm:gap-3">
               <button

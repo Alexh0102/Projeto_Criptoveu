@@ -13,6 +13,7 @@ import {
 import { Link } from 'react-router-dom'
 
 import ToolPageLayout from '../components/layout/ToolPageLayout'
+import BrandLogo from '../components/ui/BrandLogo'
 import HelpAccordion from '../components/ui/HelpAccordion'
 import { toolDefinitions } from '../config/tools'
 
@@ -160,6 +161,10 @@ export default function HomePage() {
     <ToolPageLayout>
       <section className="space-y-5 sm:space-y-6">
         <section className="surface-primary rounded-[38px] p-5 sm:p-7">
+          <div className="mb-5">
+            <BrandLogo variant="hero" showTagline />
+          </div>
+
           <div className="hero-badge">
             <ShieldCheck className="h-4 w-4" />
             Ferramentas locais

@@ -10,23 +10,20 @@ export default function BrandLogo({
   className = '',
 }: Props) {
   const isHero = variant === 'hero'
+  const frameClasses = isHero
+    ? 'h-[88px] w-[88px] rounded-[30px] sm:h-[104px] sm:w-[104px]'
+    : 'h-[52px] w-[52px] rounded-[20px] sm:h-[58px] sm:w-[58px]'
 
   return (
     <div className={`flex min-w-0 items-center gap-3 ${className}`.trim()}>
       <div
-        className={`relative overflow-hidden border border-white/10 bg-[#06111a] shadow-[0_22px_50px_rgba(2,12,27,0.45)] ${
-          isHero
-            ? 'rounded-[30px] px-3 py-3 sm:px-4 sm:py-4'
-            : 'rounded-[22px] px-2.5 py-2 sm:px-3 sm:py-2.5'
-        }`}
+        className={`relative overflow-hidden border border-cyan-400/12 bg-[#06111a] shadow-[0_22px_50px_rgba(2,12,27,0.45)] ${frameClasses}`}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_58%),radial-gradient(circle_at_bottom_right,rgba(250,204,21,0.10),transparent_46%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.18),transparent_58%),radial-gradient(circle_at_bottom_right,rgba(148,230,214,0.12),transparent_46%)]" />
         <img
           src="/brand/criptoveu-logo.png"
           alt="Logo do CriptoVéu"
-          className={`relative block w-auto ${
-            isHero ? 'h-12 sm:h-14 lg:h-16' : 'h-8 sm:h-9'
-          }`}
+          className={`relative block h-full w-full object-contain ${isHero ? 'scale-[1.1]' : 'scale-[1.08]'}`}
           loading="eager"
           draggable={false}
         />
@@ -34,11 +31,11 @@ export default function BrandLogo({
 
       {showTagline ? (
         <div className="min-w-0 hidden min-[540px]:block">
-          <p className="truncate text-[11px] uppercase tracking-[0.32em] text-cyan-100/80">
+          <p className={`truncate uppercase tracking-[0.32em] text-cyan-100/80 ${isHero ? 'text-xs' : 'text-[11px]'}`}>
             CriptoVéu
           </p>
-          <p className="mt-1 truncate text-sm text-zinc-400">
-            Privacidade local para arquivos, mensagens e imagens.
+          <p className={`mt-1 truncate text-zinc-400 ${isHero ? 'text-base' : 'text-sm'}`}>
+            Privacidade local para arquivos, mensagens, links e imagens.
           </p>
         </div>
       ) : null}

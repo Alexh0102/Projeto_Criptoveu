@@ -11,6 +11,7 @@ import QrSecretPage from './pages/QrSecretPage'
 import SecurityPage from './pages/SecurityPage'
 import SteganographyPage from './pages/SteganographyPage'
 import TechnicalDetailsPage from './pages/TechnicalDetailsPage'
+import VeuNotesPage from './pages/VeuNotesPage'
 
 function LegacyHashRedirect() {
   const location = useLocation()
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/qr-secreto" element={<QrSecretPage />} />
         <Route path="/link-secreto" element={<LinkSecretPage />} />
         <Route path="/esteganografia" element={<SteganographyPage />} />
+        <Route path="/veu-notes" element={<VeuNotesPage />} />
         <Route path="/privacidade" element={<PrivacyPage />} />
         <Route path="/seguranca" element={<SecurityPage />} />
         <Route path="/detalhes-tecnicos" element={<TechnicalDetailsPage />} />

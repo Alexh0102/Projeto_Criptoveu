@@ -6,6 +6,7 @@ import {
   ImageUp,
   Link2,
   LockKeyhole,
+  NotebookPen,
   QrCode,
   ShieldCheck,
   Users,
@@ -22,6 +23,7 @@ const iconByPath = {
   '/qr-secreto': QrCode,
   '/link-secreto': Link2,
   '/esteganografia': ImageUp,
+  '/veu-notes': NotebookPen,
 } as const
 
 const trustItems = [

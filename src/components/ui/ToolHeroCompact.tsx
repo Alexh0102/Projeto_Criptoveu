@@ -17,14 +17,14 @@ export default function ToolHeroCompact({
   actions,
 }: Props) {
   return (
-    <section className="space-y-4">
+    <section className="cv-hero space-y-4">
       <div className="hero-badge">
         <ShieldCheck className="h-4 w-4" />
         {badge}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-        <div className="space-y-3">
+        <div className="cv-hero-copy space-y-3">
           <p className="text-xs uppercase tracking-[0.38em] text-zinc-500">{eyebrow}</p>
           <h1 className="max-w-4xl text-3xl font-semibold tracking-tight text-white sm:text-[2.65rem] sm:leading-[1.05]">
             {title}
@@ -34,7 +34,7 @@ export default function ToolHeroCompact({
           </p>
         </div>
 
-        {actions ? <div className="shrink-0">{actions}</div> : null}
+        {actions ? <div className="cv-hero-actions shrink-0">{actions}</div> : null}
       </div>
     </section>
   )

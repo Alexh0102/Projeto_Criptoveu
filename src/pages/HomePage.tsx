@@ -162,8 +162,8 @@ export default function HomePage() {
   return (
     <ToolPageLayout>
       <section className="space-y-5 sm:space-y-6">
-        <section className="surface-primary rounded-[38px] p-5 sm:p-7">
-          <div className="mb-5">
+        <section className="cv-hero surface-primary rounded-[38px] p-5 sm:p-7">
+          <div className="cv-hero-brand mb-5">
             <BrandLogo variant="hero" showTagline />
           </div>
 
@@ -172,7 +172,7 @@ export default function HomePage() {
             Ferramentas locais
           </div>
 
-          <div className="mt-4 space-y-3.5">
+          <div className="cv-hero-copy mt-4 space-y-3.5">
             <p className="text-xs uppercase tracking-[0.38em] text-zinc-500">Privacidade prática</p>
             <h1 className="max-w-4xl text-3xl font-semibold tracking-tight text-white sm:text-5xl sm:leading-[1.02]">
               Proteja arquivos, mensagens e imagens sem sair do navegador.
@@ -183,7 +183,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div className="cv-hero-actions mt-5 flex flex-wrap gap-3">
             <Link to="/arquivos" className="btn-primary">
               Começar por arquivos
               <ArrowRight className="h-4 w-4" />

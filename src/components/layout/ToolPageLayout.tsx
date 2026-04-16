@@ -9,9 +9,10 @@ import BrandLogo from '../ui/BrandLogo'
 
 type Props = {
   children: ReactNode
+  showToolsDock?: boolean
 }
 
-export default function ToolPageLayout({ children }: Props) {
+export default function ToolPageLayout({ children, showToolsDock = false }: Props) {
   const { theme, toggleTheme, shellStyle } = useTheme()
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
@@ -40,26 +41,26 @@ export default function ToolPageLayout({ children }: Props) {
   return (
     <div className="app-shell relative min-h-screen overflow-hidden" style={shellStyle}>
       <div className="pointer-events-none absolute inset-0 bg-grid-fade bg-[size:34px_34px] opacity-15 [mask-image:linear-gradient(to_bottom,rgba(0,0,0,0.9),transparent)]" />
-      <div className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-cyan-400/18 blur-3xl" />
-      <div className="pointer-events-none absolute right-0 top-8 h-80 w-80 rounded-full bg-amber-300/12 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" />
+      <div className="cv-shell-orb cv-shell-orb-left pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-cyan-400/18 blur-3xl" />
+      <div className="cv-shell-orb cv-shell-orb-right pointer-events-none absolute right-0 top-8 h-80 w-80 rounded-full bg-amber-300/12 blur-3xl" />
+      <div className="cv-shell-orb cv-shell-orb-bottom pointer-events-none absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" />
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-7">
         <header className="cv-shell-header panel-surface sticky top-3 z-40 rounded-[26px] px-4 py-3 sm:px-5">
-          <div className="cv-shell-header-inner flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="cv-shell-header-inner flex items-center justify-between gap-3">
             <Link
               to="/"
-              className="cv-shell-header-brand block min-w-0 transition hover:opacity-95"
+              className="cv-shell-header-brand block min-w-0 flex-1 transition hover:opacity-95"
               aria-label="Abrir a home do CriptoVéu"
             >
               <BrandLogo variant="header" showTagline />
             </Link>
 
-            <div className="cv-shell-header-actions grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:justify-end sm:gap-3">
+            <div className="cv-shell-header-actions flex shrink-0 items-center gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => setIsDrawerOpen(true)}
-                className="btn-secondary w-full justify-center px-3 sm:w-auto"
+                className="cv-tools-trigger btn-secondary justify-center px-3 sm:w-auto"
                 aria-label="Abrir lista de ferramentas"
               >
                 <Grid2x2 className="h-4 w-4" />
@@ -88,7 +89,7 @@ export default function ToolPageLayout({ children }: Props) {
           </div>
         </header>
 
-        <main className="flex-1 py-4 sm:py-7">{children}</main>
+        <main className={`flex-1 py-4 sm:py-7 ${showToolsDock ? 'pb-28 sm:pb-7' : ''}`}>{children}</main>
 
         <footer className="mt-auto flex flex-col gap-3 border-t border-white/10 pt-5 text-sm text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
           <p>Privacidade local para arquivos, mensagens, QR Codes e imagens.</p>
@@ -97,6 +98,20 @@ export default function ToolPageLayout({ children }: Props) {
           </p>
         </footer>
       </div>
+
+      {showToolsDock && !isDrawerOpen ? (
+        <div className="cv-tools-dock fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-3 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setIsDrawerOpen(true)}
+            className="cv-tools-dock-button btn-primary w-full max-w-[360px] justify-center"
+            aria-label="Abrir ferramentas"
+          >
+            <Grid2x2 className="h-4 w-4" />
+            Ferramentas
+          </button>
+        </div>
+      ) : null}
 
       {isDrawerOpen ? (
         <div className="fixed inset-0 z-50" aria-modal="true" role="dialog">

@@ -160,7 +160,7 @@ const transparencyLinks = [
 
 export default function HomePage() {
   return (
-    <ToolPageLayout>
+    <ToolPageLayout showToolsDock>
       <section className="space-y-5 sm:space-y-6">
         <section className="cv-hero surface-primary rounded-[38px] p-5 sm:p-7">
           <div className="cv-hero-brand mb-5">

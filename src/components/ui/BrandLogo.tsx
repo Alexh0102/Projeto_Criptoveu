@@ -19,6 +19,10 @@ export default function BrandLogo({
   const wrapperClasses = isHero
     ? 'flex min-w-0 flex-col items-start gap-4 sm:flex-row sm:items-center'
     : 'flex min-w-0 items-center gap-3 sm:gap-3.5'
+  const titleClasses = isHero ? 'text-xs sm:text-[13px]' : 'truncate text-[10px] sm:text-[11px]'
+  const taglineClasses = isHero
+    ? 'mt-2 max-w-xl text-sm leading-6 sm:text-base'
+    : 'mt-1 hidden text-sm min-[360px]:block'
 
   return (
     <div className={`${wrapperClasses} ${className}`.trim()}>
@@ -43,12 +47,12 @@ export default function BrandLogo({
       {showTagline ? (
         <div className="min-w-0">
           <p
-            className={`uppercase tracking-[0.32em] text-cyan-100/80 ${isHero ? 'text-xs sm:text-[13px]' : 'truncate text-[11px]'}`}
+            className={`uppercase tracking-[0.32em] text-cyan-100/80 ${titleClasses}`}
           >
             CriptoVéu
           </p>
           <p
-            className={`text-zinc-400 ${isHero ? 'mt-2 max-w-xl text-sm leading-6 sm:text-base' : 'mt-1 hidden text-sm min-[420px]:block'}`}
+            className={`text-zinc-400 ${taglineClasses}`}
           >
             Privacidade local para arquivos, mensagens, links e imagens.
           </p>

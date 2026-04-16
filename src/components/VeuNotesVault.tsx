@@ -330,7 +330,7 @@ export default function VeuNotesVault() {
                     />
                   </FieldBlock>
 
-                  <div className="rounded-[24px] border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm leading-7 text-amber-50">
+                  <div className="cv-note-warning rounded-[24px] border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm leading-7 text-amber-50">
                     Use uma senha forte. Se você esquecer, não há como recuperar o conteúdo deste cofre.
                   </div>
 
@@ -465,7 +465,7 @@ export default function VeuNotesVault() {
                 </div>
 
                 {storageWarning ? (
-                  <div className="mt-4 rounded-[24px] border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm leading-7 text-amber-50">
+                  <div className="cv-note-warning mt-4 rounded-[24px] border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm leading-7 text-amber-50">
                     {storageWarning}
                   </div>
                 ) : null}

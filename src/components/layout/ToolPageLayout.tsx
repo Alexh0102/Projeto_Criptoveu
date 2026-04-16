@@ -44,18 +44,18 @@ export default function ToolPageLayout({ children }: Props) {
       <div className="pointer-events-none absolute right-0 top-8 h-80 w-80 rounded-full bg-amber-300/12 blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" />
 
-      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
-        <header className="panel-surface sticky top-3 z-40 rounded-[26px] px-4 py-3 sm:px-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-7">
+        <header className="cv-shell-header panel-surface sticky top-3 z-40 rounded-[26px] px-4 py-3 sm:px-5">
+          <div className="cv-shell-header-inner flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Link
               to="/"
-              className="block min-w-0 transition hover:opacity-95"
+              className="cv-shell-header-brand block min-w-0 transition hover:opacity-95"
               aria-label="Abrir a home do CriptoVéu"
             >
               <BrandLogo variant="header" showTagline />
             </Link>
 
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:justify-end sm:gap-3">
+            <div className="cv-shell-header-actions grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:justify-end sm:gap-3">
               <button
                 type="button"
                 onClick={() => setIsDrawerOpen(true)}
@@ -88,7 +88,7 @@ export default function ToolPageLayout({ children }: Props) {
           </div>
         </header>
 
-        <main className="flex-1 py-6 sm:py-7">{children}</main>
+        <main className="flex-1 py-4 sm:py-7">{children}</main>
 
         <footer className="mt-auto flex flex-col gap-3 border-t border-white/10 pt-5 text-sm text-zinc-400 sm:flex-row sm:items-center sm:justify-between">
           <p>Privacidade local para arquivos, mensagens, QR Codes e imagens.</p>

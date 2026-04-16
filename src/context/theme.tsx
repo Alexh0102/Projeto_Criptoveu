@@ -30,7 +30,7 @@ function resolveInitialTheme(): Theme {
 }
 
 const LIGHT_BACKGROUND =
-  'radial-gradient(circle at 14% 0%, rgba(56, 189, 248, 0.16), transparent 30%), radial-gradient(circle at 88% 10%, rgba(34, 197, 94, 0.12), transparent 22%), linear-gradient(180deg, #eef4f7 0%, #e4edf3 100%)'
+  'radial-gradient(circle at 12% 0%, rgba(45, 212, 191, 0.12), transparent 26%), radial-gradient(circle at 88% 8%, rgba(125, 211, 252, 0.1), transparent 24%), linear-gradient(180deg, #f6f9fb 0%, #e5edf2 56%, #dbe5eb 100%)'
 
 const DARK_BACKGROUND =
   'radial-gradient(circle at top, rgba(82, 224, 255, 0.12), transparent 28%), radial-gradient(circle at 90% 10%, rgba(251, 191, 36, 0.12), transparent 26%), #05070b'
@@ -40,7 +40,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const nextBackground = theme === 'light' ? LIGHT_BACKGROUND : DARK_BACKGROUND
-    const nextColor = theme === 'light' ? '#12263c' : '#f5f7fb'
+    const nextColor = theme === 'light' ? '#10243a' : '#f5f7fb'
 
     document.documentElement.dataset.theme = theme
     window.localStorage.setItem('criptify-theme', theme)
@@ -57,7 +57,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         theme === 'light'
           ? {
               background: LIGHT_BACKGROUND,
-              color: '#12263c',
+              color: '#10243a',
             }
           : {
               background: DARK_BACKGROUND,

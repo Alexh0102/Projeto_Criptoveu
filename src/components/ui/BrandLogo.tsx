@@ -11,10 +11,10 @@ export default function BrandLogo({
 }: Props) {
   const isHero = variant === 'hero'
   const frameClasses = isHero
-    ? 'h-[92px] w-[92px] rounded-[30px] sm:h-[108px] sm:w-[108px]'
-    : 'h-[56px] w-[56px] rounded-[22px] sm:h-[62px] sm:w-[62px]'
+    ? 'h-[76px] w-[76px] rounded-[26px] sm:h-[108px] sm:w-[108px]'
+    : 'h-[52px] w-[52px] rounded-[20px] sm:h-[62px] sm:w-[62px]'
   const coreClasses = isHero
-    ? 'rounded-[28px] sm:rounded-[30px]'
+    ? 'rounded-[24px] sm:rounded-[30px]'
     : 'rounded-[20px] sm:rounded-[21px]'
   const wrapperClasses = isHero
     ? 'flex min-w-0 flex-col items-start gap-4 sm:flex-row sm:items-center'

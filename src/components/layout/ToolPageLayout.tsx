@@ -60,7 +60,7 @@ export default function ToolPageLayout({ children, showToolsDock = false }: Prop
               <button
                 type="button"
                 onClick={() => setIsDrawerOpen(true)}
-                className="cv-tools-trigger btn-secondary justify-center px-3 sm:w-auto"
+                className="cv-tools-trigger hidden md:flex btn-secondary justify-center px-3 sm:w-auto"
                 aria-label="Abrir lista de ferramentas"
               >
                 <Grid2x2 className="h-4 w-4" />
@@ -100,7 +100,7 @@ export default function ToolPageLayout({ children, showToolsDock = false }: Prop
       </div>
 
       {showToolsDock && !isDrawerOpen ? (
-        <div className="cv-tools-dock fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-3 lg:hidden">
+        <div className="cv-tools-dock fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-3 md:hidden">
           <button
             type="button"
             onClick={() => setIsDrawerOpen(true)}
@@ -122,33 +122,33 @@ export default function ToolPageLayout({ children, showToolsDock = false }: Prop
             onClick={() => setIsDrawerOpen(false)}
           />
 
-          <div className="absolute inset-x-0 bottom-0 rounded-t-[32px] border border-white/10 bg-zinc-950/95 p-5 backdrop-blur-xl sm:inset-y-4 sm:right-4 sm:left-auto sm:w-[420px] sm:rounded-[32px]">
-            <div className="flex items-center justify-between gap-3">
-              <div>
+          <div className="absolute inset-x-0 bottom-0 rounded-t-[32px] border border-white/10 bg-zinc-950/95 p-4 backdrop-blur-xl sm:inset-y-4 sm:right-4 sm:left-auto sm:w-[420px] sm:rounded-[32px] sm:p-5">
+            <div className="flex items-center justify-between gap-2 sm:gap-3">
+              <div className="min-w-0">
                 <p className="text-xs uppercase tracking-[0.32em] text-cyan-100/80">Ferramentas</p>
-                <p className="mt-2 text-sm text-zinc-400">Escolha a tela certa para a sua tarefa.</p>
+                <p className="mt-1 text-xs sm:text-sm text-zinc-400">Escolha a ferramenta certa para a sua tarefa.</p>
               </div>
 
               <button
                 type="button"
                 onClick={() => setIsDrawerOpen(false)}
-                className="btn-secondary h-11 w-11 rounded-full px-0 py-0"
+                className="btn-secondary h-10 w-10 shrink-0 rounded-full px-0 py-0 sm:h-11 sm:w-11"
                 aria-label="Fechar drawer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="mt-5 grid gap-3">
+            <div className="mt-4 grid gap-2 sm:mt-5 sm:gap-3">
               <NavLink
                 to="/"
                 onClick={() => setIsDrawerOpen(false)}
                 className={({ isActive }) =>
-                  `${isActive ? 'surface-primary' : 'surface-secondary'} rounded-[24px] px-4 py-4 text-left transition`
+                  `${isActive ? 'surface-primary' : 'surface-secondary'} rounded-[24px] px-3 py-3 sm:px-4 sm:py-4 text-left transition`
                 }
               >
                 <p className="text-sm font-medium text-white">Home</p>
-                <p className="mt-1 text-sm text-zinc-400">Voltar para a visão geral do CriptoVéu.</p>
+                <p className="mt-0.5 text-xs sm:text-sm text-zinc-400">Voltar para a visão geral do CriptoVéu.</p>
               </NavLink>
 
               {toolDefinitions.map((tool) => (
@@ -157,36 +157,13 @@ export default function ToolPageLayout({ children, showToolsDock = false }: Prop
                   to={tool.path}
                   onClick={() => setIsDrawerOpen(false)}
                   className={({ isActive }) =>
-                    `${isActive ? 'surface-primary' : 'surface-secondary'} rounded-[24px] px-4 py-4 text-left transition`
+                    `${isActive ? 'surface-primary' : 'surface-secondary'} rounded-[24px] px-3 py-3 sm:px-4 sm:py-4 text-left transition`
                   }
                 >
                   <p className="text-sm font-medium text-white">{tool.title}</p>
-                  <p className="mt-1 text-sm text-zinc-400">{tool.helper}</p>
+                  <p className="mt-0.5 text-xs sm:text-sm text-zinc-400">{tool.helper}</p>
                 </NavLink>
               ))}
-            </div>
-
-            <div className="mt-5 border-t border-white/10 pt-5">
-              <p className="text-xs uppercase tracking-[0.32em] text-zinc-500">Transparência</p>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                {[
-                  { to: '/privacidade', label: 'Privacidade' },
-                  { to: '/seguranca', label: 'Segurança' },
-                  { to: '/detalhes-tecnicos', label: 'Detalhes técnicos' },
-                  { to: '/sobre', label: 'Sobre o projeto' },
-                ].map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => setIsDrawerOpen(false)}
-                    className={({ isActive }) =>
-                      `${isActive ? 'surface-primary' : 'surface-secondary'} rounded-[20px] px-4 py-3 text-sm font-medium text-white transition`
-                    }
-                  >
-                    {item.label}
-                  </NavLink>
-                ))}
-              </div>
             </div>
           </div>
         </div>

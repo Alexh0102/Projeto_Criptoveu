@@ -1,5 +1,5 @@
 export type ToolDefinition = {
-  path: '/arquivos' | '/qr-secreto' | '/link-secreto' | '/esteganografia'
+  path: '/arquivos' | '/qr-secreto' | '/link-secreto' | '/esteganografia' | '/veu-notes'
   title: string
   shortTitle: string
   description: string
@@ -43,5 +43,15 @@ export const toolDefinitions: ToolDefinition[] = [
     helper: 'Envie a imagem, defina a senha e gere o novo arquivo.',
     eyebrow: 'Imagem com segredo',
     technicalLabel: 'Esteganografia',
+  },
+  {
+    path: '/veu-notes',
+    title: 'VéuNotes',
+    shortTitle: 'VéuNotes',
+    cardTitle: 'Cofre de notas',
+    description: 'Guarde uma nota criptografada com senha mestre, só neste navegador.',
+    helper: 'Crie, destranque, edite, exporte e importe um único cofre local de texto.',
+    eyebrow: 'Cofre local',
+    technicalLabel: 'AES-GCM',
   },
 ]

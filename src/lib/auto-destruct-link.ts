@@ -5,7 +5,8 @@ import {
   type TextEncryptionResult,
 } from './cryptify'
 
-export const AUTO_DESTRUCT_APP_URL = 'https://projeto-criptify.vercel.app'
+export const AUTO_DESTRUCT_APP_URL = 'https://www.xn--criptovu-h1a.com'
+const AUTO_DESTRUCT_APP_PATH = '/link-secreto'
 const AUTO_DESTRUCT_HASH_PREFIX = '#msg='
 const AUTO_DESTRUCT_STORAGE_PREFIX = 'criptify:auto-destruct:'
 
@@ -168,7 +169,12 @@ export function payloadToDecryptInput(payload: AutoDestructPayload): TextDecrypt
 }
 
 export function buildAutoDestructLink(encodedPayload: string) {
-  return `${AUTO_DESTRUCT_APP_URL}/${AUTO_DESTRUCT_HASH_PREFIX}${encodeURIComponent(encodedPayload)}`
+  const baseUrl =
+    typeof window !== 'undefined' && window.location?.origin
+      ? new URL(AUTO_DESTRUCT_APP_PATH, window.location.origin).toString()
+      : `${AUTO_DESTRUCT_APP_URL}${AUTO_DESTRUCT_APP_PATH}`
+
+  return `${baseUrl}${AUTO_DESTRUCT_HASH_PREFIX}${encodeURIComponent(encodedPayload)}`
 }
 
 export function readAutoDestructPayloadFromHash(hash: string) {

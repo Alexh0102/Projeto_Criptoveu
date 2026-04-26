@@ -1,4 +1,5 @@
 export const MAX_STEG_IMAGE_SIZE_BYTES = 10 * 1024 * 1024
+const MAX_STEG_IMAGE_PIXELS = 20_000_000
 export const STEGANOGRAPHY_PAYLOAD_PREFIX = 'CRIPTIFY_STEG_V1:'
 
 const HEADER_SIZE_BYTES = 4
@@ -75,6 +76,16 @@ async function loadImageElement(file: File | Blob) {
 async function readImageData(file: File | Blob) {
   assertSupportedImage(file)
   const image = await loadImageElement(file)
+  const width = image.naturalWidth || image.width
+  const height = image.naturalHeight || image.height
+
+  if (!width || !height || width * height > MAX_STEG_IMAGE_PIXELS) {
+    throw new SteganographyError(
+      'IMAGE_TOO_LARGE',
+      'A imagem tem resolução alta demais para processamento seguro.',
+    )
+  }
+
   const canvas = document.createElement('canvas')
   const context = canvas.getContext('2d')
 
@@ -85,8 +96,8 @@ async function readImageData(file: File | Blob) {
     )
   }
 
-  canvas.width = image.naturalWidth || image.width
-  canvas.height = image.naturalHeight || image.height
+  canvas.width = width
+  canvas.height = height
   context.drawImage(image, 0, 0)
 
   return {

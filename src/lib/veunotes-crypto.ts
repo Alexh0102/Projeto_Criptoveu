@@ -7,6 +7,7 @@ const IV_LENGTH_BYTES = 12
 export const VEU_NOTES_VERSION = 1
 export const VEU_NOTES_MIN_PASSWORD_LENGTH = 12
 export const VEU_NOTES_PBKDF2_ITERATIONS = 210_000
+export const VEU_NOTES_MAX_PBKDF2_ITERATIONS = 1_200_000
 
 export type VeuNotesBlobJson = {
   version: number
@@ -94,7 +95,11 @@ export function assertVeuNotesBlobJson(value: unknown): VeuNotesBlobJson {
     )
   }
 
-  if (value.iterations < 100_000) {
+  if (
+    !Number.isSafeInteger(value.iterations) ||
+    value.iterations < 100_000 ||
+    value.iterations > VEU_NOTES_MAX_PBKDF2_ITERATIONS
+  ) {
     throw new VeuNotesCryptoError(
       'INVALID_BLOB',
       'O cofre salvo usa parâmetros de derivação inválidos.',

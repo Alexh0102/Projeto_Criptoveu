@@ -7,14 +7,27 @@ import {
 export const VEU_NOTES_STORAGE_KEY = 'veunotes-v1'
 export const VEU_NOTES_BACKUP_FILE = 'veunotes-backup.json'
 export const VEU_NOTES_STORAGE_WARNING_BYTES = 500 * 1024
+export const VEU_NOTES_MAX_BACKUP_BYTES = 2 * 1024 * 1024
 
 export class VeuNotesStorageError extends Error {
-  code: 'INVALID_JSON' | 'INVALID_SHAPE' | 'WRITE_FAILED'
+  code: 'INVALID_JSON' | 'INVALID_SHAPE' | 'WRITE_FAILED' | 'FILE_TOO_LARGE'
 
-  constructor(code: 'INVALID_JSON' | 'INVALID_SHAPE' | 'WRITE_FAILED', message: string) {
+  constructor(
+    code: 'INVALID_JSON' | 'INVALID_SHAPE' | 'WRITE_FAILED' | 'FILE_TOO_LARGE',
+    message: string,
+  ) {
     super(message)
     this.name = 'VeuNotesStorageError'
     this.code = code
+  }
+}
+
+export function assertSupportedBackupFile(file: File) {
+  if (file.size > VEU_NOTES_MAX_BACKUP_BYTES) {
+    throw new VeuNotesStorageError(
+      'FILE_TOO_LARGE',
+      'O backup excede o tamanho máximo suportado para importação.',
+    )
   }
 }
 

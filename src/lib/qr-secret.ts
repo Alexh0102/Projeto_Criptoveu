@@ -3,6 +3,7 @@ import jsQR from 'jsqr'
 import { parseEncryptedTextPayload } from './secret-text-payload'
 
 export const MAX_QR_IMAGE_SIZE_BYTES = 10 * 1024 * 1024
+const MAX_QR_IMAGE_PIXELS = 20_000_000
 export const QR_SECRET_HASH_PREFIX = '#qr='
 export const QR_SECRET_ROUTE_PATH = '/qr-secreto'
 
@@ -75,6 +76,16 @@ async function loadImageElement(file: File | Blob) {
 async function readQrImageData(file: File | Blob) {
   assertSupportedQrImage(file)
   const image = await loadImageElement(file)
+  const width = image.naturalWidth || image.width
+  const height = image.naturalHeight || image.height
+
+  if (!width || !height || width * height > MAX_QR_IMAGE_PIXELS) {
+    throw new QRCodeSecretError(
+      'IMAGE_TOO_LARGE',
+      'A imagem do QR tem resolução alta demais para processamento seguro.',
+    )
+  }
+
   const canvas = document.createElement('canvas')
   const context = canvas.getContext('2d', { willReadFrequently: true })
 
@@ -85,8 +96,8 @@ async function readQrImageData(file: File | Blob) {
     )
   }
 
-  canvas.width = image.naturalWidth || image.width
-  canvas.height = image.naturalHeight || image.height
+  canvas.width = width
+  canvas.height = height
   context.drawImage(image, 0, 0)
 
   return context.getImageData(0, 0, canvas.width, canvas.height)

@@ -9,6 +9,7 @@ export const AUTO_DESTRUCT_APP_URL = 'https://www.xn--criptovu-h1a.com'
 const AUTO_DESTRUCT_APP_PATH = '/link-secreto'
 const AUTO_DESTRUCT_HASH_PREFIX = '#msg='
 const AUTO_DESTRUCT_STORAGE_PREFIX = 'criptify:auto-destruct:'
+const MAX_AUTO_DESTRUCT_PAYLOAD_CHARS = 200_000
 
 export type AutoDestructExpiration = '24h' | '7d' | 'never'
 
@@ -59,6 +60,13 @@ function encodeJsonToBase64(value: unknown) {
 }
 
 function decodeJsonFromBase64(value: string) {
+  if (value.length > MAX_AUTO_DESTRUCT_PAYLOAD_CHARS) {
+    throw new AutoDestructLinkError(
+      'INVALID_PAYLOAD',
+      'O link da mensagem excede o tamanho máximo suportado.',
+    )
+  }
+
   try {
     const bytes = decodeBase64ToBytes(value)
     return JSON.parse(new TextDecoder().decode(bytes)) as unknown

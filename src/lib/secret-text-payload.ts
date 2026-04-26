@@ -6,6 +6,7 @@ import {
 } from './cryptify'
 
 export const SECRET_TEXT_PAYLOAD_PREFIX = 'CRIPTIFY_SECRET_V1:'
+export const MAX_SECRET_TEXT_PAYLOAD_CHARS = 200_000
 const LEGACY_SECRET_TEXT_PAYLOAD_PREFIXES = ['CRIPTIFY_STEG_V1:']
 
 type SerializedSecretTextPayload = {
@@ -46,6 +47,12 @@ export function serializeEncryptedTextPayload(payload: TextEncryptionResult) {
 }
 
 export function parseEncryptedTextPayload(payload: string): TextDecryptionInput {
+  if (payload.length > MAX_SECRET_TEXT_PAYLOAD_CHARS) {
+    throw new SecretTextPayloadError(
+      'A mensagem protegida excede o tamanho máximo suportado.',
+    )
+  }
+
   const prefix = resolvePayloadPrefix(payload)
 
   if (!prefix) {

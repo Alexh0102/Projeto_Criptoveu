@@ -14,6 +14,7 @@ import {
   VEU_NOTES_BACKUP_FILE,
   VEU_NOTES_STORAGE_WARNING_BYTES,
   VeuNotesStorageError,
+  assertSupportedBackupFile,
   clearVault,
   loadVaultBlob,
   measureVaultBlobBytes,
@@ -398,6 +399,7 @@ export default function useVeuNotes(options: UseVeuNotesOptions = {}) {
       setIsBusy(true)
 
       try {
+        assertSupportedBackupFile(file)
         const rawContent = await file.text()
         const importedBlob = parseVaultBlob(rawContent)
         const salt = decodeBase64ToBytes(importedBlob.salt)

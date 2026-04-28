@@ -30,7 +30,7 @@ Link do site: `https://www.xn--criptovu-h1a.com/`
 
 ## Requisitos Nao Funcionais
 
-| ID | Descricao |
+| ID | Descrição |
 | --- | --- |
 | RNF01 | 100% client-side, sem servidor e sem envio de dados |
 | RNF02 | Design moderno, dark mode e responsivo com foco em mobile |
@@ -51,28 +51,6 @@ Link do site: `https://www.xn--criptovu-h1a.com/`
 - Erro claro para senha incorreta ou arquivo invalido
 - Banner de destaque: `Seus arquivos nunca saem do navegador`
 
-## Como rodar
-
-```bash
-npm install
-npm run dev
-```
-
-## Build de producao
-
-```bash
-npm run build
-```
-
-## Build endurecida
-
-```bash
-npm run build:secure
-```
-
-Esta variante faz o build normal e aplica ofuscacao no bundle final em `dist/assets`.
-
-## Hardening aplicado
 
 - `CSP`, `COOP`, `COEP`, `CORP`, `HSTS`, `Referrer-Policy`, `Permissions-Policy` e demais headers em `vercel.json` e `netlify.toml`
 - Sem `sourcemap` em producao
@@ -82,12 +60,4 @@ Esta variante faz o build normal e aplica ofuscacao no bundle final em `dist/ass
 - Validacao de contexto seguro: o app bloqueia processamento fora de `HTTPS` ou `localhost`
 - Limite de arquivo de `500 MB` para reduzir risco de travamento e consumo excessivo de memoria
 
-## Limite importante
-
-Nao existe forma de esconder 100% o codigo de um site client-side. O navegador sempre recebe JavaScript executavel. O que da para fazer e:
-
-- dificultar engenharia reversa com minificacao e ofuscacao
-- remover `sourcemaps`
-- bloquear segredos no frontend
-- endurecer headers e politicas do navegador
 

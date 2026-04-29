@@ -12,6 +12,7 @@ import QrSecretPage from './pages/QrSecretPage'
 import SecurityPage from './pages/SecurityPage'
 import SteganographyPage from './pages/SteganographyPage'
 import TechnicalDetailsPage from './pages/TechnicalDetailsPage'
+import TermsPage from './pages/TermsPage'
 import VeuNotesPage from './pages/VeuNotesPage'
 
 function LegacyHashRedirect() {
@@ -42,6 +43,8 @@ export default function App() {
         <Route path="/privacidade" element={<PrivacyPage />} />
         <Route path="/seguranca" element={<SecurityPage />} />
         <Route path="/detalhes-tecnicos" element={<TechnicalDetailsPage />} />
+        <Route path="/termos" element={<TermsPage />} />
+        <Route path="/termos-de-uso" element={<TermsPage />} />
         <Route path="/sobre" element={<AboutPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

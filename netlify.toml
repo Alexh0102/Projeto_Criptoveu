@@ -17,6 +17,16 @@
   from = "/esteganografia"
   to = "/index.html"
   status = 200
+
+[[redirects]]
+  from = "/termos"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/termos-de-uso"
+  to = "/index.html"
+  status = 200
 [[headers]]
   for = "/*"
 

@@ -1,5 +1,6 @@
 import { ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 
 const TERMS_STORAGE_KEY = 'criptoveu_accepted_terms'
 
@@ -11,6 +12,7 @@ const TERMS_ITEMS = [
 ]
 
 export default function TermsModal() {
+  const location = useLocation()
   const [shouldShow, setShouldShow] = useState(() => {
     if (typeof window === 'undefined') {
       return false
@@ -34,6 +36,10 @@ export default function TermsModal() {
   }
 
   if (!shouldShow) {
+    return null
+  }
+
+  if (location.pathname === '/termos' || location.pathname === '/termos-de-uso') {
     return null
   }
 
@@ -80,6 +86,15 @@ export default function TermsModal() {
         >
           Li e aceito os termos
         </button>
+
+        <Link
+          to="/termos"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 block text-center text-sm font-medium text-zinc-400 transition hover:text-emerald-200 hover:underline"
+        >
+          Ler mais sobre os termos
+        </Link>
       </div>
     </div>
   )

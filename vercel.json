@@ -147,6 +147,14 @@
       "destination": "/index.html"
     },
     {
+      "source": "/termos",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/termos-de-uso",
+      "destination": "/index.html"
+    },
+    {
       "source": "/sobre",
       "destination": "/index.html"
     }

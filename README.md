@@ -30,7 +30,7 @@ Link do site: `https://www.xn--criptovu-h1a.com/`
 
 ## Requisitos Nao Funcionais
 
-| ID | Descricao |
+| ID | Descrição |
 | --- | --- |
 | RNF01 | 100% client-side, sem servidor e sem envio de dados |
 | RNF02 | Design moderno, dark mode e responsivo com foco em mobile |

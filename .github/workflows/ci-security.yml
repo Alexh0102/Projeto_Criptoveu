@@ -34,8 +34,8 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Build secure bundle
-        run: npm run build:secure
+      - name: Build production bundle
+        run: npm run build
 
       - name: Audit dependencies
         run: npm audit --audit-level=high

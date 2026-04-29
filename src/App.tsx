@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-
 
 import AboutPage from './pages/AboutPage'
 import { ThemeProvider } from './context/theme'
+import TermsModal from './components/TermsModal'
 import FilesPage from './pages/FilesPage'
 import HomePage from './pages/HomePage'
 import LinkSecretPage from './pages/LinkSecretPage'
@@ -29,6 +30,7 @@ function LegacyHashRedirect() {
 export default function App() {
   return (
     <ThemeProvider>
+      <TermsModal />
       <LegacyHashRedirect />
       <Routes>
         <Route path="/" element={<HomePage />} />

@@ -21,7 +21,7 @@ git push -u origin main
 4. Revise as configuracoes de build:
 
 - Framework Preset: `Vite`
-- Build Command: `npm run build:secure`
+- Build Command: `npm run build`
 - Output Directory: `dist`
 - Install Command: `npm ci`
 

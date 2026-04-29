@@ -21,18 +21,17 @@ Criptify e um app 100% client-side. Isso significa que:
 - `X-Content-Type-Options: nosniff`
 - `Cache-Control` conservador para HTML e agressivo para assets versionados
 - `sourcemap` desabilitado
-- build opcional com ofuscacao
 
 ## Limites
 
 - codigo frontend nunca fica secreto
-- ofuscacao nao substitui arquitetura segura
+- minificacao nao substitui arquitetura segura
 - qualquer segredo deve ficar fora do frontend
 
 ## Recomendacoes de deploy
 
 - publicar apenas em HTTPS
-- usar `npm run build:secure` para a versao publica
+- usar `npm run build` para gerar a versao publica
 - validar os headers finais com o deploy ja no ar
 - revisar dependencias periodicamente
 - habilitar `Dependabot`, `CodeQL` e workflow de CI no GitHub

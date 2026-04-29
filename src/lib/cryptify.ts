@@ -1,8 +1,9 @@
-﻿const HEADER_TEXT = 'CRIPTIFY1'
-const HEADER_BYTES = new TextEncoder().encode(HEADER_TEXT)
-const SALT_LENGTH = 16
-const IV_LENGTH = 12
+﻿const FILE_HEADER_TEXT = 'CRIPTIFY1'
+const FILE_HEADER_BYTES = new TextEncoder().encode(FILE_HEADER_TEXT)
+const SALT_LENGTH_BYTES = 16
+const IV_LENGTH_BYTES = 12
 const PBKDF2_ITERATIONS = 600_000
+const BASE64_CHUNK_SIZE_BYTES = 0x8000
 export const MAX_FILE_SIZE_BYTES = 500 * 1024 * 1024
 
 type ProgressCallback = (value: number, label: string) => void
@@ -58,10 +59,9 @@ function cloneBytes(source: Uint8Array): Uint8Array<ArrayBuffer> {
 
 export function encodeBytesToBase64(bytes: Uint8Array) {
   let binary = ''
-  const chunkSize = 0x8000
 
-  for (let index = 0; index < bytes.length; index += chunkSize) {
-    const chunk = bytes.subarray(index, index + chunkSize)
+  for (let index = 0; index < bytes.length; index += BASE64_CHUNK_SIZE_BYTES) {
+    const chunk = bytes.subarray(index, index + BASE64_CHUNK_SIZE_BYTES)
     binary += String.fromCharCode(...chunk)
   }
 
@@ -179,21 +179,28 @@ export async function encryptFile(
   const source = new Uint8Array(await file.arrayBuffer())
 
   await reportProgress(onProgress, 32, 'Preparando proteção')
-  const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH))
+  const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH_BYTES))
   const key = await deriveAesKey(password, salt, 'encrypt')
 
   await reportProgress(onProgress, 72, 'Protegendo conteúdo')
-  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH_BYTES))
   const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, source)
 
   await reportProgress(onProgress, 92, 'Finalizando arquivo protegido')
+  // Formato do arquivo: cabeçalho fixo + salt PBKDF2 + IV AES-GCM + ciphertext.
   const payload = new Uint8Array(
-    HEADER_BYTES.length + SALT_LENGTH + IV_LENGTH + encrypted.byteLength,
+    FILE_HEADER_BYTES.length +
+      SALT_LENGTH_BYTES +
+      IV_LENGTH_BYTES +
+      encrypted.byteLength,
   )
-  payload.set(HEADER_BYTES, 0)
-  payload.set(salt, HEADER_BYTES.length)
-  payload.set(iv, HEADER_BYTES.length + SALT_LENGTH)
-  payload.set(new Uint8Array(encrypted), HEADER_BYTES.length + SALT_LENGTH + IV_LENGTH)
+  payload.set(FILE_HEADER_BYTES, 0)
+  payload.set(salt, FILE_HEADER_BYTES.length)
+  payload.set(iv, FILE_HEADER_BYTES.length + SALT_LENGTH_BYTES)
+  payload.set(
+    new Uint8Array(encrypted),
+    FILE_HEADER_BYTES.length + SALT_LENGTH_BYTES + IV_LENGTH_BYTES,
+  )
 
   return {
     blob: new Blob([payload], { type: 'application/octet-stream' }),
@@ -214,8 +221,8 @@ export async function encryptText(
     )
   }
 
-  const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH))
-  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))
+  const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH_BYTES))
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH_BYTES))
   const key = await deriveAesKey(password, salt, 'encrypt')
   const source = new TextEncoder().encode(normalizedText)
   const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, source)
@@ -261,25 +268,35 @@ export async function decryptFile(
   await reportProgress(onProgress, 10, 'Lendo arquivo')
   const source = new Uint8Array(await file.arrayBuffer())
 
-  if (source.byteLength <= HEADER_BYTES.length + SALT_LENGTH + IV_LENGTH) {
+  if (
+    source.byteLength <=
+    FILE_HEADER_BYTES.length + SALT_LENGTH_BYTES + IV_LENGTH_BYTES
+  ) {
     throw new CriptifyError('INVALID_FILE', 'Arquivo inválido ou incompleto.')
   }
 
-  const incomingHeader = new TextDecoder().decode(source.slice(0, HEADER_BYTES.length))
+  const incomingHeader = new TextDecoder().decode(
+    source.slice(0, FILE_HEADER_BYTES.length),
+  )
 
-  if (incomingHeader !== HEADER_TEXT) {
+  if (incomingHeader !== FILE_HEADER_TEXT) {
     throw new CriptifyError(
       'INVALID_FILE',
       'Arquivo inválido. Não foi possível reconhecer este pacote protegido.',
     )
   }
 
-  const salt = source.slice(HEADER_BYTES.length, HEADER_BYTES.length + SALT_LENGTH)
-  const iv = source.slice(
-    HEADER_BYTES.length + SALT_LENGTH,
-    HEADER_BYTES.length + SALT_LENGTH + IV_LENGTH,
+  const salt = source.slice(
+    FILE_HEADER_BYTES.length,
+    FILE_HEADER_BYTES.length + SALT_LENGTH_BYTES,
   )
-  const encrypted = source.slice(HEADER_BYTES.length + SALT_LENGTH + IV_LENGTH)
+  const iv = source.slice(
+    FILE_HEADER_BYTES.length + SALT_LENGTH_BYTES,
+    FILE_HEADER_BYTES.length + SALT_LENGTH_BYTES + IV_LENGTH_BYTES,
+  )
+  const encrypted = source.slice(
+    FILE_HEADER_BYTES.length + SALT_LENGTH_BYTES + IV_LENGTH_BYTES,
+  )
 
   await reportProgress(onProgress, 36, 'Preparando recuperação')
   const key = await deriveAesKey(password, new Uint8Array(salt), 'decrypt')

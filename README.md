@@ -51,13 +51,34 @@ Link do site: `https://www.xn--criptovu-h1a.com/`
 - Erro claro para senha incorreta ou arquivo invalido
 - Banner de destaque: `Seus arquivos nunca saem do navegador`
 
+## Como rodar
+
+```bash
+npm install
+npm run dev
+```
+
+## Build de producao
+
+```bash
+npm run build
+```
+
+## Hardening aplicado
 
 - `CSP`, `COOP`, `COEP`, `CORP`, `HSTS`, `Referrer-Policy`, `Permissions-Policy` e demais headers em `vercel.json` e `netlify.toml`
 - Sem `sourcemap` em producao
 - Minificacao de bundle e remocao de `console` e `debugger` no build
-- Ofuscacao opcional com `javascript-obfuscator`
 - Fontes externas removidas para permitir `style-src 'self'` e `font-src 'self'`
 - Validacao de contexto seguro: o app bloqueia processamento fora de `HTTPS` ou `localhost`
 - Limite de arquivo de `500 MB` para reduzir risco de travamento e consumo excessivo de memoria
 
+## Limite importante
+
+Nao existe forma de esconder 100% o codigo de um site client-side. O navegador sempre recebe JavaScript executavel. O que da para fazer e:
+
+- publicar codigo legivel para auditoria e contribuicao
+- remover `sourcemaps`
+- bloquear segredos no frontend
+- endurecer headers e politicas do navegador
 

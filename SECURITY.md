@@ -2,7 +2,7 @@
 
 ## Modelo de seguranca
 
-Criptify e um app 100% client-side. Isso significa que:
+CriptoVéu é um app 100% client-side. Isso significa que:
 
 - o processamento e feito no navegador
 - a senha nao deve ser persistida

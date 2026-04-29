@@ -17,7 +17,7 @@ import type { ChangeEvent } from 'react'
 
 import useVeuNotes from '../hooks/useVeuNotes'
 import { VEU_NOTES_MIN_PASSWORD_LENGTH } from '../lib/veunotes-crypto'
-import { getPasswordStrength } from '../lib/cryptify'
+import { getPasswordStrength } from '../lib/criptoveu'
 import FieldBlock from './ui/FieldBlock'
 import MobileStickyCTA from './ui/MobileStickyCTA'
 

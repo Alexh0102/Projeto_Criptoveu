@@ -23,7 +23,7 @@ import {
   readAutoDestructPayloadFromInput,
   serializeAutoDestructPayload,
 } from '../lib/auto-destruct-link'
-import { CriptifyError, decryptText, encryptText } from '../lib/cryptify'
+import { CriptoveuError, decryptText, encryptText } from '../lib/criptoveu'
 import AdvancedOptions from './ui/AdvancedOptions'
 import MobileStickyCTA from './ui/MobileStickyCTA'
 import ResultPanel from './ui/ResultPanel'
@@ -124,7 +124,7 @@ function OptionCard({
 }
 
 function getFriendlyErrorMessage(error: unknown) {
-  if (error instanceof AutoDestructLinkError || error instanceof CriptifyError) {
+  if (error instanceof AutoDestructLinkError || error instanceof CriptoveuError) {
     return error.message
   }
 

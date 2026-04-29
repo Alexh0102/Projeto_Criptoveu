@@ -10,7 +10,7 @@ import {
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ChangeEvent, ClipboardEvent } from 'react'
 
-import { CriptifyError, decryptText, encryptText, formatFileSize } from '../lib/cryptify'
+import { CriptoveuError, decryptText, encryptText, formatFileSize } from '../lib/criptoveu'
 import {
   MAX_QR_IMAGE_SIZE_BYTES,
   QRCodeSecretError,
@@ -53,7 +53,7 @@ function getFriendlyErrorMessage(error: unknown) {
   if (
     error instanceof QRCodeSecretError ||
     error instanceof SecretTextPayloadError ||
-    error instanceof CriptifyError
+    error instanceof CriptoveuError
   ) {
     return error.message
   }

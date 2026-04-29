@@ -3,7 +3,7 @@ import {
   encodeBytesToBase64,
   type TextDecryptionInput,
   type TextEncryptionResult,
-} from './cryptify'
+} from './criptoveu'
 
 export const AUTO_DESTRUCT_APP_URL = 'https://www.xn--criptovu-h1a.com'
 const AUTO_DESTRUCT_APP_PATH = '/link-secreto'

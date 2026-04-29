@@ -34,7 +34,7 @@ Link do site: `https://www.xn--criptovu-h1a.com/`
 | --- | --- |
 | RNF01 | 100% client-side, sem servidor e sem envio de dados |
 | RNF02 | Design moderno, dark mode e responsivo com foco em mobile |
-| RNF03 | Tempo de processamento aceitavel para arquivos de ate 500 MB |
+| RNF03 | Tempo de processamento aceitavel para arquivos de ate 2 GB |
 | RNF04 | Codigo limpo, tipado em TypeScript e comentado quando necessario |
 | RNF05 | Acessibilidade basica com labels, foco visivel e contraste adequado |
 | RNF06 | Deploy facil em Vercel ou Netlify |
@@ -42,7 +42,7 @@ Link do site: `https://www.xn--criptovu-h1a.com/`
 
 ## Requisitos Tecnicos
 
-- Formato proprio: cabecalho `CRIPTIFY1` + `salt` + `IV` + payload criptografado
+- Formato proprio: cabecalho `CRIPTOVEU2` + `salt` + blocos AES-GCM
 - Compatibilidade alvo: Chrome, Edge e Firefox
 - Safari: limite pratico aproximado de 2 GB
 - Senha nunca e armazenada
@@ -71,7 +71,7 @@ npm run build
 - Minificacao de bundle e remocao de `console` e `debugger` no build
 - Fontes externas removidas para permitir `style-src 'self'` e `font-src 'self'`
 - Validacao de contexto seguro: o app bloqueia processamento fora de `HTTPS` ou `localhost`
-- Limite de arquivo de `500 MB` para reduzir risco de travamento e consumo excessivo de memoria
+- Limite de arquivo de `2 GB` com processamento por blocos para reduzir risco de travamento e consumo excessivo de memoria
 
 ## Limite importante
 

@@ -1,6 +1,6 @@
 {
-  "name": "cryptify",
-  "description": "Demo client-side de criptografia e descriptografia de arquivos com React, TypeScript e Web Crypto API.",
+  "name": "criptoveu",
+  "description": "App client-side de criptografia e descriptografia de arquivos com React, TypeScript e Web Crypto API.",
   "private": true,
   "version": "0.0.0",
   "type": "module",

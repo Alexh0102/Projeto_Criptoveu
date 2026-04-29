@@ -4,14 +4,12 @@ import {
   Copy,
   Download,
   FileArchive,
-  FileImage,
   LoaderCircle,
   Lock,
   Maximize2,
   Sparkles,
   Unlock,
   Upload,
-  X,
 } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent } from 'react'
@@ -20,36 +18,38 @@ import FieldBlock from '../ui/FieldBlock'
 import MobileStickyCTA from '../ui/MobileStickyCTA'
 import ResultPanel from '../ui/ResultPanel'
 import SegmentedMode from '../ui/SegmentedMode'
+import UniversalPreview from './UniversalPreview'
+import {
+  getUniversalPreviewMetadata,
+  type PreviewMetadata,
+} from './preview-metadata'
+import { useInactivity } from '../../hooks/useInactivity'
+import { useStreamingCrypto } from '../../hooks/useStreamingCrypto'
 import {
   MAX_FILE_SIZE_BYTES,
-  CriptifyError,
-  decryptFile,
-  encryptFile,
+  STREAMING_CHUNK_SIZE_BYTES,
+  CriptoveuError,
   formatFileSize,
   generateWhatsappStyleKey,
   getPasswordStrength,
-} from '../../lib/cryptify'
+} from '../../lib/criptoveu'
 
 type Mode = 'encrypt' | 'decrypt'
 type StatusTone = 'info' | 'success' | 'error'
-type PreviewKind = 'image' | 'none'
 
 type StatusState = {
   tone: StatusTone
   message: string
 }
 
-type PreviewState = {
-  kind: PreviewKind
-}
-
 type ResultItem = {
   id: string
   name: string
+  blob: Blob
   url: string
   size: number
   sourceName: string
-  preview: PreviewState
+  preview: PreviewMetadata
 }
 
 const MODE_COPY: Record<
@@ -72,8 +72,8 @@ const MODE_COPY: Record<
     action: 'Recuperar arquivos',
     title: 'Recupere o conteúdo original',
     description:
-      'Envie um arquivo .cryptify e use a mesma senha para recuperar o conteúdo.',
-    hint: 'Selecione apenas arquivos .cryptify.',
+      'Envie um arquivo .criptoveu e use a mesma senha para recuperar o conteúdo.',
+    hint: 'Também aceita pacotes antigos .cryptify.',
   },
 }
 
@@ -92,14 +92,6 @@ function downloadBlobUrl(url: string, fileName: string) {
   document.body.appendChild(anchor)
   anchor.click()
   anchor.remove()
-}
-
-function getPreviewState(mimeType: string): PreviewState {
-  if (mimeType.startsWith('image/')) {
-    return { kind: 'image' }
-  }
-
-  return { kind: 'none' }
 }
 
 export default function FileCryptoWorkspace() {
@@ -122,6 +114,8 @@ export default function FileCryptoWorkspace() {
   const passwordInputId = useId()
   const resultUrlRef = useRef<string[]>([])
   const resultPanelRef = useRef<HTMLDivElement | null>(null)
+  const isInactive = useInactivity({ disabled: results.length === 0 && !isPreviewOpen })
+  const streamingCrypto = useStreamingCrypto()
   const canUseSecureProcessing =
     window.isSecureContext && typeof window.crypto?.subtle !== 'undefined'
   const hasClipboardSupport = typeof navigator.clipboard?.writeText === 'function'
@@ -131,12 +125,12 @@ export default function FileCryptoWorkspace() {
   const totalSelectedSize = files.reduce((sum, currentFile) => sum + currentFile.size, 0)
   const resultUrl = previewItem?.url ?? results[0]?.url ?? null
   const resultName = previewItem?.name ?? results[0]?.name ?? ''
-  const preview = previewItem?.preview ?? results[0]?.preview ?? { kind: 'none' }
-  const canExpandPreview = Boolean(previewItem ?? results[0]) && preview.kind === 'image'
+  const activePreviewItem = previewItem ?? results[0] ?? null
+  const preview = activePreviewItem?.preview ?? { kind: 'none', label: 'Arquivo' }
   const quickFacts = [
     {
       label: 'Formatos suportados',
-      value: mode === 'encrypt' ? 'Qualquer arquivo' : 'Arquivos .cryptify',
+      value: mode === 'encrypt' ? 'Qualquer arquivo' : 'Arquivos .criptoveu',
     },
     {
       label: 'Limite recomendado',
@@ -144,7 +138,7 @@ export default function FileCryptoWorkspace() {
     },
     {
       label: 'Processamento',
-      value: 'Local no navegador',
+      value: `Blocos de ${formatFileSize(STREAMING_CHUNK_SIZE_BYTES)}`,
     },
     {
       label: 'Envio',
@@ -218,6 +212,7 @@ export default function FileCryptoWorkspace() {
     setResults([])
     setPreviewItem(null)
     setIsPreviewOpen(false)
+    streamingCrypto.resetProgress()
   }
 
   function handleModeChange(nextMode: string) {
@@ -234,8 +229,8 @@ export default function FileCryptoWorkspace() {
       tone: 'info',
       message:
         resolvedMode === 'encrypt'
-          ? 'Modo de proteção ativo. O arquivo será convertido para .cryptify.'
-          : 'Modo de recuperação ativo. Selecione o arquivo .cryptify e use a mesma senha.',
+          ? 'Modo de proteção ativo. O arquivo será convertido para .criptoveu.'
+          : 'Modo de recuperação ativo. Selecione o arquivo .criptoveu e use a mesma senha.',
     })
     setFiles([])
     clearResults()
@@ -369,7 +364,7 @@ export default function FileCryptoWorkspace() {
   }
 
   function handleOpenPreview(result: ResultItem | null = results[0] ?? null) {
-    if (!result || result.preview.kind !== 'image') {
+    if (!result || result.preview.kind === 'none') {
       return
     }
 
@@ -412,7 +407,6 @@ export default function FileCryptoWorkspace() {
     clearResults()
 
     try {
-      const operation = mode === 'encrypt' ? encryptFile : decryptFile
       const processedResults: ResultItem[] = []
       const failures: string[] = []
 
@@ -420,24 +414,32 @@ export default function FileCryptoWorkspace() {
         const currentStep = index + 1
 
         try {
-          const { blob, downloadName } = await operation(currentFile, password, (value, label) => {
-            const startProgress = (index / files.length) * 100
-            const endProgress = ((index + 1) / files.length) * 100
-            const aggregateProgress = startProgress + ((endProgress - startProgress) * value) / 100
+          const { blob, downloadName } = await streamingCrypto.processFile(
+            mode,
+            currentFile,
+            password,
+            (value, label) => {
+              const startProgress = (index / files.length) * 100
+              const endProgress = ((index + 1) / files.length) * 100
+              const aggregateProgress = startProgress + ((endProgress - startProgress) * value) / 100
 
-            setProgress(Math.round(aggregateProgress))
-            setProgressLabel(
-              files.length === 1 ? label : `Arquivo ${currentStep}/${files.length} - ${label}`,
-            )
-          })
+              setProgress(Math.round(aggregateProgress))
+              setProgressLabel(
+                files.length === 1 ? label : `Arquivo ${currentStep}/${files.length} - ${label}`,
+              )
+            },
+          )
 
           const nextUrl = URL.createObjectURL(blob)
-          const nextPreview: PreviewState =
-            mode === 'decrypt' ? getPreviewState(blob.type) : { kind: 'none' }
+          const nextPreview =
+            mode === 'decrypt'
+              ? getUniversalPreviewMetadata(blob.type)
+              : ({ kind: 'none', label: 'Arquivo' } as PreviewMetadata)
 
           processedResults.push({
             id: `${downloadName}-${index}-${blob.size}`,
             name: downloadName,
+            blob,
             url: nextUrl,
             size: blob.size,
             sourceName: currentFile.name,
@@ -450,7 +452,7 @@ export default function FileCryptoWorkspace() {
         } catch (error) {
           failures.push(
             `${currentFile.name}: ${
-              error instanceof CriptifyError
+              error instanceof CriptoveuError
                 ? error.message
                 : 'Falha inesperada ao processar este arquivo.'
             }`,
@@ -473,7 +475,9 @@ export default function FileCryptoWorkspace() {
         return
       }
 
-      const previewableResults = processedResults.filter((result) => result.preview.kind === 'image')
+      const previewableResults = processedResults.filter(
+        (result) => result.preview.kind !== 'none',
+      )
 
       setProgress(100)
       setProgressLabel(
@@ -489,7 +493,7 @@ export default function FileCryptoWorkspace() {
             : failures.length > 0
               ? `${processedResults.length} arquivo(s) recuperado(s) com sucesso. ${failures.length} falhou(ram).`
               : previewableResults.length > 0
-                ? `${processedResults.length} arquivo(s) recuperado(s) com sucesso. ${previewableResults.length} imagem(ns) podem ser revisadas antes do download.`
+                ? `${processedResults.length} arquivo(s) recuperado(s) com sucesso. ${previewableResults.length} prévia(s) segura(s) disponível(is).`
                 : `${processedResults.length} arquivo(s) recuperado(s) com sucesso. Baixe os arquivos para abrir no aplicativo correspondente.`,
       })
     } catch (error) {
@@ -498,7 +502,7 @@ export default function FileCryptoWorkspace() {
       setStatus({
         tone: 'error',
         message:
-          error instanceof CriptifyError
+          error instanceof CriptoveuError
             ? error.message
             : 'Ocorreu um erro inesperado ao processar os arquivos.',
       })
@@ -514,24 +518,6 @@ export default function FileCryptoWorkspace() {
       : status.tone === 'error'
         ? AlertCircle
         : Sparkles
-
-  function renderPreviewImage(targetResult: ResultItem | boolean, expanded = false) {
-    const resolvedTarget =
-      typeof targetResult === 'boolean' ? (previewItem ?? results[0] ?? null) : targetResult
-    const isExpanded = typeof targetResult === 'boolean' ? targetResult : expanded
-
-    if (!resolvedTarget || resolvedTarget.preview.kind !== 'image') {
-      return null
-    }
-
-    return (
-      <img
-        src={resolvedTarget.url}
-        alt={`Prévia de ${resolvedTarget.name}`}
-        className={`w-full rounded-2xl object-contain ${isExpanded ? 'max-h-[76vh]' : 'max-h-[420px]'}`}
-      />
-    )
-  }
 
   return (
     <>
@@ -588,7 +574,7 @@ export default function FileCryptoWorkspace() {
                 type="file"
                 className="hidden"
                 multiple
-                accept={mode === 'decrypt' ? '.cryptify' : undefined}
+                accept={mode === 'decrypt' ? '.criptoveu,.cryptify' : undefined}
                 onChange={handleFileInputChange}
               />
 
@@ -799,7 +785,7 @@ export default function FileCryptoWorkspace() {
             </div>
 
             <progress
-              className="cryptify-progress mt-3"
+              className="criptoveu-progress mt-3"
               value={progress}
               max={100}
               aria-label="Progresso do processamento"
@@ -847,49 +833,11 @@ export default function FileCryptoWorkspace() {
               </div>
             ) : null}
 
-            {mode === 'decrypt' && results.length === 1 && resultUrl && preview.kind === 'image' ? (
-              <div className="surface-primary rounded-[24px] p-4">
-                <div className="flex items-start gap-3">
-                  <div className="icon-chip p-2">
-                    <FileImage className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">Prévia da imagem recuperada</p>
-                    <p className="mt-1 text-sm text-zinc-400">
-                      Confira a imagem no navegador antes de baixar o arquivo.
-                    </p>
-                  </div>
-                </div>
-
-                {canExpandPreview ? (
-                  <div className="mt-4 flex items-center justify-between gap-3 text-xs uppercase tracking-[0.24em] text-zinc-500">
-                    <p>Clique na prévia para ampliar.</p>
-                    <button
-                      type="button"
-                      onClick={() => handleOpenPreview()}
-                      className="btn-secondary text-[11px]"
-                    >
-                      <Maximize2 className="h-3.5 w-3.5" />
-                      Abrir ampliado
-                    </button>
-                  </div>
-                ) : null}
-
-                <div className="mt-4 surface-technical rounded-[24px] p-4">
-                  <button
-                    type="button"
-                    onClick={() => handleOpenPreview()}
-                    className="block w-full cursor-zoom-in rounded-2xl transition hover:opacity-95"
-                    aria-label="Ampliar prévia da imagem"
-                  >
-                    {renderPreviewImage(false)}
-                  </button>
-                </div>
-              </div>
-            ) : null}
-
             {results.length > 0 ? (
-              <div className="space-y-4">
+              <div
+                className="space-y-4 transition duration-300"
+                style={{ filter: isInactive ? 'blur(15px)' : 'none' }}
+              >
                 {results.map((result) => (
                   <article
                     key={result.id}
@@ -900,8 +848,8 @@ export default function FileCryptoWorkspace() {
                         <p className="text-xs uppercase tracking-[0.28em] text-zinc-500">
                           {mode === 'encrypt'
                             ? 'Pacote gerado'
-                            : result.preview.kind === 'image'
-                              ? 'Imagem pronta para revisar'
+                            : result.preview.kind !== 'none'
+                              ? `${result.preview.label} pronto para revisar`
                               : 'Arquivo pronto'}
                         </p>
                         <p className="mt-2 truncate text-sm font-semibold text-white">{result.name}</p>
@@ -909,7 +857,7 @@ export default function FileCryptoWorkspace() {
                       </div>
 
                       <div className="flex flex-wrap gap-3">
-                        {mode === 'decrypt' && result.preview.kind === 'image' ? (
+                        {mode === 'decrypt' && result.preview.kind !== 'none' ? (
                           <button
                             type="button"
                             onClick={() => handleOpenPreview(result)}
@@ -933,21 +881,21 @@ export default function FileCryptoWorkspace() {
 
                     <div className="mt-4 flex items-center justify-between gap-3 text-xs text-zinc-500">
                       <span>{formatFileSize(result.size)}</span>
-                      {mode === 'decrypt' && result.preview.kind === 'image' ? (
-                        <span>Clique na miniatura para ampliar</span>
+                      {mode === 'decrypt' && result.preview.kind !== 'none' ? (
+                        <span>Prévia local sem envio para servidores</span>
                       ) : null}
                     </div>
 
-                    {mode === 'decrypt' && result.preview.kind === 'image' ? (
+                    {mode === 'decrypt' && result.preview.kind !== 'none' ? (
                       <div className="mt-4 surface-primary rounded-[24px] p-4">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenPreview(result)}
-                          className="block w-full cursor-zoom-in rounded-2xl transition hover:opacity-95"
-                          aria-label={`Ampliar prévia de ${result.name}`}
-                        >
-                          {renderPreviewImage(result, false)}
-                        </button>
+                        <UniversalPreview
+                          url={result.url}
+                          blob={result.blob}
+                          fileName={result.name}
+                          isInactive={isInactive}
+                          onOpen={() => handleOpenPreview(result)}
+                          onDownload={() => handleDownloadResult(result)}
+                        />
                       </div>
                     ) : null}
                   </article>
@@ -967,12 +915,12 @@ export default function FileCryptoWorkspace() {
         loading={isProcessing}
       />
 
-      {isPreviewOpen && resultUrl && preview.kind === 'image' ? (
+      {isPreviewOpen && activePreviewItem && resultUrl && preview.kind !== 'none' ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 py-6 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
-          aria-label="Visualização ampliada da imagem recuperada"
+          aria-label="Visualização ampliada do arquivo recuperado"
         >
           <button
             type="button"
@@ -981,37 +929,16 @@ export default function FileCryptoWorkspace() {
             aria-label="Fechar visualização ampliada"
           />
 
-          <div className="relative z-10 flex w-full max-w-6xl flex-col gap-4 rounded-[32px] border border-white/10 bg-zinc-950/95 p-4 shadow-2xl shadow-black/40 sm:p-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.32em] text-cyan-100/80">Visualização ampliada</p>
-                <p className="mt-2 text-lg font-semibold text-white">{resultName}</p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleDownload}
-                  className="btn-secondary"
-                >
-                  <Download className="h-4 w-4" />
-                  Baixar arquivo
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleClosePreview}
-                  className="btn-secondary"
-                >
-                  <X className="h-4 w-4" />
-                  Fechar
-                </button>
-              </div>
-            </div>
-
-            <div className="rounded-[28px] border border-white/10 bg-black/40 p-3 sm:p-4">
-              {renderPreviewImage(true)}
-            </div>
+          <div className="relative z-10 w-full max-w-6xl rounded-[32px] border border-white/10 bg-zinc-950/95 p-4 shadow-2xl shadow-black/40 sm:p-6">
+            <UniversalPreview
+              url={activePreviewItem.url}
+              blob={activePreviewItem.blob}
+              fileName={resultName}
+              expanded
+              isInactive={isInactive}
+              onClose={handleClosePreview}
+              onDownload={handleDownload}
+            />
           </div>
         </div>
       ) : null}

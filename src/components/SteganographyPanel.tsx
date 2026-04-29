@@ -15,11 +15,11 @@ import { useEffect, useId, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 
 import {
-  CriptifyError,
+  CriptoveuError,
   decryptText,
   encryptText,
   formatFileSize,
-} from '../lib/cryptify'
+} from '../lib/criptoveu'
 import {
   SecretTextPayloadError,
   parseEncryptedTextPayload,
@@ -67,7 +67,7 @@ function downloadBlob(blob: Blob, fileName: string) {
 function getFriendlyErrorMessage(error: unknown) {
   if (
     error instanceof SteganographyError ||
-    error instanceof CriptifyError ||
+    error instanceof CriptoveuError ||
     error instanceof SecretTextPayloadError
   ) {
     return error.message

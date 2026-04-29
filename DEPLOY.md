@@ -9,7 +9,7 @@ git init
 git add .
 git commit -m "feat: release inicial segura"
 git branch -M main
-git remote add origin https://github.com/SEU-USUARIO/cryptify.git
+git remote add origin https://github.com/SEU-USUARIO/Projeto_Criptoveu.git
 git push -u origin main
 ```
 
@@ -17,7 +17,7 @@ git push -u origin main
 
 1. Acesse a Vercel e entre com sua conta GitHub.
 2. Clique em `Add New Project`.
-3. Escolha o repositorio `cryptify`.
+3. Escolha o repositorio `Projeto_Criptoveu`.
 4. Revise as configuracoes de build:
 
 - Framework Preset: `Vite`

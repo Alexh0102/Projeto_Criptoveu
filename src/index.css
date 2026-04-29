@@ -323,7 +323,7 @@ select {
   }
 }
 
-.cryptify-progress {
+.criptoveu-progress {
   display: block;
   width: 100%;
   height: 0.75rem;
@@ -333,18 +333,18 @@ select {
   background: rgb(24 24 27);
 }
 
-.cryptify-progress::-webkit-progress-bar {
+.criptoveu-progress::-webkit-progress-bar {
   background: rgb(24 24 27);
   border-radius: 9999px;
 }
 
-.cryptify-progress::-webkit-progress-value {
+.criptoveu-progress::-webkit-progress-value {
   border-radius: 9999px;
   background: linear-gradient(90deg, #22d3ee 0%, #38bdf8 50%, #34d399 100%);
   transition: inline-size 0.5s ease-out;
 }
 
-.cryptify-progress::-moz-progress-bar {
+.criptoveu-progress::-moz-progress-bar {
   border-radius: 9999px;
   background: linear-gradient(90deg, #22d3ee 0%, #38bdf8 50%, #34d399 100%);
 }
@@ -444,8 +444,8 @@ html[data-theme='light'] .app-shell textarea::placeholder {
   color: #6a7f94;
 }
 
-html[data-theme='light'] .cryptify-progress,
-html[data-theme='light'] .cryptify-progress::-webkit-progress-bar {
+html[data-theme='light'] .criptoveu-progress,
+html[data-theme='light'] .criptoveu-progress::-webkit-progress-bar {
   background: #cfdae3;
 }
 

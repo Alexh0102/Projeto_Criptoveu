@@ -3,6 +3,7 @@ const decoder = new TextDecoder()
 
 const SALT_LENGTH_BYTES = 16
 const IV_LENGTH_BYTES = 12
+const BASE64_CHUNK_SIZE_BYTES = 0x8000
 
 export const VEU_NOTES_VERSION = 1
 export const VEU_NOTES_MIN_PASSWORD_LENGTH = 12
@@ -32,10 +33,11 @@ export class VeuNotesCryptoError extends Error {
 
 export function encodeBytesToBase64(bytes: Uint8Array) {
   let binary = ''
-  const chunkSize = 0x8000
 
-  for (let index = 0; index < bytes.length; index += chunkSize) {
-    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize))
+  for (let index = 0; index < bytes.length; index += BASE64_CHUNK_SIZE_BYTES) {
+    binary += String.fromCharCode(
+      ...bytes.subarray(index, index + BASE64_CHUNK_SIZE_BYTES),
+    )
   }
 
   return btoa(binary)
@@ -110,7 +112,13 @@ export function assertVeuNotesBlobJson(value: unknown): VeuNotesBlobJson {
 }
 
 export async function getPasswordKey(password: string): Promise<CryptoKey> {
-  return crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveKey'])
+  return crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password),
+    'PBKDF2',
+    false,
+    ['deriveKey'],
+  )
 }
 
 export async function deriveAesKey(

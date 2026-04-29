@@ -64,20 +64,11 @@ npm run dev
 npm run build
 ```
 
-## Build endurecida
-
-```bash
-npm run build:secure
-```
-
-Esta variante faz o build normal e aplica ofuscacao no bundle final em `dist/assets`.
-
 ## Hardening aplicado
 
 - `CSP`, `COOP`, `COEP`, `CORP`, `HSTS`, `Referrer-Policy`, `Permissions-Policy` e demais headers em `vercel.json` e `netlify.toml`
 - Sem `sourcemap` em producao
 - Minificacao de bundle e remocao de `console` e `debugger` no build
-- Ofuscacao opcional com `javascript-obfuscator`
 - Fontes externas removidas para permitir `style-src 'self'` e `font-src 'self'`
 - Validacao de contexto seguro: o app bloqueia processamento fora de `HTTPS` ou `localhost`
 - Limite de arquivo de `500 MB` para reduzir risco de travamento e consumo excessivo de memoria
@@ -86,7 +77,7 @@ Esta variante faz o build normal e aplica ofuscacao no bundle final em `dist/ass
 
 Nao existe forma de esconder 100% o codigo de um site client-side. O navegador sempre recebe JavaScript executavel. O que da para fazer e:
 
-- dificultar engenharia reversa com minificacao e ofuscacao
+- publicar codigo legivel para auditoria e contribuicao
 - remover `sourcemaps`
 - bloquear segredos no frontend
 - endurecer headers e politicas do navegador

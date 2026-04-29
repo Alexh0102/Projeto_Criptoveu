@@ -521,8 +521,8 @@ export default function FileCryptoWorkspace() {
 
   return (
     <>
-      <div className="grid gap-5 pb-28 xl:grid-cols-[1.08fr_0.92fr] lg:pb-0">
-        <section className="panel-surface rounded-[32px] p-5 sm:p-6">
+      <div className="grid min-w-0 gap-5 overflow-hidden pb-28 xl:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:pb-0">
+        <section className="panel-surface min-w-0 rounded-[32px] p-5 sm:p-6">
           <div className="space-y-5">
             <SegmentedMode
               label="Modo"
@@ -754,8 +754,8 @@ export default function FileCryptoWorkspace() {
           </div>
         </section>
 
-        <div className="space-y-5">
-          <section className="surface-secondary rounded-[28px] p-4 sm:p-5">
+        <div className="min-w-0 space-y-5 overflow-hidden">
+          <section className="surface-secondary min-w-0 rounded-[28px] p-4 sm:p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-zinc-500">Guia rápido</p>
@@ -776,7 +776,7 @@ export default function FileCryptoWorkspace() {
             </div>
           </section>
 
-          <section className="surface-primary rounded-[28px] p-4 sm:p-5">
+          <section className="surface-primary min-w-0 overflow-hidden rounded-[28px] p-4 sm:p-5">
             <div className="flex items-center justify-between gap-4 text-sm">
               <span className="text-zinc-300">Processamento local</span>
               <span className="font-mono text-xs uppercase tracking-[0.25em] text-zinc-400">
@@ -810,7 +810,7 @@ export default function FileCryptoWorkspace() {
               </div>
             ) : null}
           </section>
-          <div ref={resultPanelRef}>
+          <div ref={resultPanelRef} className="min-w-0 overflow-hidden">
             <ResultPanel
             title="Resultados"
             description="Seus arquivos processados aparecem aqui para baixar ou revisar."
@@ -819,7 +819,7 @@ export default function FileCryptoWorkspace() {
                 <button
                   type="button"
                   onClick={handleDownloadAll}
-                  className="btn-secondary"
+                  className="btn-secondary w-full sm:w-auto"
                 >
                   <Download className="h-4 w-4" />
                   Baixar todos
@@ -835,33 +835,33 @@ export default function FileCryptoWorkspace() {
 
             {results.length > 0 ? (
               <div
-                className="space-y-4 transition duration-300"
+                className="min-w-0 space-y-4 overflow-hidden transition duration-300"
                 style={{ filter: isInactive ? 'blur(15px)' : 'none' }}
               >
                 {results.map((result) => (
                   <article
                     key={result.id}
-                    className="surface-technical rounded-[24px] p-4"
+                    className="surface-technical min-w-0 overflow-hidden rounded-[24px] p-4"
                   >
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="min-w-0">
-                        <p className="text-xs uppercase tracking-[0.28em] text-zinc-500">
+                        <p className="break-words text-xs uppercase tracking-[0.2em] text-zinc-500 sm:tracking-[0.28em]">
                           {mode === 'encrypt'
                             ? 'Pacote gerado'
                             : result.preview.kind !== 'none'
                               ? `${result.preview.label} pronto para revisar`
                               : 'Arquivo pronto'}
                         </p>
-                        <p className="mt-2 truncate text-sm font-semibold text-white">{result.name}</p>
-                        <p className="mt-1 text-xs text-zinc-400">Origem: {result.sourceName}</p>
+                        <p className="mt-2 break-words text-sm font-semibold text-white">{result.name}</p>
+                        <p className="mt-1 break-words text-xs text-zinc-400">Origem: {result.sourceName}</p>
                       </div>
 
-                      <div className="flex flex-wrap gap-3">
+                      <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:w-auto lg:grid-cols-none lg:auto-cols-max lg:grid-flow-col">
                         {mode === 'decrypt' && result.preview.kind !== 'none' ? (
                           <button
                             type="button"
                             onClick={() => handleOpenPreview(result)}
-                            className="btn-secondary"
+                            className="btn-secondary w-full"
                           >
                             <Maximize2 className="h-4 w-4" />
                             Visualizar
@@ -871,7 +871,7 @@ export default function FileCryptoWorkspace() {
                         <button
                           type="button"
                           onClick={() => handleDownloadResult(result)}
-                          className="btn-secondary"
+                          className="btn-secondary w-full"
                         >
                           <Download className="h-4 w-4" />
                           Baixar
@@ -879,7 +879,7 @@ export default function FileCryptoWorkspace() {
                       </div>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between gap-3 text-xs text-zinc-500">
+                    <div className="mt-4 flex min-w-0 flex-col gap-2 text-xs text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
                       <span>{formatFileSize(result.size)}</span>
                       {mode === 'decrypt' && result.preview.kind !== 'none' ? (
                         <span>Prévia local sem envio para servidores</span>
@@ -887,7 +887,7 @@ export default function FileCryptoWorkspace() {
                     </div>
 
                     {mode === 'decrypt' && result.preview.kind !== 'none' ? (
-                      <div className="mt-4 surface-primary rounded-[24px] p-4">
+                      <div className="mt-4 surface-primary min-w-0 overflow-hidden rounded-[24px] p-3 sm:p-4">
                         <UniversalPreview
                           url={result.url}
                           blob={result.blob}

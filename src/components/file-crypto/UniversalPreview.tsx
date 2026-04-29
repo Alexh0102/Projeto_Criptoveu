@@ -156,37 +156,37 @@ export default function UniversalPreview({
           : ShieldOff
 
   return (
-    <div ref={containerRef} className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div ref={containerRef} className="min-w-0 space-y-4 overflow-hidden">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 items-start gap-3">
           <div className="icon-chip p-2">
             <PreviewIcon className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs uppercase tracking-[0.28em] text-cyan-100/80">
+            <p className="break-words text-xs uppercase tracking-[0.18em] text-cyan-100/80 sm:tracking-[0.28em]">
               Prévia segura - {metadata.label}
             </p>
-            <p className="mt-2 truncate text-sm font-semibold text-white">{fileName}</p>
+            <p className="mt-2 break-words text-sm font-semibold text-white">{fileName}</p>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="grid w-full grid-cols-1 gap-3 sm:w-auto sm:grid-flow-col sm:auto-cols-max">
           {canExpand ? (
-            <button type="button" onClick={onOpen} className="btn-secondary">
+            <button type="button" onClick={onOpen} className="btn-secondary w-full">
               <Maximize2 className="h-4 w-4" />
               Ampliar
             </button>
           ) : null}
 
           {onDownload ? (
-            <button type="button" onClick={onDownload} className="btn-secondary">
+            <button type="button" onClick={onDownload} className="btn-secondary w-full">
               <Download className="h-4 w-4" />
               Baixar
             </button>
           ) : null}
 
           {onClose ? (
-            <button type="button" onClick={onClose} className="btn-secondary">
+            <button type="button" onClick={onClose} className="btn-secondary w-full">
               <X className="h-4 w-4" />
               Fechar
             </button>
@@ -195,14 +195,14 @@ export default function UniversalPreview({
       </div>
 
       {isInactive ? (
-        <div className="flex items-center gap-3 rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-3 text-sm text-cyan-50">
+        <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-3 text-sm text-cyan-50">
           <Pause className="h-4 w-4" />
           Prévia ocultada por inatividade.
         </div>
       ) : null}
 
       <div
-        className="surface-technical rounded-[24px] p-4 transition duration-300"
+        className="surface-technical min-w-0 overflow-hidden rounded-[24px] p-3 transition duration-300 sm:p-4"
         style={{ filter: isInactive ? 'blur(15px)' : 'none' }}
         aria-hidden={isInactive}
       >

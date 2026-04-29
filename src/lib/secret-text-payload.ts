@@ -3,11 +3,14 @@ import {
   encodeBytesToBase64,
   type TextDecryptionInput,
   type TextEncryptionResult,
-} from './cryptify'
+} from './criptoveu'
 
-export const SECRET_TEXT_PAYLOAD_PREFIX = 'CRIPTIFY_SECRET_V1:'
+export const SECRET_TEXT_PAYLOAD_PREFIX = 'CRIPTOVEU_SECRET_V1:'
 export const MAX_SECRET_TEXT_PAYLOAD_CHARS = 200_000
-const LEGACY_SECRET_TEXT_PAYLOAD_PREFIXES = ['CRIPTIFY_STEG_V1:']
+const LEGACY_SECRET_TEXT_PAYLOAD_PREFIXES = [
+  'CRIPTIFY_SECRET_V1:',
+  'CRIPTIFY_STEG_V1:',
+]
 
 type SerializedSecretTextPayload = {
   version: 1

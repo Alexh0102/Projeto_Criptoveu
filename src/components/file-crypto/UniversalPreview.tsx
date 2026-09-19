@@ -1,6 +1,8 @@
 import {
   AlertTriangle,
   ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
   Download,
   ExternalLink,
   FastForward,
@@ -38,6 +40,12 @@ type UniversalPreviewProps = {
   onOpenExternal?: (event: MouseEvent<HTMLButtonElement>) => void
   fullscreenTargetRef?: RefObject<HTMLDivElement>
   previewUrlRevoked?: boolean
+  hasPrevious?: boolean
+  hasNext?: boolean
+  onPrevious?: () => void
+  onNext?: () => void
+  galleryIndex?: number
+  galleryTotal?: number
 }
 
 const VIDEO_PLAYBACK_RATES = [0.5, 1, 1.25, 1.5, 2] as const
@@ -76,6 +84,12 @@ export default function UniversalPreview({
   onOpenExternal,
   fullscreenTargetRef,
   previewUrlRevoked = false,
+  hasPrevious = false,
+  hasNext = false,
+  onPrevious,
+  onNext,
+  galleryIndex,
+  galleryTotal,
 }: UniversalPreviewProps) {
   const { t } = useTranslation()
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -176,6 +190,34 @@ export default function UniversalPreview({
   }, [isInactive, metadata.kind])
 
   useEffect(() => {
+    if (metadata.kind !== 'image' || isInactive || (!hasPrevious && !hasNext)) {
+      return
+    }
+
+    function handleImageKeyboard(event: KeyboardEvent) {
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLSelectElement ||
+        event.target instanceof HTMLTextAreaElement
+      ) {
+        return
+      }
+
+      if (event.key === 'ArrowLeft' && hasPrevious) {
+        event.preventDefault()
+        onPrevious?.()
+      } else if (event.key === 'ArrowRight' && hasNext) {
+        event.preventDefault()
+        onNext?.()
+      }
+    }
+
+    window.addEventListener('keydown', handleImageKeyboard)
+
+    return () => window.removeEventListener('keydown', handleImageKeyboard)
+  }, [metadata.kind, isInactive, hasPrevious, hasNext, onPrevious, onNext])
+
+  useEffect(() => {
     if (metadata.kind !== 'text') {
       return
     }
@@ -250,37 +292,71 @@ export default function UniversalPreview({
       }
 
       return (
-        <img
-          src={url}
-          alt={t('files.preview.imageAlt', { fileName })}
-          onLoad={(event) => {
-            if (import.meta.env.DEV) {
-              console.debug('[CriptoVéu][preview-loaded]', {
-                fileName,
-                previewUrl: url,
-                naturalWidth: event.currentTarget.naturalWidth,
-                naturalHeight: event.currentTarget.naturalHeight,
-              })
-            }
-          }}
-          onError={(event) => {
-            if (import.meta.env.DEV) {
-              console.error('[CriptoVéu][preview-error]', {
-                fileName,
-                currentSrc: event.currentTarget.currentSrc,
-                previewBlobSize: blob.size,
-                previewBlobType: blob.type,
-                previewUrlIsBlob: url.startsWith('blob:'),
-                previewUrlRevoked,
-                cause: event.nativeEvent.type,
-              })
-            }
-            setImageFailed(true)
-          }}
-          className={`block h-auto w-auto max-w-full rounded-2xl object-contain ${
-            expanded ? 'max-h-[76vh]' : 'max-h-[65dvh]'
-          }`}
-        />
+        <div className="relative flex w-full items-center justify-center">
+          <img
+            src={url}
+            alt={t('files.preview.imageAlt', { fileName })}
+            onLoad={(event) => {
+              if (import.meta.env.DEV) {
+                console.debug('[CriptoVéu][preview-loaded]', {
+                  fileName,
+                  previewUrl: url,
+                  naturalWidth: event.currentTarget.naturalWidth,
+                  naturalHeight: event.currentTarget.naturalHeight,
+                })
+              }
+            }}
+            onError={(event) => {
+              if (import.meta.env.DEV) {
+                console.error('[CriptoVéu][preview-error]', {
+                  fileName,
+                  currentSrc: event.currentTarget.currentSrc,
+                  previewBlobSize: blob.size,
+                  previewBlobType: blob.type,
+                  previewUrlIsBlob: url.startsWith('blob:'),
+                  previewUrlRevoked,
+                  cause: event.nativeEvent.type,
+                })
+              }
+              setImageFailed(true)
+            }}
+            className={`block h-auto w-auto max-w-full rounded-2xl object-contain ${
+              expanded ? 'max-h-[76vh]' : 'max-h-[65dvh]'
+            }`}
+          />
+
+          {hasPrevious && onPrevious ? (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.preventDefault()
+                event.stopPropagation()
+                onPrevious()
+              }}
+              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full border border-white/20 bg-zinc-950/70 text-white shadow-2xl backdrop-blur transition hover:scale-105 hover:bg-zinc-900 active:scale-95 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              aria-label={t('files.preview.previousImage')}
+              title={t('files.preview.previousImage')}
+            >
+              <ChevronLeft className="h-6 w-6 sm:h-7 sm:w-7" />
+            </button>
+          ) : null}
+
+          {hasNext && onNext ? (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.preventDefault()
+                event.stopPropagation()
+                onNext()
+              }}
+              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full border border-white/20 bg-zinc-950/70 text-white shadow-2xl backdrop-blur transition hover:scale-105 hover:bg-zinc-900 active:scale-95 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              aria-label={t('files.preview.nextImage')}
+              title={t('files.preview.nextImage')}
+            >
+              <ChevronRight className="h-6 w-6 sm:h-7 sm:w-7" />
+            </button>
+          ) : null}
+        </div>
       )
     }
 
@@ -613,7 +689,9 @@ export default function UniversalPreview({
               {fileName}
             </p>
             <p className="truncate text-[11px] uppercase tracking-[0.16em] text-cyan-100/70">
-              {previewKindLabel}
+              {galleryTotal && galleryTotal > 1
+                ? t('files.preview.galleryCounter', { current: galleryIndex ?? 1, total: galleryTotal })
+                : previewKindLabel}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -660,7 +738,9 @@ export default function UniversalPreview({
             </div>
             <div className="min-w-0">
               <p className="break-words text-xs uppercase tracking-[0.18em] text-cyan-100/80 sm:tracking-[0.28em]">
-                {t('files.preview.safePreview', { label: previewKindLabel })}
+                {galleryTotal && galleryTotal > 1
+                  ? t('files.preview.galleryCounter', { current: galleryIndex ?? 1, total: galleryTotal })
+                  : t('files.preview.safePreview', { label: previewKindLabel })}
               </p>
               <p className="mt-2 break-words text-sm font-semibold text-white">{fileName}</p>
             </div>

@@ -439,7 +439,10 @@
       "pdfTitle": "Vista previa PDF de {{fileName}}",
       "noCaptions": "Sin subtítulos incrustados",
       "expandedAria": "Vista ampliada del archivo recuperado",
-      "closeExpandedAria": "Cerrar vista ampliada"
+      "closeExpandedAria": "Cerrar vista ampliada",
+      "previousImage": "Imagen anterior",
+      "nextImage": "Siguiente imagen",
+      "galleryCounter": "Imagen {{current}} de {{total}}"
     },
     "workspace": {
       "modes": {

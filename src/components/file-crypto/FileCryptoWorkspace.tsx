@@ -1,4 +1,4 @@
-﻿import {
+import {
   AlertCircle,
   ArrowRight,
   CheckCircle2,
@@ -255,6 +255,12 @@ export default function FileCryptoWorkspace() {
   const resultName = previewItem?.name ?? results[0]?.name ?? ''
   const activePreviewItem = previewItem ?? results[0] ?? null
   const preview = activePreviewItem?.preview ?? { kind: 'none', label: t('common.file') }
+  const imageResults = results.filter((result) => result.preview.kind === 'image')
+  const currentImageGalleryIndex =
+    activePreviewItem && activePreviewItem.preview.kind === 'image'
+      ? imageResults.findIndex((result) => result.id === activePreviewItem.id)
+      : -1
+  const isImageGallery = currentImageGalleryIndex !== -1 && imageResults.length > 1
   const quickFacts = [
     {
       label: t('files.workspace.quickFacts.formats'),
@@ -893,6 +899,21 @@ export default function FileCryptoWorkspace() {
   function handlePreviewBackdropClick(event: MouseEvent<HTMLDivElement>) {
     if (event.target === event.currentTarget) {
       handleClosePreview()
+    }
+  }
+
+  function handlePreviousImage() {
+    if (currentImageGalleryIndex > 0) {
+      handleOpenPreview(imageResults[currentImageGalleryIndex - 1])
+    }
+  }
+
+  function handleNextImage() {
+    if (
+      currentImageGalleryIndex >= 0 &&
+      currentImageGalleryIndex < imageResults.length - 1
+    ) {
+      handleOpenPreview(imageResults[currentImageGalleryIndex + 1])
     }
   }
 
@@ -2049,6 +2070,12 @@ export default function FileCryptoWorkspace() {
                   : undefined
               }
               fullscreenTargetRef={previewModalRef}
+              hasPrevious={isImageGallery && currentImageGalleryIndex > 0}
+              hasNext={isImageGallery && currentImageGalleryIndex < imageResults.length - 1}
+              onPrevious={handlePreviousImage}
+              onNext={handleNextImage}
+              galleryIndex={isImageGallery ? currentImageGalleryIndex + 1 : undefined}
+              galleryTotal={isImageGallery ? imageResults.length : undefined}
             />
           </div>
         </div>

@@ -439,7 +439,10 @@
       "pdfTitle": "PDF preview of {{fileName}}",
       "noCaptions": "No embedded captions",
       "expandedAria": "Expanded view of the recovered file",
-      "closeExpandedAria": "Close expanded view"
+      "closeExpandedAria": "Close expanded view",
+      "previousImage": "Previous image",
+      "nextImage": "Next image",
+      "galleryCounter": "Image {{current}} of {{total}}"
     },
     "workspace": {
       "modes": {

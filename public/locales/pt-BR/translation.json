@@ -478,7 +478,10 @@
       "pdfTitle": "Prévia PDF de {{fileName}}",
       "noCaptions": "Sem legendas embutidas",
       "expandedAria": "Visualização ampliada do arquivo recuperado",
-      "closeExpandedAria": "Fechar visualização ampliada"
+      "closeExpandedAria": "Fechar visualização ampliada",
+      "previousImage": "Imagem anterior",
+      "nextImage": "Próxima imagem",
+      "galleryCounter": "Imagem {{current}} de {{total}}"
     },
     "workspace": {
       "modes": {

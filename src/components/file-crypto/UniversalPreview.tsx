@@ -187,7 +187,7 @@ export default function UniversalPreview({
     window.addEventListener('keydown', handleKeyboardShortcut)
 
     return () => window.removeEventListener('keydown', handleKeyboardShortcut)
-  }, [isInactive, metadata.kind])
+  }, [isInactive, metadata.kind, fullscreenTargetRef])
 
   useEffect(() => {
     if (metadata.kind !== 'image' || isInactive || (!hasPrevious && !hasNext)) {

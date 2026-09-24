@@ -13,3 +13,9 @@ project(':capacitor-share').projectDir = new File('../node_modules/@capacitor/sh
 
 include ':capawesome-team-capacitor-file-opener'
 project(':capawesome-team-capacitor-file-opener').projectDir = new File('../node_modules/@capawesome-team/capacitor-file-opener/android')
+
+include ':capgo-capacitor-purchases'
+project(':capgo-capacitor-purchases').projectDir = new File('../node_modules/@capgo/capacitor-purchases/android')
+
+include ':revenuecat-purchases-capacitor'
+project(':revenuecat-purchases-capacitor').projectDir = new File('../node_modules/@revenuecat/purchases-capacitor/android')

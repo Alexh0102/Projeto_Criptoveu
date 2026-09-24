@@ -13,6 +13,8 @@ dependencies {
     implementation project(':capacitor-preferences')
     implementation project(':capacitor-share')
     implementation project(':capawesome-team-capacitor-file-opener')
+    implementation project(':capgo-capacitor-purchases')
+    implementation project(':revenuecat-purchases-capacitor')
 
 }
 

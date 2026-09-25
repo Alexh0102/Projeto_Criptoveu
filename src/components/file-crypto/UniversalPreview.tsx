@@ -218,34 +218,6 @@ export default function UniversalPreview({
   }, [metadata.kind, isInactive, hasPrevious, hasNext, onPrevious, onNext])
 
   useEffect(() => {
-    if (metadata.kind !== 'image' || isInactive || (!hasPrevious && !hasNext)) {
-      return
-    }
-
-    function handleImageKeyboard(event: KeyboardEvent) {
-      if (
-        event.target instanceof HTMLInputElement ||
-        event.target instanceof HTMLSelectElement ||
-        event.target instanceof HTMLTextAreaElement
-      ) {
-        return
-      }
-
-      if (event.key === 'ArrowLeft' && hasPrevious) {
-        event.preventDefault()
-        onPrevious?.()
-      } else if (event.key === 'ArrowRight' && hasNext) {
-        event.preventDefault()
-        onNext?.()
-      }
-    }
-
-    window.addEventListener('keydown', handleImageKeyboard)
-
-    return () => window.removeEventListener('keydown', handleImageKeyboard)
-  }, [metadata.kind, isInactive, hasPrevious, hasNext, onPrevious, onNext])
-
-  useEffect(() => {
     if (metadata.kind !== 'text') {
       return
     }

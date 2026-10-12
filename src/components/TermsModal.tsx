@@ -45,13 +45,14 @@ export default function TermsModal() {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md"
+      className="fixed inset-0 z-[9999] flex h-[100dvh] items-center justify-center bg-black/90 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-[calc(env(safe-area-inset-top)+1rem)] backdrop-blur-md"
       role="dialog"
       aria-modal="true"
       aria-labelledby="terms-modal-title"
     >
-      <div className="w-full max-w-lg rounded-2xl border border-emerald-500/30 bg-[#121212] p-6 shadow-2xl shadow-emerald-900/20">
-        <div className="flex items-start gap-3">
+      <div className="flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-emerald-500/30 bg-[#121212] shadow-2xl shadow-emerald-900/20">
+        {/* Cabeçalho fixo */}
+        <div className="flex shrink-0 items-start gap-3 px-6 pt-6">
           <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-emerald-200">
             <ShieldCheck className="h-6 w-6" />
           </div>
@@ -60,41 +61,47 @@ export default function TermsModal() {
             <p className="text-xs uppercase tracking-[0.28em] text-emerald-200/80">
               CriptoVéu
             </p>
-            <h2 id="terms-modal-title" className="mt-2 text-2xl font-bold text-white">
+            <h2 id="terms-modal-title" className="mt-2 text-xl font-bold text-white sm:text-2xl">
               Termos de Uso e Responsabilidade
             </h2>
           </div>
         </div>
 
-        <p className="mt-5 text-sm leading-7 text-zinc-300">
-          Ao utilizar o CriptoVéu, você declara estar ciente de que esta é uma ferramenta de processamento estritamente local.
-        </p>
+        {/* Conteúdo rolável: apenas o texto rola, o botão permanece visível */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 px-6">
+          <p className="text-sm leading-7 text-zinc-300">
+            Ao utilizar o CriptoVéu, você declara estar ciente de que esta é uma ferramenta de processamento estritamente local.
+          </p>
 
-        <ul className="mt-5 space-y-3 text-sm leading-6 text-zinc-300">
-          {TERMS_ITEMS.map((item) => (
-            <li key={item} className="flex gap-3">
-              <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-emerald-400" />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
+          <ul className="mt-5 space-y-3 text-sm leading-6 text-zinc-300">
+            {TERMS_ITEMS.map((item) => (
+              <li key={item} className="flex gap-3">
+                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-emerald-400" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        <button
-          type="button"
-          onClick={acceptTerms}
-          className="mt-6 w-full rounded-xl bg-emerald-600 py-3 font-bold text-white transition-all hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 focus:ring-offset-[#121212]"
-        >
-          Li e aceito os termos
-        </button>
+        {/* Rodapé fixo com respeito à safe-area da barra de navegação do Android */}
+        <div className="shrink-0 border-t border-white/5 px-6 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4">
+          <button
+            type="button"
+            onClick={acceptTerms}
+            className="w-full rounded-xl bg-emerald-600 py-3 font-bold text-white transition-all hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 focus:ring-offset-[#121212]"
+          >
+            Li e aceito os termos
+          </button>
 
-        <Link
-          to="/termos"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-4 block text-center text-sm font-medium text-zinc-400 transition hover:text-emerald-200 hover:underline"
-        >
-          Ler mais sobre os termos
-        </Link>
+          <Link
+            to="/termos"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 block text-center text-sm font-medium text-zinc-400 transition hover:text-emerald-200 hover:underline"
+          >
+            Ler mais sobre os termos
+          </Link>
+        </div>
       </div>
     </div>
   )

@@ -40,5 +40,8 @@ jobs:
       - name: Build production bundle
         run: npm run build
 
-      - name: Audit dependencies
-        run: npm audit --audit-level=high
+      # Audita apenas dependências de produção (o que é empacotado no app/site).
+      # Ferramentas de build (ex.: cadeia do Tailwind 3) não bloqueiam o PR;
+      # continuam monitoradas pelo Dependabot / Dependency Review.
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high

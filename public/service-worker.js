@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v5'
+const CACHE_VERSION = 'v6'
 const APP_SHELL_CACHE = `criptoveu-app-shell-${CACHE_VERSION}`
 const STATIC_CACHE = `criptoveu-static-${CACHE_VERSION}`
 const APP_SHELL_URLS = [
@@ -12,6 +12,9 @@ const APP_SHELL_URLS = [
   '/web-app-manifest-192x192.png',
   '/web-app-manifest-512x512.png',
   '/brand/criptoveu-logo.png',
+  '/locales/pt-BR/translation.json',
+  '/locales/en/translation.json',
+  '/locales/es/translation.json',
 ]
 
 self.addEventListener('install', (event) => {
@@ -86,6 +89,10 @@ async function handleNavigationRequest(event) {
 function shouldCacheStaticAsset(request, requestUrl) {
   if (requestUrl.search && requestUrl.search !== '?source=pwa') {
     return false
+  }
+
+  if (requestUrl.pathname.startsWith('/locales/') && requestUrl.pathname.endsWith('.json')) {
+    return true
   }
 
   return ['script', 'style', 'font', 'image'].includes(request.destination)

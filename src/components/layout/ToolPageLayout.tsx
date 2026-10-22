@@ -192,8 +192,14 @@ export default function ToolPageLayout({ children, showToolsDock = false }: Prop
             onClick={() => setActiveDrawer(null)}
           />
 
-          <div className="absolute inset-x-0 bottom-0 max-h-[90dvh] overflow-y-auto overscroll-contain rounded-t-[32px] border border-white/10 bg-zinc-950/95 p-4 backdrop-blur-xl sm:inset-y-4 sm:right-4 sm:left-auto sm:w-[min(420px,calc(100vw-2rem))] sm:max-h-[calc(100dvh-2rem)] sm:rounded-[32px] sm:p-5">
-            <div className="sticky top-0 z-10 flex items-center justify-between gap-2 bg-zinc-950/50 pb-4 backdrop-blur-md sm:gap-3">
+          <div
+            className={`absolute inset-x-0 bottom-0 flex max-h-[90dvh] flex-col overflow-hidden rounded-t-[32px] border border-white/10 bg-zinc-950/95 p-4 backdrop-blur-xl sm:inset-y-4 sm:right-4 sm:left-auto sm:max-h-[calc(100dvh-2rem)] sm:rounded-[32px] sm:p-5 ${
+              activeDrawer === 'tools'
+                ? 'sm:w-[min(420px,calc(100vw-2rem))] lg:w-[min(640px,calc(100vw-2rem))]'
+                : 'sm:w-[min(420px,calc(100vw-2rem))]'
+            }`}
+          >
+            <div className="flex shrink-0 items-center justify-between gap-2 pb-3 sm:gap-3 sm:pb-4">
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.32em] text-cyan-100/80">
                   {t(`layout.drawer.${activeDrawer === 'beta' ? 'betaTitle' : 'title'}`)}
@@ -215,16 +221,22 @@ export default function ToolPageLayout({ children, showToolsDock = false }: Prop
               </button>
             </div>
 
-            <div className="mt-2 flex flex-col gap-2 pb-20 sm:gap-2.5 sm:pb-8">
+            <div
+              className={`min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:pb-2 ${
+                activeDrawer === 'tools'
+                  ? 'grid grid-cols-1 gap-2 sm:gap-2.5 lg:grid-cols-2 lg:content-start'
+                  : 'flex flex-col gap-2 sm:gap-2.5'
+              }`}
+            >
               <NavLink
                 to="/"
                 onClick={() => setActiveDrawer(null)}
                 className={({ isActive }) =>
-                  `${isActive ? 'surface-primary ring-1 ring-cyan-500/30' : 'surface-secondary'} rounded-[20px] px-3.5 py-3.5 text-left transition active:scale-[0.98] sm:rounded-[24px] sm:px-4 sm:py-4`
+                  `${isActive ? 'surface-primary ring-1 ring-cyan-500/30' : 'surface-secondary'} rounded-[20px] px-3.5 py-3 text-left transition active:scale-[0.98] sm:rounded-[22px] sm:px-4 sm:py-3`
                 }
               >
                 <p className="text-sm font-bold text-white sm:text-base">{t('layout.drawer.home')}</p>
-                <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400 sm:mt-1 sm:text-xs">
+                <p className="mt-0.5 text-[11px] leading-snug text-zinc-400 sm:mt-1 sm:text-xs">
                   {t('layout.drawer.homeHelper')}
                 </p>
               </NavLink>
@@ -234,14 +246,14 @@ export default function ToolPageLayout({ children, showToolsDock = false }: Prop
                   to="/configuracoes"
                   onClick={() => setActiveDrawer(null)}
                   className={({ isActive }) =>
-                    `${isActive ? 'surface-primary ring-1 ring-cyan-500/30' : 'surface-secondary'} rounded-[20px] px-3.5 py-3.5 text-left transition active:scale-[0.98] sm:rounded-[24px] sm:px-4 sm:py-4`
+                    `${isActive ? 'surface-primary ring-1 ring-cyan-500/30' : 'surface-secondary'} rounded-[20px] px-3.5 py-3 text-left transition active:scale-[0.98] sm:rounded-[22px] sm:px-4 sm:py-3`
                   }
                 >
                   <div className="flex items-center gap-2 text-sm font-bold text-white sm:text-base">
                     <Settings className="h-4 w-4 text-cyan-200" />
                     {t('layout.drawer.settings')}
                   </div>
-                  <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400 sm:mt-1 sm:text-xs">
+                  <p className="mt-0.5 text-[11px] leading-snug text-zinc-400 sm:mt-1 sm:text-xs">
                     {t('layout.drawer.settingsHelper')}
                   </p>
                 </NavLink>
@@ -253,13 +265,13 @@ export default function ToolPageLayout({ children, showToolsDock = false }: Prop
                   to={tool.path}
                   onClick={() => setActiveDrawer(null)}
                   className={({ isActive }) =>
-                    `${isActive ? 'surface-primary ring-1 ring-cyan-500/30' : 'surface-secondary'} rounded-[20px] px-3.5 py-3.5 text-left transition active:scale-[0.98] sm:rounded-[24px] sm:px-4 sm:py-4`
+                    `${isActive ? 'surface-primary ring-1 ring-cyan-500/30' : 'surface-secondary'} rounded-[20px] px-3.5 py-3 text-left transition active:scale-[0.98] sm:rounded-[22px] sm:px-4 sm:py-3`
                   }
                 >
                   <p className="text-sm font-bold text-white sm:text-base">
                     {t(`tools.${tool.id}.title`)}
                   </p>
-                  <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-400 sm:mt-1 sm:text-xs">
+                  <p className="mt-0.5 text-[11px] leading-snug text-zinc-400 sm:mt-1 sm:text-xs">
                     {t(`tools.${tool.id}.helper`)}
                   </p>
                 </NavLink>

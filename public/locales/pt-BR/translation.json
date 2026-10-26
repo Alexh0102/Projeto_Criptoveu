@@ -236,11 +236,26 @@
       "title": "Onde o CriptoVéu ajuda",
       "description": "Proteja conteúdo sensível antes de enviar, compartilhar ou armazenar.",
       "items": {
-        "file": { "title": "Enviar um arquivo protegido por senha", "description": "Proteja documentos antes de compartilhar." },
-        "qr": { "title": "Criar um QR com mensagem protegida", "description": "Gere um QR e abra depois com a mesma senha." },
-        "link": { "title": "Compartilhar um link temporário", "description": "Crie uma mensagem protegida para abrir no momento certo." },
-        "image": { "title": "Ocultar uma mensagem em imagem", "description": "Esconda conteúdo sensível dentro de uma imagem." },
-        "carefulTasks": { "title": "Organizar tarefas sensíveis com mais cuidado", "description": "Separe tarefas para reduzir erro e exposição." }
+        "file": {
+          "title": "Enviar um arquivo protegido por senha",
+          "description": "Proteja documentos antes de compartilhar."
+        },
+        "qr": {
+          "title": "Criar um QR com mensagem protegida",
+          "description": "Gere um QR e abra depois com a mesma senha."
+        },
+        "link": {
+          "title": "Compartilhar um link temporário",
+          "description": "Crie uma mensagem protegida para abrir no momento certo."
+        },
+        "image": {
+          "title": "Ocultar uma mensagem em imagem",
+          "description": "Esconda conteúdo sensível dentro de uma imagem."
+        },
+        "carefulTasks": {
+          "title": "Organizar tarefas sensíveis com mais cuidado",
+          "description": "Separe tarefas para reduzir erro e exposição."
+        }
       }
     },
     "tools": {
@@ -281,23 +296,56 @@
       "eyebrow": "Perfil de uso",
       "title": "Para quem o CriptoVéu foi feito",
       "items": {
-        "freelancers": { "title": "Profissionais autônomos", "description": "Para quem precisa proteger arquivos, mensagens ou imagens no dia a dia." },
-        "smallOffices": { "title": "Pequenos escritórios", "description": "Para equipes que lidam com conteúdo sensível e querem mais controle no envio." },
-        "adminOps": { "title": "Operações administrativas", "description": "Para tarefas que envolvem documentos, instruções ou dados reservados." },
-        "privacyPeople": { "title": "Pessoas que priorizam privacidade", "description": "Para quem quer resolver tarefas sensíveis diretamente no navegador." }
+        "freelancers": {
+          "title": "Profissionais autônomos",
+          "description": "Para quem precisa proteger arquivos, mensagens ou imagens no dia a dia."
+        },
+        "smallOffices": {
+          "title": "Pequenos escritórios",
+          "description": "Para equipes que lidam com conteúdo sensível e querem mais controle no envio."
+        },
+        "adminOps": {
+          "title": "Operações administrativas",
+          "description": "Para tarefas que envolvem documentos, instruções ou dados reservados."
+        },
+        "privacyPeople": {
+          "title": "Pessoas que priorizam privacidade",
+          "description": "Para quem quer resolver tarefas sensíveis diretamente no navegador."
+        }
       }
     },
     "faq": {
       "eyebrow": "Perguntas frequentes",
       "title": "Perguntas frequentes",
       "items": {
-        "account": { "title": "Preciso criar conta para usar?", "content": "Não. O uso das ferramentas pode começar diretamente pelo navegador." },
-        "server": { "title": "Meu conteúdo é enviado para um servidor?", "content": "O processamento principal acontece localmente no navegador durante o uso da ferramenta." },
-        "linkPassword": { "title": "O link contém minha senha?", "content": "Não. Links e QRs contêm apenas os dados criptografados e os parâmetros públicos necessários. Compartilhe a senha separadamente, de preferência por outro canal." },
-        "mobile": { "title": "Funciona no celular?", "content": "Sim. As telas foram organizadas para uso mobile com foco em fluxo direto." },
-        "contentTypes": { "title": "Posso usar para arquivos, mensagens e imagens?", "content": "Sim. Cada ferramenta foi criada para uma tarefa específica." },
-        "firstTool": { "title": "Qual ferramenta devo usar primeiro?", "content": "Se você quer proteger um documento, comece por arquivos. Para mensagens curtas, use QR protegido ou link protegido." },
-        "steganography": { "title": "Esteganografia é a mesma coisa que criptografia?", "content": "Não. Na esteganografia, a mensagem protegida é escondida dentro de uma imagem. Na criptografia, o conteúdo é protegido diretamente." }
+        "account": {
+          "title": "Preciso criar conta para usar?",
+          "content": "Não. O uso das ferramentas pode começar diretamente pelo navegador."
+        },
+        "server": {
+          "title": "Meu conteúdo é enviado para um servidor?",
+          "content": "O processamento principal acontece localmente no navegador durante o uso da ferramenta."
+        },
+        "linkPassword": {
+          "title": "O link contém minha senha?",
+          "content": "Não. Links e QRs contêm apenas os dados criptografados e os parâmetros públicos necessários. Compartilhe a senha separadamente, de preferência por outro canal."
+        },
+        "mobile": {
+          "title": "Funciona no celular?",
+          "content": "Sim. As telas foram organizadas para uso mobile com foco em fluxo direto."
+        },
+        "contentTypes": {
+          "title": "Posso usar para arquivos, mensagens e imagens?",
+          "content": "Sim. Cada ferramenta foi criada para uma tarefa específica."
+        },
+        "firstTool": {
+          "title": "Qual ferramenta devo usar primeiro?",
+          "content": "Se você quer proteger um documento, comece por arquivos. Para mensagens curtas, use QR protegido ou link protegido."
+        },
+        "steganography": {
+          "title": "Esteganografia é a mesma coisa que criptografia?",
+          "content": "Não. Na esteganografia, a mensagem protegida é escondida dentro de uma imagem. Na criptografia, o conteúdo é protegido diretamente."
+        }
       }
     },
     "social": {
@@ -331,10 +379,22 @@
       "description": "O CriptoVéu foi pensado para tarefas sensíveis com processamento local no navegador. Para entender melhor como cada ferramenta funciona, consulte as páginas de privacidade, segurança e detalhes técnicos.",
       "featuredBadge": "Destaque",
       "items": {
-        "privacy": { "title": "Privacidade", "description": "O que é processado localmente e quais são os limites do uso." },
-        "security": { "title": "Segurança", "description": "Boas práticas, cuidados com senha e uso responsável." },
-        "technical": { "title": "Detalhes técnicos", "description": "Visão geral das rotas, do fluxo e das decisões da interface." },
-        "about": { "title": "Sobre o projeto", "description": "Objetivo do CriptoVéu, contexto do produto e direção da plataforma." }
+        "privacy": {
+          "title": "Privacidade",
+          "description": "O que é processado localmente e quais são os limites do uso."
+        },
+        "security": {
+          "title": "Segurança",
+          "description": "Boas práticas, cuidados com senha e uso responsável."
+        },
+        "technical": {
+          "title": "Detalhes técnicos",
+          "description": "Visão geral das rotas, do fluxo e das decisões da interface."
+        },
+        "about": {
+          "title": "Sobre o projeto",
+          "description": "Objetivo do CriptoVéu, contexto do produto e direção da plataforma."
+        }
       }
     }
   },
@@ -578,7 +638,10 @@
         "decryptedSuccess": "{{count}} arquivo(s) recuperado(s) e validado(s) localmente. A prévia não está disponível para este tipo; o arquivo ainda não foi salvo no dispositivo.",
         "recoveredFileSaved": "Arquivo recuperado salvo em Documentos.",
         "unexpectedProcessingError": "Ocorreu um erro inesperado ao processar os arquivos.",
-        "unexpectedDownloadFailure": "Não foi possível exportar o arquivo. Verifique o espaço disponível e tente novamente."
+        "unexpectedDownloadFailure": "Não foi possível exportar o arquivo. Verifique o espaço disponível e tente novamente.",
+        "tooManyFiles": "Limite de lote excedido: você selecionou {{count}} ficheiros, mas o máximo permitido é de {{max}} ficheiros por vez.",
+        "singleFileTooLarge": "O ficheiro \"{{fileName}}\" ({{size}} MB) excede o limite individual de {{maxMb}} MB por ficheiro.",
+        "batchTotalTooLarge": "O tamanho total selecionado ({{totalMb}} MB) ultrapassa o limite máximo de {{maxMb}} MB por lote."
       },
       "plan": {
         "unlimited": "Ilimitado para apoiadores",
@@ -610,7 +673,9 @@
         "filesReady_one": "1 arquivo pronto para processamento",
         "filesReady_other": "{{count}} arquivos prontos para processamento",
         "noFiles": "Nenhum arquivo carregado",
-        "additionalFiles": "+ {{count}} arquivo(s) adicional(is)"
+        "additionalFiles": "+ {{count}} arquivo(s) adicional(is)",
+        "batchLimitHint": "Selecione até 50 ficheiros (máx. 25 MB por ficheiro e 100 MB no total do lote)",
+        "batchCounter": "{{count}} de {{maxFiles}} ficheiros • {{totalMb}} MB / {{maxTotalMb}} MB"
       },
       "limitDialog": {
         "title": "Limite de arquivo: até 1 GB",

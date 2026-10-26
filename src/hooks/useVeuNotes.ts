@@ -56,8 +56,14 @@ const DEFAULT_IDLE_MINUTES = 10
 const DEFAULT_HIDDEN_GRACE_MS = 60_000
 const DEFAULT_AUTOSAVE_DELAY_MS = 2_500
 
-function createDownload(fileName: string, content: string, mimeType: string) {
-  const blob = new Blob([content], { type: mimeType })
+function createDownload(
+  fileName: string,
+  dadosCifrados: string,
+  mimeType: string = VEU_NOTES_BACKUP_MIME_TYPE,
+) {
+  const blob = new Blob([dadosCifrados], {
+    type: mimeType || 'application/octet-stream',
+  })
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = url
@@ -441,7 +447,7 @@ export default function useVeuNotes(options: UseVeuNotesOptions = {}) {
     createDownload(
       VEU_NOTES_BACKUP_FILE,
       JSON.stringify(blob, null, 2),
-      VEU_NOTES_BACKUP_MIME_TYPE,
+      'application/octet-stream',
     )
     showToast(
       'success',
@@ -690,6 +696,7 @@ export default function useVeuNotes(options: UseVeuNotesOptions = {}) {
     deleteNote,
     lockVault: (reason?: string) => lockVault(reason),
     clearBrokenVault: removeBrokenVault,
+    notifyError: (message: string) => showToast('error', message),
     dismissToast: () => setToast(null),
     usageLabel,
   }

@@ -5,26 +5,41 @@ import {
 } from './veunotes-crypto'
 
 export const VEU_NOTES_STORAGE_KEY = 'veunotes-v1'
+export const VEU_NOTES_BACKUP_EXTENSION = '.criptoveu-note'
 export const VEU_NOTES_BACKUP_FILE = 'veunotes-cofre.criptoveu-note'
 export const VEU_NOTES_STORAGE_WARNING_BYTES = 500 * 1024
 export const VEU_NOTES_MAX_BACKUP_BYTES = 4 * 1024 * 1024
-export const VEU_NOTES_BACKUP_MIME_TYPE =
-  'application/vnd.criptoveu.note+json'
+export const VEU_NOTES_BACKUP_MIME_TYPE = 'application/octet-stream'
+
+export type VeuNotesStorageErrorCode =
+  | 'INVALID_JSON'
+  | 'INVALID_SHAPE'
+  | 'WRITE_FAILED'
+  | 'FILE_TOO_LARGE'
+  | 'INVALID_EXTENSION'
 
 export class VeuNotesStorageError extends Error {
-  code: 'INVALID_JSON' | 'INVALID_SHAPE' | 'WRITE_FAILED' | 'FILE_TOO_LARGE'
+  code: VeuNotesStorageErrorCode
 
-  constructor(
-    code: 'INVALID_JSON' | 'INVALID_SHAPE' | 'WRITE_FAILED' | 'FILE_TOO_LARGE',
-    message: string,
-  ) {
+  constructor(code: VeuNotesStorageErrorCode, message: string) {
     super(message)
     this.name = 'VeuNotesStorageError'
     this.code = code
   }
 }
 
-export function assertSupportedBackupFile(file: File) {
+export function isValidVeuNotesBackupFileName(fileName: string): boolean {
+  return fileName.trim().toLowerCase().endsWith(VEU_NOTES_BACKUP_EXTENSION)
+}
+
+export function assertSupportedBackupFile(file: Pick<File, 'name' | 'size'>) {
+  if (!isValidVeuNotesBackupFileName(file.name)) {
+    throw new VeuNotesStorageError(
+      'INVALID_EXTENSION',
+      'Formato inválido. Selecione um ficheiro com a extensão .criptoveu-note.',
+    )
+  }
+
   if (file.size > VEU_NOTES_MAX_BACKUP_BYTES) {
     throw new VeuNotesStorageError(
       'FILE_TOO_LARGE',

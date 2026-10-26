@@ -47,6 +47,8 @@ globalThis.Worker = Argon2TestWorker
 let vite
 let portableVault
 let veuNotesCrypto
+let veuNotesStorage
+let batchQueue
 
 before(async () => {
   vite = await createServer({
@@ -56,10 +58,13 @@ before(async () => {
     server: { middlewareMode: true },
   })
 
-  ;[portableVault, veuNotesCrypto] = await Promise.all([
-    vite.ssrLoadModule('/src/lib/portable-vault.ts'),
-    vite.ssrLoadModule('/src/lib/veunotes-crypto.ts'),
-  ])
+  ;[portableVault, veuNotesCrypto, veuNotesStorage, batchQueue] =
+    await Promise.all([
+      vite.ssrLoadModule('/src/lib/portable-vault.ts'),
+      vite.ssrLoadModule('/src/lib/veunotes-crypto.ts'),
+      vite.ssrLoadModule('/src/lib/veunotes-storage.ts'),
+      vite.ssrLoadModule('/src/lib/file-crypto/batch-queue.ts'),
+    ])
 })
 
 after(async () => {
@@ -206,10 +211,147 @@ test('NOTE3 recupera um ciphertext danificado com paridade', async () => {
   assert.equal(blob.version, 3)
   assert.equal(blob.type, 'NOTE3')
   assert.equal(
-    (await veuNotesCrypto.unlockVeuNotesBlob(
-      damaged,
-      'senha-portatil-paridade-2026',
-    )).plaintext,
+    (
+      await veuNotesCrypto.unlockVeuNotesBlob(
+        damaged,
+        'senha-portatil-paridade-2026',
+      )
+    ).plaintext,
     plaintext,
   )
+})
+
+test('VéuNotes usa application/octet-stream para compatibilidade SAF Android e valida extensão .criptoveu-note', () => {
+  assert.equal(
+    veuNotesStorage.VEU_NOTES_BACKUP_MIME_TYPE,
+    'application/octet-stream',
+  )
+  assert.equal(
+    veuNotesStorage.isValidVeuNotesBackupFileName(
+      'veunotes-cofre_12_10_2026.criptoveu-note',
+    ),
+    true,
+  )
+  assert.equal(
+    veuNotesStorage.isValidVeuNotesBackupFileName(
+      'veunotes-cofre (versão_14_08_2026) (2).CRIPTOVEU-NOTE',
+    ),
+    true,
+  )
+  assert.equal(
+    veuNotesStorage.isValidVeuNotesBackupFileName('documento.pdf'),
+    false,
+  )
+
+  assert.doesNotThrow(() =>
+    veuNotesStorage.assertSupportedBackupFile({
+      name: 'veunotes-cofre_12_10_2026.criptoveu-note',
+      size: 13_602,
+    }),
+  )
+
+  assert.throws(
+    () =>
+      veuNotesStorage.assertSupportedBackupFile({
+        name: 'fatura.pdf',
+        size: 13_602,
+      }),
+    (error) =>
+      error.code === 'INVALID_EXTENSION' &&
+      /\.criptoveu-note/.test(error.message),
+  )
+})
+
+test('validação de lote aceita até 50 ficheiros, máx 25 MB individual e 100 MB total', () => {
+  assert.equal(batchQueue.MAX_FILES, 50)
+  assert.equal(batchQueue.MAX_SINGLE_FILE_BYTES, 25 * 1024 * 1024)
+  assert.equal(batchQueue.MAX_TOTAL_BYTES, 100 * 1024 * 1024)
+
+  const validFiftyFiles = Array.from({ length: 50 }, (_, index) => ({
+    name: `foto-${index + 1}.jpg`,
+    size: 2 * 1024 * 1024, // 50 * 2 MB = 100 MB exatos
+  }))
+  const validResult = batchQueue.validateBatchFileSelection(validFiftyFiles)
+  assert.equal(validResult.valid, true)
+  assert.equal(validResult.fileCount, 50)
+  assert.equal(validResult.totalMegabytesFormatted, '100.00')
+
+  const tooManyFiles = Array.from({ length: 51 }, (_, index) => ({
+    name: `foto-${index + 1}.jpg`,
+    size: 1024,
+  }))
+  const tooManyResult = batchQueue.validateBatchFileSelection(tooManyFiles)
+  assert.equal(tooManyResult.valid, false)
+  assert.equal(tooManyResult.code, 'TOO_MANY_FILES')
+
+  const singleTooLargeResult = batchQueue.validateBatchFileSelection([
+    { name: 'imagem-ok.png', size: 5 * 1024 * 1024 },
+    { name: 'video-pesado.mp4', size: 25 * 1024 * 1024 + 1 },
+  ])
+  assert.equal(singleTooLargeResult.valid, false)
+  assert.equal(singleTooLargeResult.code, 'SINGLE_FILE_TOO_LARGE')
+  assert.equal(singleTooLargeResult.offendingFileName, 'video-pesado.mp4')
+  assert.match(singleTooLargeResult.message, /video-pesado\.mp4/)
+
+  const totalTooLargeResult = batchQueue.validateBatchFileSelection([
+    { name: 'parte-1.bin', size: 25 * 1024 * 1024 },
+    { name: 'parte-2.bin', size: 25 * 1024 * 1024 },
+    { name: 'parte-3.bin', size: 25 * 1024 * 1024 },
+    { name: 'parte-4.bin', size: 25 * 1024 * 1024 },
+    { name: 'parte-5.bin', size: 1024 * 1024 },
+  ])
+  assert.equal(totalTooLargeResult.valid, false)
+  assert.equal(totalTooLargeResult.code, 'TOTAL_SIZE_EXCEEDED')
+  assert.equal(totalTooLargeResult.totalMegabytesFormatted, '101.00')
+  assert.match(totalTooLargeResult.message, /101\.00 MB/)
+})
+
+test('fila de processamento respeita limite de concorrência (1 mobile, 2 desktop) e limpa memória transitória', async () => {
+  assert.equal(batchQueue.getBatchCryptoConcurrency(true), 1)
+  assert.equal(batchQueue.getBatchCryptoConcurrency(false), 2)
+
+  const items = [1, 2, 3, 4, 5, 6]
+  let activeWorkers = 0
+  let maxObservedActiveWorkers = 0
+  const releasedBuffers = []
+
+  const resultsDesktop = await batchQueue.runBatchCryptoQueue(
+    items,
+    async (item, index, memoryScope) => {
+      activeWorkers += 1
+      maxObservedActiveWorkers = Math.max(
+        maxObservedActiveWorkers,
+        activeWorkers,
+      )
+      const transientBuffer = new Uint8Array([1, 2, 3, 4])
+      memoryScope.trackBuffer(transientBuffer)
+      releasedBuffers.push(transientBuffer)
+
+      await new Promise((resolve) => setTimeout(resolve, 15))
+      activeWorkers -= 1
+      return item * 10 + index
+    },
+    { concurrency: 2 },
+  )
+
+  assert.equal(maxObservedActiveWorkers, 2)
+  assert.deepEqual(resultsDesktop, [10, 21, 32, 43, 54, 65])
+  for (const buf of releasedBuffers) {
+    assert.deepEqual(Array.from(buf), [0, 0, 0, 0])
+  }
+
+  let activeMobile = 0
+  let maxObservedMobile = 0
+  await batchQueue.runBatchCryptoQueue(
+    items,
+    async (item) => {
+      activeMobile += 1
+      maxObservedMobile = Math.max(maxObservedMobile, activeMobile)
+      await new Promise((resolve) => setTimeout(resolve, 5))
+      activeMobile -= 1
+      return item
+    },
+    { isMobileOrTouch: true },
+  )
+  assert.equal(maxObservedMobile, 1)
 })

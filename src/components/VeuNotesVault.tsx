@@ -119,6 +119,7 @@ export default function VeuNotesVault() {
     deleteNote,
     lockVault,
     clearBrokenVault,
+    notifyError,
     dismissToast,
     usageLabel,
   } = useVeuNotes()
@@ -140,9 +141,23 @@ export default function VeuNotesVault() {
 
   function handleImportFileChange(event: ChangeEvent<HTMLInputElement>) {
     const selectedFile = event.target.files?.[0] ?? null
+    event.target.value = ''
+
+    if (!selectedFile) {
+      return
+    }
+
+    if (!selectedFile.name.toLowerCase().endsWith('.criptoveu-note')) {
+      setPendingImportFile(null)
+      setImportPassword('')
+      notifyError(
+        'Formato inválido. Selecione um ficheiro com a extensão .criptoveu-note.',
+      )
+      return
+    }
+
     setPendingImportFile(selectedFile)
     setImportPassword('')
-    event.target.value = ''
   }
 
   async function handleCreateVault() {
@@ -228,7 +243,7 @@ export default function VeuNotesVault() {
         id="veunotes-backup-file"
         ref={importInputRef}
         type="file"
-        accept=".criptoveu-note,.json,application/json,application/vnd.criptoveu.note+json"
+        accept=".criptoveu-note,application/x-criptoveu-note,application/octet-stream,*/*"
         className="hidden"
         aria-label="Selecionar arquivo de backup do cofre"
         tabIndex={-1}
@@ -473,8 +488,9 @@ export default function VeuNotesVault() {
                     Compatível com seus backups
                   </p>
                   <p className="mt-3 text-sm leading-7 text-zinc-400">
-                    Backups JSON antigos continuam aceitos. Após a senha correta,
-                    a nota única é migrada para o novo cofre sem perder conteúdo.
+                    Backups em formato <code>.criptoveu-note</code> de versões
+                    anteriores continuam aceitos. Após a senha correta, a nota
+                    única é migrada para o novo cofre sem perder conteúdo.
                   </p>
                 </div>
               </div>

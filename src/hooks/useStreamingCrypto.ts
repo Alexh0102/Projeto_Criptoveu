@@ -10,6 +10,33 @@ import {
   type FileEncryptionOptions,
   type ProcessResult,
 } from '../lib/criptoveu'
+import {
+  MAX_FILES,
+  MAX_SINGLE_FILE_BYTES,
+  MAX_TOTAL_BYTES,
+  formatMegabytes,
+  getBatchCryptoConcurrency,
+  isMobileOrTouchEnvironment,
+  runBatchCryptoQueue,
+  validateBatchFileSelection,
+  type BatchCryptoQueueOptions,
+  type BatchFileValidationResult,
+  type TransientCryptoMemoryScope,
+} from '../lib/file-crypto/batch-queue'
+
+export {
+  MAX_FILES,
+  MAX_SINGLE_FILE_BYTES,
+  MAX_TOTAL_BYTES,
+  formatMegabytes,
+  getBatchCryptoConcurrency,
+  isMobileOrTouchEnvironment,
+  runBatchCryptoQueue,
+  validateBatchFileSelection,
+  type BatchCryptoQueueOptions,
+  type BatchFileValidationResult,
+  type TransientCryptoMemoryScope,
+}
 
 type StreamingCryptoMode = 'encrypt' | 'decrypt'
 

@@ -217,9 +217,18 @@
       "eyebrow": "Hecho para tareas sensibles",
       "title": "Claridad, enfoque y procesamiento local en una sola experiencia.",
       "items": {
-        "local": { "title": "100% local", "description": "Tu contenido se procesa en el navegador mientras lo usas." },
-        "focusedFlow": { "title": "Sin flujo confuso", "description": "Cada herramienta abre en su propia pantalla, enfocada en la tarea." },
-        "ready": { "title": "Listo para usar", "description": "Elige la herramienta, rellena los campos y obtén el resultado enseguida." }
+        "local": {
+          "title": "100% local",
+          "description": "Tu contenido se procesa en el navegador mientras lo usas."
+        },
+        "focusedFlow": {
+          "title": "Sin flujo confuso",
+          "description": "Cada herramienta abre en su propia pantalla, enfocada en la tarea."
+        },
+        "ready": {
+          "title": "Listo para usar",
+          "description": "Elige la herramienta, rellena los campos y obtén el resultado enseguida."
+        }
       }
     },
     "useCases": {
@@ -227,11 +236,26 @@
       "title": "Dónde ayuda CriptoVéu",
       "description": "Protege contenido sensible antes de enviarlo, compartirlo o almacenarlo.",
       "items": {
-        "file": { "title": "Enviar un archivo protegido con contraseña", "description": "Protege documentos antes de compartirlos." },
-        "qr": { "title": "Crear un QR con mensaje protegido", "description": "Genera un QR y ábrelo después con la misma contraseña." },
-        "link": { "title": "Compartir un enlace temporal", "description": "Crea un mensaje protegido para abrirlo en el momento adecuado." },
-        "image": { "title": "Ocultar un mensaje en una imagen", "description": "Esconde contenido sensible dentro de una imagen." },
-        "carefulTasks": { "title": "Organizar tareas sensibles con más cuidado", "description": "Separa las tareas para reducir errores y exposición." }
+        "file": {
+          "title": "Enviar un archivo protegido con contraseña",
+          "description": "Protege documentos antes de compartirlos."
+        },
+        "qr": {
+          "title": "Crear un QR con mensaje protegido",
+          "description": "Genera un QR y ábrelo después con la misma contraseña."
+        },
+        "link": {
+          "title": "Compartir un enlace temporal",
+          "description": "Crea un mensaje protegido para abrirlo en el momento adecuado."
+        },
+        "image": {
+          "title": "Ocultar un mensaje en una imagen",
+          "description": "Esconde contenido sensible dentro de una imagen."
+        },
+        "carefulTasks": {
+          "title": "Organizar tareas sensibles con más cuidado",
+          "description": "Separa las tareas para reducir errores y exposición."
+        }
       }
     },
     "tools": {
@@ -254,32 +278,74 @@
       "eyebrow": "Procesamiento local",
       "title": "Por qué usar procesamiento local",
       "items": {
-        "control": { "title": "Más control", "description": "Archivos, mensajes e imágenes permanecen en tu dispositivo mientras usas la herramienta." },
-        "lessExposure": { "title": "Menos exposición", "description": "Reduces la dependencia de flujos inseguros para tareas sensibles." },
-        "simplicity": { "title": "Más simplicidad", "description": "Cada herramienta resuelve una tarea específica sin pasos visibles extra." }
+        "control": {
+          "title": "Más control",
+          "description": "Archivos, mensajes e imágenes permanecen en tu dispositivo mientras usas la herramienta."
+        },
+        "lessExposure": {
+          "title": "Menos exposición",
+          "description": "Reduces la dependencia de flujos inseguros para tareas sensibles."
+        },
+        "simplicity": {
+          "title": "Más simplicidad",
+          "description": "Cada herramienta resuelve una tarea específica sin pasos visibles extra."
+        }
       }
     },
     "audience": {
       "eyebrow": "Perfil de uso",
       "title": "Para quién fue hecho CriptoVéu",
       "items": {
-        "freelancers": { "title": "Profesionales independientes", "description": "Para quienes necesitan proteger archivos, mensajes o imágenes en el día a día." },
-        "smallOffices": { "title": "Pequeñas oficinas", "description": "Para equipos que manejan contenido sensible y quieren más control al enviarlo." },
-        "adminOps": { "title": "Operaciones administrativas", "description": "Para tareas que implican documentos, instrucciones o datos reservados." },
-        "privacyPeople": { "title": "Personas que priorizan la privacidad", "description": "Para quienes quieren resolver tareas sensibles directamente en el navegador." }
+        "freelancers": {
+          "title": "Profesionales independientes",
+          "description": "Para quienes necesitan proteger archivos, mensajes o imágenes en el día a día."
+        },
+        "smallOffices": {
+          "title": "Pequeñas oficinas",
+          "description": "Para equipos que manejan contenido sensible y quieren más control al enviarlo."
+        },
+        "adminOps": {
+          "title": "Operaciones administrativas",
+          "description": "Para tareas que implican documentos, instrucciones o datos reservados."
+        },
+        "privacyPeople": {
+          "title": "Personas que priorizan la privacidad",
+          "description": "Para quienes quieren resolver tareas sensibles directamente en el navegador."
+        }
       }
     },
     "faq": {
       "eyebrow": "Preguntas frecuentes",
       "title": "Preguntas frecuentes",
       "items": {
-        "account": { "title": "¿Necesito una cuenta?", "content": "No. Puedes empezar a usar las herramientas directamente en el navegador." },
-        "server": { "title": "¿Mi contenido se envía a un servidor?", "content": "El procesamiento principal ocurre localmente en el navegador mientras usas la herramienta." },
-        "linkPassword": { "title": "¿El enlace contiene mi contraseña?", "content": "No. Los enlaces y códigos QR contienen solo los datos cifrados y los parámetros públicos necesarios. Comparte la contraseña por separado, preferiblemente por otro canal." },
-        "mobile": { "title": "¿Funciona en móvil?", "content": "Sí. Las pantallas se organizaron para uso móvil con un flujo directo." },
-        "contentTypes": { "title": "¿Puedo usarlo para archivos, mensajes e imágenes?", "content": "Sí. Cada herramienta fue creada para una tarea específica." },
-        "firstTool": { "title": "¿Qué herramienta debo usar primero?", "content": "Si quieres proteger un documento, empieza por archivos. Para mensajes cortos, usa QR protegido o enlace protegido." },
-        "steganography": { "title": "¿La esteganografía es lo mismo que el cifrado?", "content": "No. En esteganografía, el mensaje protegido se oculta dentro de una imagen. En el cifrado, el contenido se protege directamente." }
+        "account": {
+          "title": "¿Necesito una cuenta?",
+          "content": "No. Puedes empezar a usar las herramientas directamente en el navegador."
+        },
+        "server": {
+          "title": "¿Mi contenido se envía a un servidor?",
+          "content": "El procesamiento principal ocurre localmente en el navegador mientras usas la herramienta."
+        },
+        "linkPassword": {
+          "title": "¿El enlace contiene mi contraseña?",
+          "content": "No. Los enlaces y códigos QR contienen solo los datos cifrados y los parámetros públicos necesarios. Comparte la contraseña por separado, preferiblemente por otro canal."
+        },
+        "mobile": {
+          "title": "¿Funciona en móvil?",
+          "content": "Sí. Las pantallas se organizaron para uso móvil con un flujo directo."
+        },
+        "contentTypes": {
+          "title": "¿Puedo usarlo para archivos, mensajes e imágenes?",
+          "content": "Sí. Cada herramienta fue creada para una tarea específica."
+        },
+        "firstTool": {
+          "title": "¿Qué herramienta debo usar primero?",
+          "content": "Si quieres proteger un documento, empieza por archivos. Para mensajes cortos, usa QR protegido o enlace protegido."
+        },
+        "steganography": {
+          "title": "¿La esteganografía es lo mismo que el cifrado?",
+          "content": "No. En esteganografía, el mensaje protegido se oculta dentro de una imagen. En el cifrado, el contenido se protege directamente."
+        }
       }
     },
     "social": {
@@ -287,9 +353,24 @@
       "title": "Saber más sobre CriptoVéu",
       "description": "Para seguir novedades del sitio, conocer mejor al autor del proyecto y consultar el código fuente, usa los enlaces de abajo.",
       "items": {
-        "instagram": { "eyebrow": "@criptoveu", "title": "CriptoVéu en Instagram", "description": "Sigue noticias, contenido visual y actualizaciones del proyecto.", "cta": "Abrir Instagram" },
-        "linkedin": { "eyebrow": "Alex Silva", "title": "Perfil en LinkedIn", "description": "Ve el perfil profesional ligado al proyecto y conoce mejor la iniciativa.", "cta": "Abrir LinkedIn" },
-        "github": { "eyebrow": "GitHub", "title": "Código fuente", "description": "Consulta el repositorio público, sigue los cambios y ve cómo funciona CriptoVéu por dentro.", "cta": "Abrir GitHub" }
+        "instagram": {
+          "eyebrow": "@criptoveu",
+          "title": "CriptoVéu en Instagram",
+          "description": "Sigue noticias, contenido visual y actualizaciones del proyecto.",
+          "cta": "Abrir Instagram"
+        },
+        "linkedin": {
+          "eyebrow": "Alex Silva",
+          "title": "Perfil en LinkedIn",
+          "description": "Ve el perfil profesional ligado al proyecto y conoce mejor la iniciativa.",
+          "cta": "Abrir LinkedIn"
+        },
+        "github": {
+          "eyebrow": "GitHub",
+          "title": "Código fuente",
+          "description": "Consulta el repositorio público, sigue los cambios y ve cómo funciona CriptoVéu por dentro.",
+          "cta": "Abrir GitHub"
+        }
       }
     },
     "transparency": {
@@ -298,10 +379,22 @@
       "description": "CriptoVéu fue pensado para tareas sensibles con procesamiento local en el navegador. Para entender mejor cómo funciona cada herramienta, consulta las páginas de privacidad, seguridad y detalles técnicos.",
       "featuredBadge": "Destacado",
       "items": {
-        "privacy": { "title": "Privacidad", "description": "Qué se procesa localmente y cuáles son los límites del uso." },
-        "security": { "title": "Seguridad", "description": "Buenas prácticas, cuidado con las contraseñas y uso responsable." },
-        "technical": { "title": "Detalles técnicos", "description": "Visión general de rutas, flujo y decisiones de la interfaz." },
-        "about": { "title": "Sobre el proyecto", "description": "Objetivo de CriptoVéu, contexto del producto y dirección de la plataforma." }
+        "privacy": {
+          "title": "Privacidad",
+          "description": "Qué se procesa localmente y cuáles son los límites del uso."
+        },
+        "security": {
+          "title": "Seguridad",
+          "description": "Buenas prácticas, cuidado con las contraseñas y uso responsable."
+        },
+        "technical": {
+          "title": "Detalles técnicos",
+          "description": "Visión general de rutas, flujo y decisiones de la interfaz."
+        },
+        "about": {
+          "title": "Sobre el proyecto",
+          "description": "Objetivo de CriptoVéu, contexto del producto y dirección de la plataforma."
+        }
       }
     }
   },
@@ -401,8 +494,14 @@
       "title": "Protege o recupera archivos sin salir del navegador.",
       "description": "Previsualiza vídeos, fotos, PDFs y documentos locales antes de proteger o recuperar archivos com contraseña, sin subir nada.",
       "help": {
-        "how": { "title": "Cómo funciona", "content": "Eliges los archivos, defines la contraseña y el procesamiento ocurre localmente en el navegador." },
-        "privacy": { "title": "Privacidad", "content": "Tus archivos no salen del dispositivo. El resultado se genera localmente para descargarlo." }
+        "how": {
+          "title": "Cómo funciona",
+          "content": "Eliges los archivos, defines la contraseña y el procesamiento ocurre localmente en el navegador."
+        },
+        "privacy": {
+          "title": "Privacidad",
+          "content": "Tus archivos no salen del dispositivo. El resultado se genera localmente para descargarlo."
+        }
       }
     },
     "previewKinds": {
@@ -446,8 +545,18 @@
     },
     "workspace": {
       "modes": {
-        "encrypt": { "action": "Proteger archivos", "title": "Protege tus archivos localmente", "description": "Elige los archivos, define la contraseña y genera los paquetes protegidos en el navegador.", "hint": "Acepta cualquier formato de archivo." },
-        "decrypt": { "action": "Recuperar archivos", "title": "Recupera el contenido original", "description": "Sube un archivo .criptoveu y usa la misma contraseña para recuperar el contenido.", "hint": "También acepta paquetes antiguos .cryptify." }
+        "encrypt": {
+          "action": "Proteger archivos",
+          "title": "Protege tus archivos localmente",
+          "description": "Elige los archivos, define la contraseña y genera los paquetes protegidos en el navegador.",
+          "hint": "Acepta cualquier formato de archivo."
+        },
+        "decrypt": {
+          "action": "Recuperar archivos",
+          "title": "Recupera el contenido original",
+          "description": "Sube un archivo .criptoveu y usa la misma contraseña para recuperar el contenido.",
+          "hint": "También acepta paquetes antiguos .cryptify."
+        }
       },
       "tabs": {
         "encrypt": "Proteger",
@@ -510,7 +619,10 @@
         "previewAvailable": "Integridad confirmada. Vista previa disponible; el archivo aún no se ha guardado en el dispositivo.",
         "previewUnavailable": "La vista previa no está disponible para este tipo de archivo.",
         "previewTooLarge": "El archivo es demasiado grande para una vista previa segura.",
-        "processing": { "encrypt": "Protegiendo archivos localmente...", "decrypt": "Recuperando archivos localmente..." },
+        "processing": {
+          "encrypt": "Protegiendo archivos localmente...",
+          "decrypt": "Recuperando archivos localmente..."
+        },
         "fileStep": "Archivo {{current}}/{{total}} - {{label}}",
         "unexpectedFileFailure": "Fallo inesperado al procesar este archivo.",
         "processingFailed": "Procesamiento fallido",
@@ -526,7 +638,10 @@
         "decryptedSuccess": "{{count}} archivo(s) recuperado(s) y validado(s) localmente. No hay vista previa para este tipo; el archivo aún no se ha guardado en el dispositivo.",
         "recoveredFileSaved": "Archivo recuperado guardado en Documents.",
         "unexpectedProcessingError": "Ocurrió un error inesperado al procesar los archivos.",
-        "unexpectedDownloadFailure": "No fue posible exportar el archivo. Comprueba el espacio disponible e inténtalo de nuevo."
+        "unexpectedDownloadFailure": "No fue posible exportar el archivo. Comprueba el espacio disponible e inténtalo de nuevo.",
+        "tooManyFiles": "Límite de lote superado: seleccionaste {{count}} archivos, pero el máximo permitido es de {{max}} archivos a la vez.",
+        "singleFileTooLarge": "El archivo \"{{fileName}}\" ({{size}} MB) supera el límite individual de {{maxMb}} MB por archivo.",
+        "batchTotalTooLarge": "El tamaño total seleccionado ({{totalMb}} MB) supera el límite máximo de {{maxMb}} MB por lote."
       },
       "plan": {
         "unlimited": "Ilimitado para apoyadores",
@@ -558,7 +673,9 @@
         "filesReady_one": "1 archivo listo para procesar",
         "filesReady_other": "{{count}} archivos listos para procesar",
         "noFiles": "Ningún archivo cargado",
-        "additionalFiles": "+ {{count}} archivo(s) adicional(es)"
+        "additionalFiles": "+ {{count}} archivo(s) adicional(es)",
+        "batchLimitHint": "Selecciona hasta 50 archivos (máx. 25 MB por archivo y 100 MB en total por lote)",
+        "batchCounter": "{{count}} de {{maxFiles}} archivos • {{totalMb}} MB / {{maxTotalMb}} MB"
       },
       "limitDialog": {
         "title": "Límite de archivo: hasta 1 GB",
@@ -655,8 +772,14 @@
         "keyFileProtection": "Protección doble confirmada: se necesitaron la contraseña y el archivo-clave.",
         "keyFileNotEmbedded": "Archivo-clave incorporado: no"
       },
-      "quickGuide": { "eyebrow": "Guía rápida", "title": "Antes de procesar" },
-      "progress": { "title": "Procesamiento local", "aria": "Progreso del procesamiento" },
+      "quickGuide": {
+        "eyebrow": "Guía rápida",
+        "title": "Antes de procesar"
+      },
+      "progress": {
+        "title": "Procesamiento local",
+        "aria": "Progreso del procesamiento"
+      },
       "results": {
         "title": "Resultados",
         "description": "Tus archivos procesados aparecen aquí para descargar o revisar.",
@@ -714,10 +837,22 @@
       "description": "Crea, busca y organiza notas localmente; expórtalas como un archivo .criptoveu-note protegido con Argon2id y AES-256-GCM.",
       "badge": "100% client-side",
       "help": {
-        "how": { "title": "Cómo funciona", "content": "En el primer uso, creas una contraseña maestra. Los títulos, etiquetas y textos solo se descifran en memoria después de desbloquear la bóveda." },
-        "saved": { "title": "Qué queda guardado en el navegador", "content": "Solo un sobre NOTE2 cifrado con Argon2id, salt, IV y ciphertext. El documento PORTABLE_VAULT1, los títulos, etiquetas y textos permanecen dentro del ciphertext. Las bóvedas antiguas solo se migran después de usar la contraseña correcta." },
-        "backup": { "title": "Copia de seguridad y recuperación", "content": "Puedes exportar un archivo .criptoveu-note e importarlo en el mismo u otro dispositivo. Las copias JSON antiguas siguen siendo compatibles." },
-        "forgot": { "title": "Si olvido la contraseña", "content": "No hay recuperación. Guarda la contraseña separada del archivo .criptoveu-note. Las copias anteriores a un cambio de contraseña siguen usando la contraseña anterior." }
+        "how": {
+          "title": "Cómo funciona",
+          "content": "En el primer uso, creas una contraseña maestra. Los títulos, etiquetas y textos solo se descifran en memoria después de desbloquear la bóveda."
+        },
+        "saved": {
+          "title": "Qué queda guardado en el navegador",
+          "content": "Solo un sobre NOTE2 cifrado con Argon2id, salt, IV y ciphertext. El documento PORTABLE_VAULT1, los títulos, etiquetas y textos permanecen dentro del ciphertext. Las bóvedas antiguas solo se migran después de usar la contraseña correcta."
+        },
+        "backup": {
+          "title": "Copia de seguridad y recuperación",
+          "content": "Puedes exportar un archivo .criptoveu-note e importarlo en el mismo u otro dispositivo. Las copias JSON antiguas siguen siendo compatibles."
+        },
+        "forgot": {
+          "title": "Si olvido la contraseña",
+          "content": "No hay recuperación. Guarda la contraseña separada del archivo .criptoveu-note. Las copias anteriores a un cambio de contraseña siguen usando la contraseña anterior."
+        }
       }
     }
   }

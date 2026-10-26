@@ -44,7 +44,6 @@ import { useStreamingCrypto } from '../../hooks/useStreamingCrypto'
 import {
   ARGON2_FILE_ITERATIONS,
   FILE_SECURITY_PROFILES,
-  MAX_FILE_PACKAGE_OVERHEAD_BYTES,
   MAX_FILE_SIZE,
   STREAMING_CHUNK_SIZE_BYTES,
   formatFileSize,
@@ -55,6 +54,16 @@ import {
   type FileSecurityProfileId,
 } from '../../lib/criptoveu'
 import { MAX_KEY_FILE_SIZE_BYTES } from '../../lib/key-file-protection'
+import {
+  MAX_FILES,
+  MAX_SINGLE_FILE_BYTES,
+  MAX_TOTAL_BYTES,
+  formatMegabytes,
+  getBatchCryptoConcurrency,
+  runBatchCryptoQueue,
+  validateBatchFileSelection,
+  type BatchFileValidationResult,
+} from '../../lib/file-crypto/batch-queue'
 import {
   exportFileToNativeDownloads,
   type NativeExportContext,
@@ -249,9 +258,40 @@ export default function FileCryptoWorkspace() {
 
   const currentMode = MODE_COPY[mode]
   const totalSelectedSize = files.reduce((sum, currentFile) => sum + currentFile.size, 0)
-  const activeFileLimit = opfsAvailable
-    ? null
-    : MAX_FILE_SIZE + (mode === 'decrypt' ? MAX_FILE_PACKAGE_OVERHEAD_BYTES : 0)
+  const batchValidation = validateBatchFileSelection(files)
+  const totalSelectedMegabytes = formatMegabytes(totalSelectedSize)
+  const isBatchLimitExceeded = !batchValidation.valid
+
+  function getBatchValidationErrorMessage(
+    validation: BatchFileValidationResult,
+  ): string {
+    if (validation.valid) {
+      return ''
+    }
+
+    if (validation.code === 'TOO_MANY_FILES') {
+      return t('files.workspace.status.tooManyFiles', {
+        count: validation.fileCount,
+        max: MAX_FILES,
+        defaultValue: validation.message,
+      })
+    }
+
+    if (validation.code === 'SINGLE_FILE_TOO_LARGE') {
+      return t('files.workspace.status.singleFileTooLarge', {
+        fileName: validation.offendingFileName ?? '',
+        size: validation.offendingFileMegabytesFormatted ?? '0.00',
+        maxMb: Math.round(MAX_SINGLE_FILE_BYTES / (1024 * 1024)),
+        defaultValue: validation.message,
+      })
+    }
+
+    return t('files.workspace.status.batchTotalTooLarge', {
+      totalMb: validation.totalMegabytesFormatted,
+      maxMb: Math.round(MAX_TOTAL_BYTES / (1024 * 1024)),
+      defaultValue: validation.message,
+    })
+  }
   const resultName = previewItem?.name ?? results[0]?.name ?? ''
   const activePreviewItem = previewItem ?? results[0] ?? null
   const preview = activePreviewItem?.preview ?? { kind: 'none', label: t('common.file') }
@@ -470,30 +510,15 @@ export default function FileCryptoWorkspace() {
       return false
     }
 
-    const maxAllowedBytes = opfsAvailable
-  ? null
-  : mode === 'decrypt'
-        ? MAX_FILE_SIZE + MAX_FILE_PACKAGE_OVERHEAD_BYTES
-        : MAX_FILE_SIZE
-
-    const oversizedFiles = nextFiles.filter(
-      (selectedFile) =>
-        maxAllowedBytes !== null && selectedFile.size > maxAllowedBytes,
-    )
-
-    if (oversizedFiles.length > 0) {
+    const selectionValidation = validateBatchFileSelection(nextFiles)
+    if (!selectionValidation.valid) {
       setFiles([])
+      setHasStorageWarning(false)
       clearResults()
       setStatus({
         tone: 'error',
-        message: t('files.workspace.status.fileExceedsLimit', {
-          defaultValue:
-            'O arquivo selecionado excede o limite de 1 GB para processamento 100% local e seguro na memória do dispositivo.',
-        }),
+        message: getBatchValidationErrorMessage(selectionValidation),
       })
-      if (mode === 'encrypt') {
-        setIsFileLimitDialogOpen(true)
-      }
       return false
     }
 
@@ -954,27 +979,18 @@ export default function FileCryptoWorkspace() {
       return
     }
 
-    const oversizedFiles =
-      activeFileLimit === null
-        ? []
-        : files.filter((selectedFile) => selectedFile.size > activeFileLimit)
-
-    if (oversizedFiles.length > 0) {
+    const currentBatchValidation = validateBatchFileSelection(files)
+    if (!currentBatchValidation.valid) {
       setStatus({
         tone: 'error',
-        message: t('files.workspace.status.fileExceedsLimit', {
-          defaultValue:
-            'O arquivo selecionado excede o limite de 1 GB para processamento 100% local e seguro na memória do dispositivo.',
-        }),
+        message: getBatchValidationErrorMessage(currentBatchValidation),
       })
-      if (mode === 'encrypt') {
-        setIsFileLimitDialogOpen(true)
-      }
       return
     }
 
     setIsProcessing(true)
-    abortControllerRef.current = new AbortController()
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
     setProgress(4)
     setProgressLabel(t('files.workspace.status.preparingSecureEnvironment'))
     setStatus({
@@ -984,139 +1000,157 @@ export default function FileCryptoWorkspace() {
     clearResults()
 
     try {
-      const processedResults: ResultItem[] = []
+      const processedResultsBySlot: Array<ResultItem | null> = new Array(
+        files.length,
+      ).fill(null)
       const failures: string[] = []
+      const fileProgress = new Array<number>(files.length).fill(0)
+      const queueConcurrency = getBatchCryptoConcurrency()
       let saveCancelled = false
       let savePending = false
 
-      for (const [index, currentFile] of files.entries()) {
-        const currentStep = index + 1
-        let processedResult: ResultItem | null = null
+      await runBatchCryptoQueue(
+        files,
+        async (currentFile, index) => {
+          const currentStep = index + 1
+          let processedResult: ResultItem | null = null
 
-        try {
-          const { blob, downloadName, manifestMimeType, securityReport, dispose } =
-            await streamingCrypto.processFile(
-              mode,
-              currentFile,
-              password,
-              (value, label) => {
-                const startProgress = (index / files.length) * 100
-                const endProgress = ((index + 1) / files.length) * 100
-                const aggregateProgress =
-                  startProgress +
-                  ((endProgress - startProgress) * value) / 100
+          try {
+            const { blob, downloadName, manifestMimeType, securityReport, dispose } =
+              await streamingCrypto.processFile(
+                mode,
+                currentFile,
+                password,
+                (value, label) => {
+                  fileProgress[index] = value
+                  const aggregateProgress =
+                    fileProgress.reduce((sum, itemValue) => sum + itemValue, 0) /
+                    files.length
 
-                const cryptoProgress = Math.min(85, Math.round(aggregateProgress * 0.85))
-                setProgress(cryptoProgress)
-                setProgressLabel(
-                  files.length === 1
-                    ? label
-                    : t('files.workspace.status.fileStep', {
-                        current: currentStep,
-                        total: files.length,
-                        label,
-                      }),
-                )
-              },
-              {
-                maxFileSizeBytes: opfsAvailable ? undefined : MAX_FILE_SIZE,
-                argon2MemoryMb:
-                  mode === 'encrypt' ? securityProfile.memoryMb : undefined,
-                argon2Iterations:
-                  mode === 'encrypt' ? ARGON2_FILE_ITERATIONS : undefined,
-                keyFile:
-                  mode === 'encrypt'
-                    ? useKeyFile
-                      ? keyFile
-                      : null
-                    : keyFile,
-                recoverable:
-                  mode === 'encrypt' ? useRecoverableParity : undefined,
-                signal: abortControllerRef.current.signal,
-              },
-            )
+                  const cryptoProgress = Math.min(
+                    85,
+                    Math.round(aggregateProgress * 0.85),
+                  )
+                  setProgress(cryptoProgress)
+                  setProgressLabel(
+                    files.length === 1
+                      ? label
+                      : t('files.workspace.status.fileStep', {
+                          current: currentStep,
+                          total: files.length,
+                          label,
+                        }),
+                  )
+                },
+                {
+                  maxFileSizeBytes: opfsAvailable ? undefined : MAX_FILE_SIZE,
+                  argon2MemoryMb:
+                    mode === 'encrypt' ? securityProfile.memoryMb : undefined,
+                  argon2Iterations:
+                    mode === 'encrypt' ? ARGON2_FILE_ITERATIONS : undefined,
+                  keyFile:
+                    mode === 'encrypt'
+                      ? useKeyFile
+                        ? keyFile
+                        : null
+                      : keyFile,
+                  recoverable:
+                    mode === 'encrypt' ? useRecoverableParity : undefined,
+                  signal: abortController.signal,
+                },
+              )
 
-          const nextPreview =
-            mode === 'decrypt'
-              ? getUniversalPreviewMetadata(blob.type, downloadName, blob.size)
-              : ({ kind: 'none', label: t('common.file') } as PreviewMetadata)
+            const nextPreview =
+              mode === 'decrypt'
+                ? getUniversalPreviewMetadata(blob.type, downloadName, blob.size)
+                : ({ kind: 'none', label: t('common.file') } as PreviewMetadata)
 
-          if (mode === 'decrypt' && import.meta.env.DEV) {
-            console.debug('[CriptoVéu][preview]', {
-              originalFileName: downloadName,
-              manifestMimeType: manifestMimeType ?? blob.type,
-              recoveredBlobType: blob.type,
-              fileSize: blob.size,
-              previewKind: nextPreview.kind,
-              reason: nextPreview.reason ?? null,
-            })
-          }
-
-          processedResult = {
-            id: `${downloadName}-${index}-${blob.size}`,
-            name: downloadName,
-            blob,
-            size: blob.size,
-            sourceName: currentFile.name,
-            preview: nextPreview,
-            securityReport,
-            savedWithSuccess: false,
-            savedToDocuments: false,
-            nativePath: null,
-            dispose,
-          }
-          if (mode === 'encrypt') {
-            setStatus({
-              tone: 'info',
-              message: t('files.workspace.status.packageReady'),
-            })
-            if (supportsNativeFileExport()) {
-              await handleDownloadResult(processedResult, setProgress, {
-                action: 'saveEncryptedFile',
-                trigger: 'process-success',
-                userInitiated: false,
-                previewMode: false,
+            if (mode === 'decrypt' && import.meta.env.DEV) {
+              console.debug('[CriptoVéu][preview]', {
+                originalFileName: downloadName,
+                manifestMimeType: manifestMimeType ?? blob.type,
+                recoveredBlobType: blob.type,
+                fileSize: blob.size,
+                previewKind: nextPreview.kind,
+                reason: nextPreview.reason ?? null,
               })
-            } else {
-              savePending = true
             }
-          }
 
-          await incrementStats(1, currentFile.size, mode)
-
-          processedResults.push(processedResult)
-        } catch (error) {
-          if (error instanceof DOMException && error.name === 'AbortError') {
-            if (processedResult) {
-              saveCancelled = true
-              processedResults.push(processedResult)
+            processedResult = {
+              id: `${downloadName}-${index}-${blob.size}`,
+              name: downloadName,
+              blob,
+              size: blob.size,
+              sourceName: currentFile.name,
+              preview: nextPreview,
+              securityReport,
+              savedWithSuccess: false,
+              savedToDocuments: false,
+              nativePath: null,
+              dispose,
+            }
+            if (mode === 'encrypt') {
               setStatus({
                 tone: 'info',
-                message: t('files.workspace.status.saveCancelled'),
+                message: t('files.workspace.status.packageReady'),
               })
-              continue
+              if (supportsNativeFileExport()) {
+                await handleDownloadResult(processedResult, setProgress, {
+                  action: 'saveEncryptedFile',
+                  trigger: 'process-success',
+                  userInitiated: false,
+                  previewMode: false,
+                })
+              } else {
+                savePending = true
+              }
             }
-            throw error
+
+            await incrementStats(1, currentFile.size, mode)
+            fileProgress[index] = 100
+            processedResultsBySlot[index] = processedResult
+          } catch (error) {
+            if (error instanceof DOMException && error.name === 'AbortError') {
+              if (processedResult) {
+                saveCancelled = true
+                processedResultsBySlot[index] = processedResult
+                setStatus({
+                  tone: 'info',
+                  message: t('files.workspace.status.saveCancelled'),
+                })
+                return
+              }
+              throw error
+            }
+            if (processedResult) {
+              await processedResult.dispose?.()
+            }
+            failures.push(
+              `${currentFile.name}: ${
+                error instanceof Error
+                  ? error.message
+                  : t('files.workspace.status.unexpectedFileFailure')
+              }`,
+            )
+            setProgressLabel(
+              t('files.workspace.status.processingFailedAt', {
+                defaultValue:
+                  'Falha durante processamento local em {{progress}}% — {{stage}}',
+                progress,
+                stage: progressLabel,
+              }),
+            )
           }
-          if (processedResult) {
-            await processedResult.dispose?.()
-          }
-          failures.push(
-            `${currentFile.name}: ${
-              error instanceof Error
-                ? error.message
-              : t('files.workspace.status.unexpectedFileFailure')
-            }`,
-          )
-          setProgressLabel(
-            t('files.workspace.status.processingFailedAt', {
-              defaultValue: 'Falha durante processamento local em {{progress}}% — {{stage}}',
-              progress,
-              stage: progressLabel,
-            }),
-          )
-        }
-      }
+        },
+        {
+          concurrency: queueConcurrency,
+          signal: abortController.signal,
+        },
+      )
+
+      const processedResults = processedResultsBySlot.filter(
+        (item): item is ResultItem => item !== null,
+      )
 
       resultCleanupRef.current = processedResults.flatMap((result) =>
         result.dispose ? [result.dispose] : [],
@@ -1328,6 +1362,12 @@ export default function FileCryptoWorkspace() {
                       {t('files.workspace.upload.dropTitle')}
                     </p>
                     <p className="mt-1 text-sm text-zinc-400">{t(currentMode.hint)}</p>
+                    <p className="mt-1.5 text-xs text-cyan-200/80">
+                      {t('files.workspace.upload.batchLimitHint', {
+                        defaultValue:
+                          'Selecione até 50 ficheiros (máx. 25 MB por ficheiro e 100 MB no total do lote)',
+                      })}
+                    </p>
                   </div>
                 </div>
 
@@ -1379,9 +1419,25 @@ export default function FileCryptoWorkspace() {
                     </div>
                   </div>
 
-                  <p className="shrink-0 font-mono text-xs uppercase tracking-[0.2em] text-zinc-400">
-                    {files.length > 0 ? formatFileSize(totalSelectedSize) : '0 B'}
-                  </p>
+                  <div className="shrink-0 text-right">
+                    <p
+                      data-testid="batch-selection-counter"
+                      className={`font-mono text-xs tracking-[0.12em] ${
+                        isBatchLimitExceeded ? 'text-rose-300' : 'text-cyan-200/90'
+                      }`}
+                    >
+                      {t('files.workspace.upload.batchCounter', {
+                        count: files.length,
+                        maxFiles: MAX_FILES,
+                        totalMb: totalSelectedMegabytes,
+                        maxTotalMb: Math.round(MAX_TOTAL_BYTES / (1024 * 1024)),
+                        defaultValue: `${files.length} de ${MAX_FILES} ficheiros • ${totalSelectedMegabytes} MB / 100 MB`,
+                      })}
+                    </p>
+                    <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.2em] text-zinc-500">
+                      {files.length > 0 ? formatFileSize(totalSelectedSize) : '0 B'}
+                    </p>
+                  </div>
                 </div>
               </div>
             </label>
@@ -1656,6 +1712,7 @@ export default function FileCryptoWorkspace() {
                   onClick={isProcessing ? handleCancel : handleProcess}
                   disabled={
                     files.length === 0 ||
+                    isBatchLimitExceeded ||
                     !password ||
                     (keyFileIsRequired && !keyFile) ||
                     isProcessing ||
@@ -2025,7 +2082,7 @@ export default function FileCryptoWorkspace() {
         icon={isProcessing ? <X className="h-5 w-5" /> : mode === 'encrypt' ? <Lock className="h-5 w-5" /> : <Unlock className="h-5 w-5" />}
         onClick={isProcessing ? handleCancel : handleProcess}
         disabled={
-          !isProcessing && (files.length === 0 || !password || (keyFileIsRequired && !keyFile) || !canUseSecureProcessing)
+          !isProcessing && (files.length === 0 || isBatchLimitExceeded || !password || (keyFileIsRequired && !keyFile) || !canUseSecureProcessing)
         }
         loading={isProcessing}
       />

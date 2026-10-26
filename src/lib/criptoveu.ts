@@ -19,6 +19,20 @@ import {
 } from './key-file-protection'
 import { getOpfsRoot } from './opfs'
 import { resolvePreviewMimeType } from './file-preview'
+export {
+  MAX_FILES,
+  MAX_SINGLE_FILE_BYTES,
+  MAX_TOTAL_BYTES,
+  formatMegabytes,
+  getBatchCryptoConcurrency,
+  isMobileOrTouchEnvironment,
+  runBatchCryptoQueue,
+  validateBatchFileSelection,
+  type BatchCryptoQueueOptions,
+  type BatchFileValidationResult,
+  type TransientCryptoMemoryScope,
+} from './file-crypto/batch-queue'
+
 
 const LEGACY_CHUNKED_FILE_HEADER_TEXT = 'CRIPTIFY2'
 const PBKDF2_CHUNKED_FILE_HEADER_TEXT = 'CRIPTOVEU2'
@@ -1218,6 +1232,8 @@ export async function encryptFile(
     'Verificando a estrutura final do pacote',
   )
   const blob = new Blob(encryptedParts, { type: 'application/octet-stream' })
+  encryptedParts.length = 0
+  parityGroup.length = 0
   const inspection = await inspectCriptoveuPackage(blob)
 
   if (inspection.status !== 'plausible' || inspection.format !== packageFormat) {
@@ -2702,6 +2718,8 @@ async function decryptIntegrityChunkedFile(
   }
 
   const blob = new Blob(decryptedParts, { type: manifest.mimeType })
+  decryptedParts.length = 0
+  key = null
   let hashes
 
   try {

@@ -1,5 +1,10 @@
-﻿[[redirects]]
+[[redirects]]
   from = "/arquivos"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/diagnostico-navegador"
   to = "/index.html"
   status = 200
 
@@ -20,6 +25,21 @@
 
 [[redirects]]
   from = "/veu-notes"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/configuracoes"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/apoiar"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/doacao"
   to = "/index.html"
   status = 200
 
@@ -52,6 +72,7 @@
   from = "/sobre"
   to = "/index.html"
   status = 200
+
 [[headers]]
   for = "/*"
 
@@ -63,7 +84,6 @@
     Origin-Agent-Cluster = "?1"
     Permissions-Policy = "accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), magnetometer=(), microphone=(), midi=(), payment=(), publickey-credentials-get=(), serial=(), usb=(), web-share=(), xr-spatial-tracking=()"
     Referrer-Policy = "no-referrer"
-    Vary = "Origin"
     Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
     X-Content-Type-Options = "nosniff"
     X-DNS-Prefetch-Control = "off"
@@ -76,7 +96,7 @@
   for = "/"
 
   [headers.values]
-    Cache-Control = "private, no-cache, no-store, max-age=0, must-revalidate"
+    Cache-Control = "no-cache, no-store, must-revalidate, private"
     Pragma = "no-cache"
     Expires = "0"
 
@@ -84,7 +104,47 @@
   for = "/index.html"
 
   [headers.values]
-    Cache-Control = "private, no-cache, no-store, max-age=0, must-revalidate"
+    Cache-Control = "no-cache, no-store, must-revalidate, private"
+    Pragma = "no-cache"
+    Expires = "0"
+
+[[headers]]
+  for = "/*.html"
+
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate, private"
+    Pragma = "no-cache"
+    Expires = "0"
+
+[[headers]]
+  for = "/*.json"
+
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate, private"
+    Pragma = "no-cache"
+    Expires = "0"
+
+[[headers]]
+  for = "/*.xml"
+
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate, private"
+    Pragma = "no-cache"
+    Expires = "0"
+
+[[headers]]
+  for = "/*.txt"
+
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate, private"
+    Pragma = "no-cache"
+    Expires = "0"
+
+[[headers]]
+  for = "/site.webmanifest"
+
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate, private"
     Pragma = "no-cache"
     Expires = "0"
 
@@ -98,7 +158,6 @@
   for = "/service-worker.js"
 
   [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
+    Cache-Control = "no-cache, no-store, must-revalidate, private"
     Pragma = "no-cache"
     Expires = "0"
-

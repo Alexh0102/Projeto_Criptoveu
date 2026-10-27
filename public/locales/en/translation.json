@@ -674,12 +674,12 @@
         "filesReady_other": "{{count}} files ready for processing",
         "noFiles": "No file loaded",
         "additionalFiles": "+ {{count}} additional file(s)",
-        "batchLimitHint": "Select up to 50 files (max. 25 MB per file and 100 MB total per batch)",
-        "batchCounter": "{{count}} of {{maxFiles}} files • {{totalMb}} MB / {{maxTotalMb}} MB"
+        "batchLimitHint": "Total limit of {{totalGb}} GB per batch (no file quantity limit)",
+        "batchCounter": "{{count}} files • {{totalMb}} MB / {{totalGb}} GB"
       },
       "limitDialog": {
-        "title": "File limit: up to 1 GB",
-        "description": "To ensure 100% local, secure processing without out-of-memory (OOM) crashes on your device, the maximum allowed size is 1 GB per file.",
+        "title": "File limit: up to {{maxGb}} GB",
+        "description": "To ensure 100% local, secure processing without out-of-memory (OOM) crashes on your device, the maximum allowed size is {{maxGb}} GB per file.",
         "support": "Support the project",
         "back": "Back to encryption",
         "close": "Close file limit notice"

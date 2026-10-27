@@ -55,11 +55,11 @@ import {
 } from '../../lib/criptoveu'
 import { MAX_KEY_FILE_SIZE_BYTES } from '../../lib/key-file-protection'
 import {
-  MAX_FILES,
-  MAX_SINGLE_FILE_BYTES,
-  MAX_TOTAL_BYTES,
   formatMegabytes,
   getBatchCryptoConcurrency,
+  getMaxSingleFileBytes,
+  getMaxTotalBytes,
+  getPlatformType,
   runBatchCryptoQueue,
   validateBatchFileSelection,
   type BatchFileValidationResult,
@@ -258,7 +258,8 @@ export default function FileCryptoWorkspace() {
 
   const currentMode = MODE_COPY[mode]
   const totalSelectedSize = files.reduce((sum, currentFile) => sum + currentFile.size, 0)
-  const batchValidation = validateBatchFileSelection(files)
+  const platform = getPlatformType()
+  const batchValidation = validateBatchFileSelection(files, platform)
   const totalSelectedMegabytes = formatMegabytes(totalSelectedSize)
   const isBatchLimitExceeded = !batchValidation.valid
 
@@ -269,26 +270,18 @@ export default function FileCryptoWorkspace() {
       return ''
     }
 
-    if (validation.code === 'TOO_MANY_FILES') {
-      return t('files.workspace.status.tooManyFiles', {
-        count: validation.fileCount,
-        max: MAX_FILES,
-        defaultValue: validation.message,
-      })
-    }
-
     if (validation.code === 'SINGLE_FILE_TOO_LARGE') {
       return t('files.workspace.status.singleFileTooLarge', {
         fileName: validation.offendingFileName ?? '',
         size: validation.offendingFileMegabytesFormatted ?? '0.00',
-        maxMb: Math.round(MAX_SINGLE_FILE_BYTES / (1024 * 1024)),
+        maxGb: Math.round(getMaxSingleFileBytes(platform) / (1024 * 1024 * 1024) * 10) / 10,
         defaultValue: validation.message,
       })
     }
 
     return t('files.workspace.status.batchTotalTooLarge', {
       totalMb: validation.totalMegabytesFormatted,
-      maxMb: Math.round(MAX_TOTAL_BYTES / (1024 * 1024)),
+      maxGb: Math.round(getMaxTotalBytes(platform) / (1024 * 1024 * 1024) * 10) / 10,
       defaultValue: validation.message,
     })
   }
@@ -1428,10 +1421,9 @@ export default function FileCryptoWorkspace() {
                     >
                       {t('files.workspace.upload.batchCounter', {
                         count: files.length,
-                        maxFiles: MAX_FILES,
+                        totalGb: Math.round(getMaxTotalBytes(platform) / (1024 * 1024 * 1024) * 10) / 10,
                         totalMb: totalSelectedMegabytes,
-                        maxTotalMb: Math.round(MAX_TOTAL_BYTES / (1024 * 1024)),
-                        defaultValue: `${files.length} de ${MAX_FILES} ficheiros • ${totalSelectedMegabytes} MB / 100 MB`,
+                        defaultValue: `${files.length} ficheiros • ${totalSelectedMegabytes} MB / ${Math.round(getMaxTotalBytes(platform) / (1024 * 1024 * 1024) * 10) / 10} GB`,
                       })}
                     </p>
                     <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.2em] text-zinc-500">

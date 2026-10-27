@@ -674,12 +674,12 @@
         "filesReady_other": "{{count}} archivos listos para procesar",
         "noFiles": "Ningún archivo cargado",
         "additionalFiles": "+ {{count}} archivo(s) adicional(es)",
-        "batchLimitHint": "Selecciona hasta 50 archivos (máx. 25 MB por archivo y 100 MB en total por lote)",
-        "batchCounter": "{{count}} de {{maxFiles}} archivos • {{totalMb}} MB / {{maxTotalMb}} MB"
+        "batchLimitHint": "Límite total de {{totalGb}} GB por lote (sin límite de cantidad de archivos)",
+        "batchCounter": "{{count}} archivos • {{totalMb}} MB / {{totalGb}} GB"
       },
       "limitDialog": {
-        "title": "Límite de archivo: hasta 1 GB",
-        "description": "Para garantizar un procesamiento 100% local, seguro y sin bloqueos por falta de memoria (OOM) en tu dispositivo, el tamaño máximo permitido por archivo es de 1 GB.",
+        "title": "Límite de archivo: hasta {{maxGb}} GB",
+        "description": "Para garantizar un procesamiento 100% local, seguro y sin bloqueos por falta de memoria (OOM) en tu dispositivo, el tamaño máximo permitido por archivo es de {{maxGb}} GB.",
         "support": "Apoyar el proyecto",
         "back": "Volver al cifrado",
         "close": "Cerrar aviso de límite"

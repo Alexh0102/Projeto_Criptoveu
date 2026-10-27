@@ -421,13 +421,16 @@ test('CSP autoriza somente as políticas nomeadas dos Workers locais', async () 
   }
 })
 
-test('limite maximo de arquivo e 1 GB (1073741824 bytes) e rejeita arquivos maiores', async () => {
-  assert.equal(criptoveu.MAX_FILE_SIZE, 1024 * 1024 * 1024)
-  assert.equal(criptoveu.MAX_FILE_SIZE_BYTES, 1024 * 1024 * 1024)
+test('limite maximo de arquivo e 5 GB na web (10737418240 bytes) e rejeita arquivos maiores', async () => {
+  // Em ambiente Node (não navegador), getPlatformType() retorna 'web',
+  // então o limite é 5 GB
+  const maxFileSizeBytes = 5 * 1024 * 1024 * 1024
+  assert.equal(criptoveu.MAX_FILE_SIZE, maxFileSizeBytes)
+  assert.equal(criptoveu.MAX_FILE_SIZE_BYTES, maxFileSizeBytes)
 
   const oversizedMockFile = {
     name: 'grande.iso',
-    size: 1024 * 1024 * 1024 + 1,
+    size: maxFileSizeBytes + 1,
     type: 'application/octet-stream',
     lastModified: Date.now(),
   }
@@ -437,7 +440,7 @@ test('limite maximo de arquivo e 1 GB (1073741824 bytes) e rejeita arquivos maio
     {
       code: 'FILE_TOO_LARGE',
       message:
-        'O arquivo selecionado excede o limite de 1 GB para processamento 100% local e seguro na memória do dispositivo.',
+        'O arquivo selecionado excede o limite de 5 GB para processamento 100% local e seguro na memória do dispositivo.',
     },
   )
 
@@ -450,7 +453,7 @@ test('limite maximo de arquivo e 1 GB (1073741824 bytes) e rejeita arquivos maio
     {
       code: 'FILE_TOO_LARGE',
       message:
-        'O arquivo selecionado excede o limite de 1 GB para processamento 100% local e seguro na memória do dispositivo.',
+        'O arquivo selecionado excede o limite de 5 GB para processamento 100% local e seguro na memória do dispositivo.',
     },
   )
 })

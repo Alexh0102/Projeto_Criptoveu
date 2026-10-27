@@ -19,17 +19,19 @@ import {
 } from './key-file-protection'
 import { getOpfsRoot } from './opfs'
 import { resolvePreviewMimeType } from './file-preview'
+import { getMaxSingleFileBytes } from './file-crypto/batch-queue'
 export {
-  MAX_FILES,
-  MAX_SINGLE_FILE_BYTES,
-  MAX_TOTAL_BYTES,
   formatMegabytes,
   getBatchCryptoConcurrency,
+  getMaxSingleFileBytes,
+  getMaxTotalBytes,
+  getPlatformType,
   isMobileOrTouchEnvironment,
   runBatchCryptoQueue,
   validateBatchFileSelection,
   type BatchCryptoQueueOptions,
   type BatchFileValidationResult,
+  type PlatformType,
   type TransientCryptoMemoryScope,
 } from './file-crypto/batch-queue'
 
@@ -90,11 +92,11 @@ const INTEGRITY_HEADER_LENGTH_BYTES =
   CHUNK_RECORD_LENGTH_BYTES * 2
 export const ARGON2_FILE_ITERATIONS = 2
 export const STREAMING_CHUNK_SIZE_BYTES = 2 * 1024 * 1024
-export const MAX_FILE_SIZE = 1024 * 1024 * 1024 // 1 GB em bytes (1073741824 bytes)
+export const MAX_FILE_SIZE = getMaxSingleFileBytes()
 export const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE
-export const MAX_FILE_SIZE_READABLE = '1 GB'
+export const MAX_FILE_SIZE_READABLE = `${MAX_FILE_SIZE / (1024 * 1024 * 1024)} GB`
 export const MAX_FILE_SIZE_EXCEEDED_MESSAGE =
-  'O arquivo selecionado excede o limite de 1 GB para processamento 100% local e seguro na memória do dispositivo.'
+  `O arquivo selecionado excede o limite de ${MAX_FILE_SIZE_READABLE} para processamento 100% local e seguro na memória do dispositivo.`
 export const MAX_FILE_PACKAGE_OVERHEAD_BYTES = 2 * 1024 * 1024
 
 type ProgressCallback = (value: number, label: string) => void

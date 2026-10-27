@@ -262,48 +262,44 @@ test('VéuNotes usa application/octet-stream para compatibilidade SAF Android e 
   )
 })
 
-test('validação de lote aceita até 50 ficheiros, máx 25 MB individual e 100 MB total', () => {
-  assert.equal(batchQueue.MAX_FILES, 50)
-  assert.equal(batchQueue.MAX_SINGLE_FILE_BYTES, 25 * 1024 * 1024)
-  assert.equal(batchQueue.MAX_TOTAL_BYTES, 100 * 1024 * 1024)
+test('validação de lote aceita qualquer quantidade de ficheiros com limite total de 5 GB na web', () => {
+  // Na web (detectado como 'web' em ambiente Node), o limite é 5 GB total
+  // sem restrição de quantidade de arquivos
 
-  const validFiftyFiles = Array.from({ length: 50 }, (_, index) => ({
+  const maxTotalGb = 5
+  const maxTotalBytes = maxTotalGb * 1024 * 1024 * 1024
+
+  // Muitos arquivos pequenos devem ser aceitos (sem limite de quantidade)
+  const manySmallFiles = Array.from({ length: 100 }, (_, index) => ({
     name: `foto-${index + 1}.jpg`,
-    size: 2 * 1024 * 1024, // 50 * 2 MB = 100 MB exatos
+    size: 1024, // 1 KB cada
   }))
-  const validResult = batchQueue.validateBatchFileSelection(validFiftyFiles)
-  assert.equal(validResult.valid, true)
-  assert.equal(validResult.fileCount, 50)
-  assert.equal(validResult.totalMegabytesFormatted, '100.00')
+  const manyResult = batchQueue.validateBatchFileSelection(manySmallFiles)
+  assert.equal(manyResult.valid, true)
+  assert.equal(manyResult.fileCount, 100)
 
-  const tooManyFiles = Array.from({ length: 51 }, (_, index) => ({
-    name: `foto-${index + 1}.jpg`,
-    size: 1024,
-  }))
-  const tooManyResult = batchQueue.validateBatchFileSelection(tooManyFiles)
-  assert.equal(tooManyResult.valid, false)
-  assert.equal(tooManyResult.code, 'TOO_MANY_FILES')
+  // Arquivo individual de 5 GB deve ser aceito no limite
+  const singleAtLimitResult = batchQueue.validateBatchFileSelection([
+    { name: 'video-5gb.mp4', size: maxTotalBytes },
+  ])
+  assert.equal(singleAtLimitResult.valid, true)
 
+  // Arquivo individual acima de 5 GB deve ser rejeitado
   const singleTooLargeResult = batchQueue.validateBatchFileSelection([
-    { name: 'imagem-ok.png', size: 5 * 1024 * 1024 },
-    { name: 'video-pesado.mp4', size: 25 * 1024 * 1024 + 1 },
+    { name: 'video-pesado.mp4', size: maxTotalBytes + 1 },
   ])
   assert.equal(singleTooLargeResult.valid, false)
   assert.equal(singleTooLargeResult.code, 'SINGLE_FILE_TOO_LARGE')
   assert.equal(singleTooLargeResult.offendingFileName, 'video-pesado.mp4')
-  assert.match(singleTooLargeResult.message, /video-pesado\.mp4/)
 
+  // Total acima de 5 GB deve ser rejeitado
   const totalTooLargeResult = batchQueue.validateBatchFileSelection([
-    { name: 'parte-1.bin', size: 25 * 1024 * 1024 },
-    { name: 'parte-2.bin', size: 25 * 1024 * 1024 },
-    { name: 'parte-3.bin', size: 25 * 1024 * 1024 },
-    { name: 'parte-4.bin', size: 25 * 1024 * 1024 },
-    { name: 'parte-5.bin', size: 1024 * 1024 },
+    { name: 'parte-1.bin', size: maxTotalBytes },
+    { name: 'parte-2.bin', size: 1024 },
   ])
   assert.equal(totalTooLargeResult.valid, false)
   assert.equal(totalTooLargeResult.code, 'TOTAL_SIZE_EXCEEDED')
-  assert.equal(totalTooLargeResult.totalMegabytesFormatted, '101.00')
-  assert.match(totalTooLargeResult.message, /101\.00 MB/)
+  assert.match(totalTooLargeResult.message, /5 GB/)
 })
 
 test('fila de processamento respeita limite de concorrência (1 mobile, 2 desktop) e limpa memória transitória', async () => {

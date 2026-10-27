@@ -13,11 +13,15 @@ import {
 import {
   formatMegabytes,
   getBatchCryptoConcurrency,
+  getMaxSingleFileBytes,
+  getMaxTotalBytes,
+  getPlatformType,
   isMobileOrTouchEnvironment,
   runBatchCryptoQueue,
   validateBatchFileSelection,
   type BatchCryptoQueueOptions,
   type BatchFileValidationResult,
+  type PlatformType,
   type TransientCryptoMemoryScope,
 } from '../lib/file-crypto/batch-queue'
 

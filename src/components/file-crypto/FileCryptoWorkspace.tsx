@@ -63,7 +63,6 @@ import {
   runBatchCryptoQueue,
   validateBatchFileSelection,
   type BatchFileValidationResult,
-  type PlatformType,
 } from '../../lib/file-crypto/batch-queue'
 import {
   exportFileToNativeDownloads,

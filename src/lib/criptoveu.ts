@@ -19,6 +19,7 @@ import {
 } from './key-file-protection'
 import { getOpfsRoot } from './opfs'
 import { resolvePreviewMimeType } from './file-preview'
+import { getMaxSingleFileBytes } from './file-crypto/batch-queue'
 export {
   formatMegabytes,
   getBatchCryptoConcurrency,

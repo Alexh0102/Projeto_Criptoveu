@@ -11,9 +11,6 @@ import {
   type ProcessResult,
 } from '../lib/criptoveu'
 import {
-  MAX_FILES,
-  MAX_SINGLE_FILE_BYTES,
-  MAX_TOTAL_BYTES,
   formatMegabytes,
   getBatchCryptoConcurrency,
   isMobileOrTouchEnvironment,
@@ -25,16 +22,17 @@ import {
 } from '../lib/file-crypto/batch-queue'
 
 export {
-  MAX_FILES,
-  MAX_SINGLE_FILE_BYTES,
-  MAX_TOTAL_BYTES,
   formatMegabytes,
   getBatchCryptoConcurrency,
+  getMaxSingleFileBytes,
+  getMaxTotalBytes,
+  getPlatformType,
   isMobileOrTouchEnvironment,
   runBatchCryptoQueue,
   validateBatchFileSelection,
   type BatchCryptoQueueOptions,
   type BatchFileValidationResult,
+  type PlatformType,
   type TransientCryptoMemoryScope,
 }
 

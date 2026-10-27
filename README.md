@@ -203,12 +203,13 @@ Parity is redundancy, not a replacement for encryption or a backup. It cannot re
 
 Decrypted media is previewed locally from the recovered `File`/`Blob` through `URL.createObjectURL`. The preview never converts the media to Base64 or loads the entire file into a JavaScript `ArrayBuffer`. The temporary object URL is revoked when the preview closes or unmounts.
 
-Video preview limits are selected from the runtime platform:
+File encryption/decryption and video preview limits are selected from the runtime platform:
 
-| Environment | Maximum video size |
+| Environment | Maximum total size per batch |
 |---|---:|
+| Conventional desktop browser (web) | **5 GB** |
+| PWA (installed, standalone mode) | **1 GB** |
 | Capacitor Android/iOS or touch mobile browser | **1 GB** |
-| Conventional desktop browser | **5 GB** |
 
 Other media keeps the existing conservative preview limits: **100 MB** on the web, **50 MB** in the native app, and **5 MB** for text. Files above their applicable limit remain available for download but are not opened in the browser player.
 

@@ -1,9 +1,9 @@
 export {
-  MAX_FILES,
-  MAX_SINGLE_FILE_BYTES,
-  MAX_TOTAL_BYTES,
   formatMegabytes,
   getBatchCryptoConcurrency,
+  getMaxSingleFileBytes,
+  getMaxTotalBytes,
+  getPlatformType,
   isMobileOrTouchEnvironment,
   runBatchCryptoQueue,
   useStreamingCrypto,
@@ -11,6 +11,7 @@ export {
   validateBatchFileSelection,
   type BatchCryptoQueueOptions,
   type BatchFileValidationResult,
+  type PlatformType,
   type TransientCryptoMemoryScope,
 } from './useStreamingCrypto'
 

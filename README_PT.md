@@ -203,12 +203,13 @@ Paridade é redundância, não substitui criptografia nem backup. Ela não recup
 
 As mídias descriptografadas são pré-visualizadas localmente a partir do `File`/`Blob` recuperado por meio de `URL.createObjectURL`. A prévia nunca converte a mídia para Base64 nem carrega o arquivo inteiro em um `ArrayBuffer` do JavaScript. A URL temporária é revogada quando a pré-visualização é fechada ou desmontada.
 
-Os limites de vídeo são escolhidos conforme a plataforma em execução:
+Os limites de criptografia/descriptografia de arquivos e de pré-visualização de vídeo são escolhidos conforme a plataforma em execução:
 
-| Ambiente | Tamanho máximo do vídeo |
+| Ambiente | Tamanho máximo total por lote |
 |---|---:|
+| Navegador desktop convencional (web) | **5 GB** |
+| PWA (instalado, modo standalone) | **1 GB** |
 | Capacitor Android/iOS ou navegador móvel com toque | **1 GB** |
-| Navegador desktop convencional | **5 GB** |
 
 As demais mídias mantêm os limites conservadores existentes: **100 MB** na web, **50 MB** no aplicativo nativo e **5 MB** para textos. Arquivos acima do limite aplicável continuam disponíveis para download, mas não são abertos no player do navegador.
 

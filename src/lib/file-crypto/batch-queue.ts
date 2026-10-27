@@ -1,12 +1,78 @@
-export const MAX_FILES = 50
-export const MAX_TOTAL_BYTES = 100 * 1024 * 1024 // 100 MB
-export const MAX_SINGLE_FILE_BYTES = 25 * 1024 * 1024 // 25 MB
+export type PlatformType = 'web' | 'pwa' | 'android'
+
+// Limites de tamanho por plataforma (em bytes).
+// Web (navegador convencional): 5 GB total.
+// PWA e Android: 1 GB total.
+// O limite é em GB total do lote, não em quantidade de arquivos.
+const PLATFORM_LIMITS: Record<PlatformType, { maxTotalBytes: number; maxSingleFileBytes: number }> = {
+  web: {
+    maxTotalBytes: 5 * 1024 * 1024 * 1024, // 5 GB
+    maxSingleFileBytes: 5 * 1024 * 1024 * 1024, // 5 GB
+  },
+  pwa: {
+    maxTotalBytes: 1 * 1024 * 1024 * 1024, // 1 GB
+    maxSingleFileBytes: 1 * 1024 * 1024 * 1024, // 1 GB
+  },
+  android: {
+    maxTotalBytes: 1 * 1024 * 1024 * 1024, // 1 GB
+    maxSingleFileBytes: 1 * 1024 * 1024 * 1024, // 1 GB
+  },
+}
+
+/**
+ * Detecta o tipo de plataforma atual.
+ * - android: app nativo Capacitor (Android WebView)
+ * - pwa: navegador em modo standalone (PWA instalado)
+ * - web: navegador convencional (não PWA, não nativo)
+ */
+export function getPlatformType(): PlatformType {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return 'web'
+  }
+
+  const customWindow = window as Window & {
+    Capacitor?: {
+      isNative?: boolean
+      getPlatform?: () => string
+    }
+  }
+
+  // Detecta app nativo Capacitor (Android)
+  const isNative = Boolean(
+    customWindow.Capacitor?.isNative ||
+    customWindow.Capacitor?.getPlatform?.() !== 'web' ||
+    window.location.protocol === 'capacitor:' ||
+    window.location.protocol === 'ionic:'
+  )
+  if (isNative) {
+    return 'android'
+  }
+
+  // Detecta PWA (modo standalone/fullscreen)
+  if (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: fullscreen)').matches ||
+    Boolean((window.navigator as Navigator & { standalone?: boolean }).standalone) ||
+    document.referrer.startsWith('android-app://')
+  ) {
+    return 'pwa'
+  }
+
+  return 'web'
+}
+
+export function getMaxTotalBytes(platform?: PlatformType): number {
+  return PLATFORM_LIMITS[platform ?? getPlatformType()].maxTotalBytes
+}
+
+export function getMaxSingleFileBytes(platform?: PlatformType): number {
+  return PLATFORM_LIMITS[platform ?? getPlatformType()].maxSingleFileBytes
+}
 
 export const MAX_MOBILE_CONCURRENCY = 1
 export const MAX_DESKTOP_CONCURRENCY = 2
 
 export type BatchFileValidationErrorCode =
-  | 'TOO_MANY_FILES'
   | 'SINGLE_FILE_TOO_LARGE'
   | 'TOTAL_SIZE_EXCEEDED'
 
@@ -50,25 +116,19 @@ export function formatMegabytes(bytes: number): string {
 
 export function validateBatchFileSelection(
   files: readonly BatchFileLike[],
+  platform?: PlatformType,
 ): BatchFileValidationResult {
   const fileCount = files.length
   const totalBytes = files.reduce((sum, file) => sum + Math.max(0, file.size), 0)
   const totalMegabytes = totalBytes / (1024 * 1024)
   const totalMegabytesFormatted = formatMegabytes(totalBytes)
 
-  if (fileCount > MAX_FILES) {
-    return {
-      valid: false,
-      code: 'TOO_MANY_FILES',
-      fileCount,
-      totalBytes,
-      totalMegabytes,
-      totalMegabytesFormatted,
-      message: `Limite excedido: foram selecionados ${fileCount} ficheiros, mas o máximo permitido é de ${MAX_FILES} ficheiros por lote.`,
-    }
-  }
+  const resolvedPlatform = platform ?? getPlatformType()
+  const maxTotalBytes = getMaxTotalBytes(resolvedPlatform)
+  const maxSingleFileBytes = getMaxSingleFileBytes(resolvedPlatform)
+  const maxTotalGb = Math.round(maxTotalBytes / (1024 * 1024 * 1024) * 10) / 10
 
-  const oversizedFile = files.find((file) => file.size > MAX_SINGLE_FILE_BYTES)
+  const oversizedFile = files.find((file) => file.size > maxSingleFileBytes)
   if (oversizedFile) {
     const offendingFileMegabytesFormatted = formatMegabytes(oversizedFile.size)
     return {
@@ -81,11 +141,11 @@ export function validateBatchFileSelection(
       offendingFileName: oversizedFile.name,
       offendingFileBytes: oversizedFile.size,
       offendingFileMegabytesFormatted,
-      message: `O ficheiro "${oversizedFile.name}" (${offendingFileMegabytesFormatted} MB) excede o limite individual de 25 MB por ficheiro.`,
+      message: `O ficheiro "${oversizedFile.name}" (${offendingFileMegabytesFormatted} MB) excede o limite individual de ${maxTotalGb} GB por ficheiro.`,
     }
   }
 
-  if (totalBytes > MAX_TOTAL_BYTES) {
+  if (totalBytes > maxTotalBytes) {
     return {
       valid: false,
       code: 'TOTAL_SIZE_EXCEEDED',
@@ -93,7 +153,7 @@ export function validateBatchFileSelection(
       totalBytes,
       totalMegabytes,
       totalMegabytesFormatted,
-      message: `O tamanho total do lote (${totalMegabytesFormatted} MB) ultrapassa o limite máximo de 100 MB.`,
+      message: `O tamanho total do lote (${totalMegabytesFormatted} MB) ultrapassa o limite máximo de ${maxTotalGb} GB.`,
     }
   }
 

@@ -640,8 +640,8 @@
         "unexpectedProcessingError": "Ocorreu um erro inesperado ao processar os arquivos.",
         "unexpectedDownloadFailure": "Não foi possível exportar o arquivo. Verifique o espaço disponível e tente novamente.",
         "tooManyFiles": "Limite de lote excedido: você selecionou {{count}} ficheiros, mas o máximo permitido é de {{max}} ficheiros por vez.",
-        "singleFileTooLarge": "O ficheiro \"{{fileName}}\" ({{size}} MB) excede o limite individual de {{maxMb}} MB por ficheiro.",
-        "batchTotalTooLarge": "O tamanho total selecionado ({{totalMb}} MB) ultrapassa o limite máximo de {{maxMb}} MB por lote."
+        "singleFileTooLarge": "O ficheiro \"{{fileName}}\" ({{size}} MB) excede o limite individual de {{maxGb}} GB por ficheiro.",
+        "batchTotalTooLarge": "O tamanho total selecionado ({{totalMb}} MB) ultrapassa o limite máximo de {{maxGb}} GB por lote."
       },
       "plan": {
         "unlimited": "Ilimitado para apoiadores",
@@ -669,6 +669,8 @@
       "upload": {
         "dropTitle": "Arraste e solte um ou mais arquivos aqui",
         "choose": "Escolher arquivos",
+        "addMore": "Adicionar arquivos",
+        "clearSelection": "Limpar seleção",
         "selectedTitle": "Arquivos selecionados",
         "filesReady_one": "1 arquivo pronto para processamento",
         "filesReady_other": "{{count}} arquivos prontos para processamento",

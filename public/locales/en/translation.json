@@ -640,8 +640,8 @@
         "unexpectedProcessingError": "An unexpected error occurred while processing the files.",
         "unexpectedDownloadFailure": "The file could not be exported. Check available storage and try again.",
         "tooManyFiles": "Batch limit exceeded: you selected {{count}} files, but the maximum allowed is {{max}} files at a time.",
-        "singleFileTooLarge": "The file \"{{fileName}}\" ({{size}} MB) exceeds the {{maxMb}} MB single-file limit.",
-        "batchTotalTooLarge": "The total selected size ({{totalMb}} MB) exceeds the {{maxMb}} MB batch limit."
+        "singleFileTooLarge": "The file \"{{fileName}}\" ({{size}} MB) exceeds the {{maxGb}} GB single-file limit.",
+        "batchTotalTooLarge": "The total selected size ({{totalMb}} MB) exceeds the {{maxGb}} GB batch limit."
       },
       "plan": {
         "unlimited": "Unlimited for supporters",
@@ -669,6 +669,8 @@
       "upload": {
         "dropTitle": "Drag and drop one or more files here",
         "choose": "Choose files",
+        "addMore": "Add more files",
+        "clearSelection": "Clear selection",
         "selectedTitle": "Selected files",
         "filesReady_one": "1 file ready for processing",
         "filesReady_other": "{{count}} files ready for processing",

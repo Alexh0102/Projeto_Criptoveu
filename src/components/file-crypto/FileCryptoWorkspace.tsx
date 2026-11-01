@@ -234,11 +234,13 @@ export default function FileCryptoWorkspace() {
 
     setIsInspectingPackages(true)
 
-    void Promise.all(
-      files.map(async (file, index) => [
-        getFileIdentity(file, index),
-        await inspectCriptoveuPackage(file),
-      ] as const),
+    void runBatchCryptoQueue(
+      files,
+      async (file, index) =>
+        [
+          getFileIdentity(file, index),
+          await inspectCriptoveuPackage(file),
+        ] as const,
     )
       .then((entries) => {
         if (!cancelled) {
@@ -259,6 +261,12 @@ export default function FileCryptoWorkspace() {
   const currentMode = MODE_COPY[mode]
   const totalSelectedSize = files.reduce((sum, currentFile) => sum + currentFile.size, 0)
   const platform = getPlatformType()
+  const maxTotalBytes = getMaxTotalBytes(platform)
+  const maxSingleFileBytes = getMaxSingleFileBytes(platform)
+  const maxTotalGb = Math.round((maxTotalBytes / (1024 * 1024 * 1024)) * 10) / 10
+  const maxSingleGb = Math.round((maxSingleFileBytes / (1024 * 1024 * 1024)) * 10) / 10
+  const maxTotalMb = Math.round(maxTotalBytes / (1024 * 1024))
+  const maxSingleMb = Math.round(maxSingleFileBytes / (1024 * 1024))
   const batchValidation = validateBatchFileSelection(files, platform)
   const totalSelectedMegabytes = formatMegabytes(totalSelectedSize)
   const isBatchLimitExceeded = !batchValidation.valid
@@ -274,14 +282,16 @@ export default function FileCryptoWorkspace() {
       return t('files.workspace.status.singleFileTooLarge', {
         fileName: validation.offendingFileName ?? '',
         size: validation.offendingFileMegabytesFormatted ?? '0.00',
-        maxGb: Math.round(getMaxSingleFileBytes(platform) / (1024 * 1024 * 1024) * 10) / 10,
+        maxGb: maxSingleGb,
+        maxMb: maxSingleMb,
         defaultValue: validation.message,
       })
     }
 
     return t('files.workspace.status.batchTotalTooLarge', {
       totalMb: validation.totalMegabytesFormatted,
-      maxGb: Math.round(getMaxTotalBytes(platform) / (1024 * 1024 * 1024) * 10) / 10,
+      maxGb: maxTotalGb,
+      maxMb: maxTotalMb,
       defaultValue: validation.message,
     })
   }
@@ -480,22 +490,38 @@ export default function FileCryptoWorkspace() {
     clearResults()
   }
 
-  async function handleSelectedFiles(selectedFiles: FileList | File[] | null | undefined): Promise<boolean> {
-    const nextFiles = Array.from(selectedFiles ?? [])
+  function handleClearSelectedFiles(event?: MouseEvent<HTMLButtonElement>) {
+    event?.preventDefault()
+    event?.stopPropagation()
+    setFiles([])
+    setHasStorageWarning(false)
+    setProgress(0)
+    setProgressLabel(t('files.workspace.status.ready'))
+    setStatus({
+      tone: 'info',
+      message: t('files.workspace.status.initial'),
+    })
+    clearResults()
+  }
 
-    if (nextFiles.length === 0) {
+  async function handleSelectedFiles(selectedFiles: FileList | File[] | null | undefined): Promise<boolean> {
+    const incomingFiles = Array.from(selectedFiles ?? [])
+
+    if (incomingFiles.length === 0) {
       return false
     }
 
     if (
       mode === 'decrypt' &&
-      nextFiles.some(
+      incomingFiles.some(
         (selectedFile) => !hasSupportedRecoveryExtension(selectedFile.name),
       )
     ) {
-      setFiles([])
-      setHasStorageWarning(false)
-      clearResults()
+      if (files.length === 0) {
+        setFiles([])
+        setHasStorageWarning(false)
+        clearResults()
+      }
       setStatus({
         tone: 'error',
         message: t('files.workspace.status.unsupportedRecoveryFormat'),
@@ -503,11 +529,29 @@ export default function FileCryptoWorkspace() {
       return false
     }
 
-    const selectionValidation = validateBatchFileSelection(nextFiles)
+    const baseFiles = results.length > 0 ? [] : files
+    const seenKeys = new Set(
+      baseFiles.map(
+        (existingFile) =>
+          `${existingFile.name}::${existingFile.size}::${existingFile.lastModified}`,
+      ),
+    )
+    const nextFiles = [...baseFiles]
+    for (const incomingFile of incomingFiles) {
+      const key = `${incomingFile.name}::${incomingFile.size}::${incomingFile.lastModified}`
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key)
+        nextFiles.push(incomingFile)
+      }
+    }
+
+    const selectionValidation = validateBatchFileSelection(nextFiles, platform)
     if (!selectionValidation.valid) {
-      setFiles([])
-      setHasStorageWarning(false)
-      clearResults()
+      if (baseFiles.length === 0) {
+        setFiles([])
+        setHasStorageWarning(false)
+        clearResults()
+      }
       setStatus({
         tone: 'error',
         message: getBatchValidationErrorMessage(selectionValidation),
@@ -515,7 +559,7 @@ export default function FileCryptoWorkspace() {
       return false
     }
 
-    if (mode === 'decrypt') {
+    if (mode === 'decrypt' && baseFiles.length === 0) {
       setKeyFile(null)
     }
 
@@ -530,8 +574,8 @@ export default function FileCryptoWorkspace() {
     setProgress(0)
     setProgressLabel(
       nextFiles.length === 1
-        ? t('files.workspace.status.filesReady_one')
-        : t('files.workspace.status.filesReady_other'),
+        ? t('files.workspace.status.filesReady_one', { count: 1 })
+        : t('files.workspace.status.filesReady_other', { count: nextFiles.length }),
     )
     setStatus({
       tone: 'info',
@@ -829,16 +873,29 @@ export default function FileCryptoWorkspace() {
       })
     }
 
-    results.forEach((result, index) => {
-      window.setTimeout(() => {
-        void saveRecoveredFile(result, {
-          action: 'saveAll',
-          trigger: 'downloadAll-button',
-          userInitiated: true,
-          previewMode: false,
-        }).catch(handleDownloadFailure)
-      }, index * 120)
-    })
+    void (async () => {
+      for (let index = 0; index < results.length; index += 1) {
+        const result = results[index]
+        try {
+          await saveRecoveredFile(result, {
+            action: 'saveAll',
+            trigger: 'downloadAll-button',
+            userInitiated: true,
+            previewMode: false,
+          })
+          if (!supportsNativeFileExport() && index < results.length - 1) {
+            await new Promise<void>((resolve) => {
+              window.setTimeout(resolve, 120)
+            })
+          }
+        } catch (error) {
+          handleDownloadFailure(error)
+          if (error instanceof DOMException && error.name === 'AbortError') {
+            break
+          }
+        }
+      }
+    })()
   }
 
   function releasePreviewUrl() {
@@ -1357,79 +1414,101 @@ export default function FileCryptoWorkspace() {
                     <p className="mt-1 text-sm text-zinc-400">{t(currentMode.hint)}</p>
                     <p className="mt-1.5 text-xs text-cyan-200/80">
                       {t('files.workspace.upload.batchLimitHint', {
-                        defaultValue:
-                          'Selecione até 50 ficheiros (máx. 25 MB por ficheiro e 100 MB no total do lote)',
+                        totalGb: maxTotalGb,
+                        defaultValue: `Limite total de ${maxTotalGb} GB por lote (sem limite de quantidade de arquivos)`,
                       })}
                     </p>
                   </div>
                 </div>
 
                 <span className="btn-secondary">
-                  {t('files.workspace.upload.choose')}
+                  {files.length > 0 && results.length === 0
+                    ? t('files.workspace.upload.addMore', {
+                        defaultValue: t('files.workspace.upload.choose'),
+                      })
+                    : t('files.workspace.upload.choose')}
                 </span>
               </div>
 
               <div className="surface-technical rounded-2xl p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex min-w-0 items-start gap-3">
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-2 text-zinc-100">
-                      <FileArchive className="h-5 w-5" />
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <div className="shrink-0 rounded-2xl border border-white/10 bg-white/5 p-2 text-zinc-100">
+                        <FileArchive className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs uppercase tracking-[0.2em] text-zinc-500 sm:tracking-[0.3em]">
+                          {t('files.workspace.upload.selectedTitle')}
+                        </p>
+                        <p className="mt-1.5 break-words text-sm font-medium text-white">
+                          {files.length > 0
+                            ? files.length === 1
+                              ? t('files.workspace.upload.filesReady_one', { count: 1 })
+                              : t('files.workspace.upload.filesReady_other', {
+                                  count: files.length,
+                                })
+                            : t('files.workspace.upload.noFiles')}
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-                        {t('files.workspace.upload.selectedTitle')}
-                      </p>
-                      <p className="mt-2 text-sm font-medium text-white">
-                        {files.length > 0
-                          ? files.length === 1
-                            ? t('files.workspace.upload.filesReady_one')
-                            : t('files.workspace.upload.filesReady_other')
-                          : t('files.workspace.upload.noFiles')}
-                      </p>
-                      {files.length > 0 ? (
-                        <div className="mt-3 space-y-2">
-                          {files.slice(0, 4).map((selectedFile) => (
-                            <div
-                              key={`${selectedFile.name}-${selectedFile.size}-${selectedFile.lastModified}`}
-                              className="flex items-center justify-between gap-3 text-xs text-zinc-400"
-                            >
-                              <span className="truncate">{selectedFile.name}</span>
-                              <span className="shrink-0 font-mono uppercase tracking-[0.2em] text-zinc-500">
-                                {formatFileSize(selectedFile.size)}
-                              </span>
-                            </div>
-                          ))}
 
-                          {files.length > 4 ? (
-                            <p className="text-xs text-zinc-500">
-                              {t('files.workspace.upload.additionalFiles', {
-                                count: files.length - 4,
-                              })}
-                            </p>
-                          ) : null}
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 sm:shrink-0 sm:flex-col sm:items-end sm:border-0 sm:bg-transparent sm:p-0 sm:text-right">
+                      <p
+                        data-testid="batch-selection-counter"
+                        className={`font-mono text-xs tracking-[0.08em] sm:tracking-[0.12em] ${
+                          isBatchLimitExceeded ? 'text-rose-300' : 'text-cyan-200/90'
+                        }`}
+                      >
+                        {t('files.workspace.upload.batchCounter', {
+                          count: files.length,
+                          totalGb: maxTotalGb,
+                          totalMb: totalSelectedMegabytes,
+                          defaultValue: `${files.length} ficheiros • ${totalSelectedMegabytes} MB / ${maxTotalGb} GB`,
+                        })}
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-zinc-500">
+                          {files.length > 0 ? formatFileSize(totalSelectedSize) : '0 B'}
+                        </p>
+                        {files.length > 0 ? (
+                          <button
+                            type="button"
+                            onClick={handleClearSelectedFiles}
+                            className="rounded-lg border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-medium text-zinc-300 transition hover:border-rose-400/40 hover:bg-rose-400/10 hover:text-rose-100"
+                          >
+                            {t('files.workspace.upload.clearSelection', {
+                              defaultValue: 'Limpar seleção',
+                            })}
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+
+                  {files.length > 0 ? (
+                    <div className="space-y-2 border-t border-white/10 pt-3">
+                      {files.slice(0, 4).map((selectedFile) => (
+                        <div
+                          key={`${selectedFile.name}-${selectedFile.size}-${selectedFile.lastModified}`}
+                          className="flex min-w-0 items-center justify-between gap-3 text-xs text-zinc-400"
+                        >
+                          <span className="min-w-0 flex-1 truncate">{selectedFile.name}</span>
+                          <span className="shrink-0 font-mono uppercase tracking-[0.2em] text-zinc-500">
+                            {formatFileSize(selectedFile.size)}
+                          </span>
                         </div>
+                      ))}
+
+                      {files.length > 4 ? (
+                        <p className="text-xs text-zinc-500">
+                          {t('files.workspace.upload.additionalFiles', {
+                            count: files.length - 4,
+                          })}
+                        </p>
                       ) : null}
                     </div>
-                  </div>
-
-                  <div className="shrink-0 text-right">
-                    <p
-                      data-testid="batch-selection-counter"
-                      className={`font-mono text-xs tracking-[0.12em] ${
-                        isBatchLimitExceeded ? 'text-rose-300' : 'text-cyan-200/90'
-                      }`}
-                    >
-                      {t('files.workspace.upload.batchCounter', {
-                        count: files.length,
-                        totalGb: Math.round(getMaxTotalBytes(platform) / (1024 * 1024 * 1024) * 10) / 10,
-                        totalMb: totalSelectedMegabytes,
-                        defaultValue: `${files.length} ficheiros • ${totalSelectedMegabytes} MB / ${Math.round(getMaxTotalBytes(platform) / (1024 * 1024 * 1024) * 10) / 10} GB`,
-                      })}
-                    </p>
-                    <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.2em] text-zinc-500">
-                      {files.length > 0 ? formatFileSize(totalSelectedSize) : '0 B'}
-                    </p>
-                  </div>
+                  ) : null}
                 </div>
               </div>
             </label>
@@ -2156,7 +2235,7 @@ export default function FileCryptoWorkspace() {
                   id="file-limit-dialog-title"
                   className="mt-4 text-2xl font-semibold leading-tight text-white sm:text-3xl"
                 >
-                  {t('files.workspace.limitDialog.title')}
+                  {t('files.workspace.limitDialog.title', { maxGb: maxSingleGb })}
                 </h2>
               </div>
 
@@ -2174,7 +2253,7 @@ export default function FileCryptoWorkspace() {
               id="file-limit-dialog-description"
               className="mt-4 text-sm leading-7 text-zinc-200 sm:text-base"
             >
-              {t('files.workspace.limitDialog.description')}
+              {t('files.workspace.limitDialog.description', { maxGb: maxSingleGb })}
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
